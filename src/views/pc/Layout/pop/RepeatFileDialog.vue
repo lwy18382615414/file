@@ -1,0 +1,186 @@
+<template>
+  <el-dialog
+    :model-value="visible"
+    :show-close="false"
+    :before-close="handleClose"
+    destroy-on-close
+    :close-on-click-modal="false"
+    :close-on-press-escape="false"
+    style="
+      padding: 0;
+      overflow: hidden;
+      border-radius: 8px;
+      background: #f2f4f8;
+      box-shadow: 0 3px 6px 1px rgba(95, 95, 95, 0.4);
+    "
+    width="460"
+  >
+    <!-- 头部 -->
+    <template #header>
+      <div class="dialog-header">
+        <span>{{ t("fileDuplicate") }}</span>
+        <SvgIcon name="ic_close" @click="handleClose" />
+      </div>
+    </template>
+
+    <div class="dialog-content">
+      <p class="mb-3 text-[#2d2d2d] font-bold">
+        {{
+          t("duplicateFilesWarning", {
+            count: duplicateTasks.length,
+          })
+        }}
+      </p>
+      <div class="repeat-file-operate-list">
+        <div
+          v-for="(item, index) in operateList"
+          :key="item.value"
+          class="operate-item"
+          :class="{ active: index === activeIndex }"
+          @click="uploadStep2(item.value, index)"
+        >
+          {{ item.text }}
+        </div>
+      </div>
+    </div>
+    <!-- 按钮 -->
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button class="cancel-btn" @click="handleClose">{{
+          t("cancel")
+        }}</el-button>
+      </div>
+    </template>
+  </el-dialog>
+</template>
+
+<script setup lang="ts">
+import { computed, type PropType, ref } from "vue";
+import { type Task, useUploadInfo, useUploadStatus } from "@/stores";
+import { t } from "@/utils";
+import { uploadFileStep2Api } from "@/api/fileService.ts";
+
+const props = defineProps({
+  isTransfer: {
+    type: Boolean,
+    default: undefined,
+  },
+  repeatVisible: {
+    type: Boolean,
+    default: false,
+  },
+  contentId: {
+    type: Number as PropType<number>,
+    default: () => 0,
+  },
+  duplicateList: {
+    type: Array as PropType<Record<number, string>[]>,
+    default: undefined,
+  },
+  allFileList: {
+    type: Array as PropType<Task[]>,
+    default: undefined,
+  },
+});
+
+const emit = defineEmits(["update:repeatVisible", "saveSuccess"]);
+
+const uploadInfo = useUploadInfo();
+const uploadStatus = useUploadStatus();
+const visible = computed(() => props.repeatVisible);
+const operateList = [
+  { text: t("skipFiles"), value: 3 },
+  { text: t("overwriteFiles"), value: 1 },
+  { text: t("keep"), value: 2 },
+];
+const activeIndex = ref(0);
+
+const duplicateTasks = computed(
+  () => props.duplicateList ?? uploadInfo.duplicateTasks,
+);
+const allTasks = computed(() => props.allFileList ?? uploadInfo.allTasks);
+
+const handleClose = () => {
+  uploadStatus.updateUploadStatus(true);
+  uploadInfo.clearUploadingStatus();
+  emit("update:repeatVisible", false); // 关闭对话框时将 visible 设置为 false
+};
+
+const uploadStep2 = async (repeatType: number, index: number) => {
+  activeIndex.value = index;
+  const res = await uploadFileStep2Api({
+    fileInfos: allTasks.value,
+    contentId: props.contentId,
+    repeatFileOperateType: repeatType,
+    viewRanges: [],
+    editRanges: [],
+  });
+  if (res.code === 1) {
+    if (props.isTransfer) {
+      emit("saveSuccess");
+      emit("update:repeatVisible", false);
+    } else {
+      ElMessage.success(t("operationSuccess"));
+      handleClose();
+      uploadStatus.updateUploadStatus(true);
+      uploadInfo.clearUploadingStatus();
+    }
+  }
+};
+</script>
+
+<style scoped lang="scss">
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  color: #2d2d2d;
+  font-size: calc(var(--base--font--size--16) * var(--scale-factor));
+  border-bottom: 1px solid #e3e6ec80;
+  font-weight: bold;
+  overflow: hidden;
+  font-family:
+    Microsoft YaHei,
+    Microsoft YaHei;
+}
+
+.dialog-content {
+  padding: 8px 30px 24px;
+  border-bottom: 1px solid #e3e6ec80;
+  color: #2d2d2d;
+  font-size: calc(var(--base--font--size--16) * var(--scale-factor));
+
+  .file-list {
+    max-height: 140px;
+    overflow-y: auto;
+
+    .file-item {
+      .file-name {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+}
+
+.dialog-footer {
+  padding: 0 16px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  button {
+    width: 80px;
+    border-radius: 4px;
+  }
+
+  .cancel-btn {
+    border: 1px solid #327edc;
+    background: #f2f4f8;
+    color: #327edc;
+  }
+}
+</style>

@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+:root {
+  --base--font--size--10: 10px;
+  --base--font--size--12: 12px;
+  --base--font--size--13: 13px;
+  --base--font--size--14: 14px;
+  --base--font--size--15: 15px;
+  --base--font--size--16: 16px;
+  --base--font--size--18: 18px;
+  --base--font--size--20: 20px;
+  --base--font--size--22: 22px;
+  --base--font--size--24: 24px;
+  --scale-factor: 1;
+}
+
+html {
+  font-family: "Microsoft YaHei", sans-serif;
+  font-size: calc(var(--base--font--size--16) * var(--scale-factor));
+}
+:root {
+  --el-color-primary: #5665bb;
+}
+
+:root:root {
+  --el-color-primary: #5665bb;
+  --van-action-sheet-cancel-text-color: #2d2d2d;
+  --van-base-font: PingFang SC;
+  --van-dialog-radius: 8px;
+  --van-dialog-width: 268px;
+}
+
+.repeat-file-operate-list {
+  .operate-item {
+    cursor: context-menu;
+    padding: 12px 18px;
+    color: #747683;
+    border-radius: 6px;
+
+    &.active {
+      background: #fff;
+      color: #2d2d2d;
+    }
+
+    &:not(:last-child) {
+      margin-bottom: 12px;
+    }
+  }
+}
+
+.van-floating-bubble {
+  background: none;
+}
+
+.table-header-row {
+  th {
+    padding: 5px 0;
+
+    .cell {
+      user-select: none;
+      font-weight: normal;
+
+      .caret-wrapper {
+        display: none;
+      }
+    }
+  }
+}

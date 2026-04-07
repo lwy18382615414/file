@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #327edc;
+      }
+
+      .cls-2 {
+        fill: none;
+      }
+
+      .cls-3 {
+        fill: #fff;
+      }
+    </style>
+  </defs>
+  <g id="组_15052" data-name="组 15052" transform="translate(-16 -20)">
+    <rect id="矩形_3922" data-name="矩形 3922" class="cls-1" width="16" height="16" rx="8" transform="translate(16 20)"/>
+    <g id="icon-select" transform="translate(16 20)">
+      <rect id="矩形_3649" data-name="矩形 3649" class="cls-2" width="16" height="16"/>
+      <path id="dagou-2" class="cls-3" d="M7.117,11.01,4.958,9.23,4,10.043l3.731,3.966A23.845,23.845,0,0,1,12.9,6.549L12.67,6A24.216,24.216,0,0,0,7.117,11.01Z" transform="translate(-0.449 -2.004)"/>
+    </g>
+  </g>
+</svg>
