@@ -21,12 +21,21 @@ export function useUploadDialog(options?: { onRefresh?: () => void }) {
   const uploadIsPersonal = ref(true);
 
   const uploaderRef = ref<UploadInstance>();
+
+  const bindUploaderRef = (instance: UploadInstance | null) => {
+    uploaderRef.value = instance ?? undefined;
+  };
   const selectedFiles = ref<File[]>([]);
   const encryptKeys = ref<{ name: string; aesKey: string }[]>([]);
   const fileBuffer = ref<File[]>([]);
   const loading = ref(false);
   const showRepeatFileDialog = ref(false);
+  const hasSelectedFiles = computed(() => selectedFiles.value.length > 0);
   let controller = new AbortController();
+
+  const isAbortError = (error: unknown): error is Error => {
+    return error instanceof Error && error.message === "__ENCRYPT_ABORTED__";
+  };
 
   const resetUploadState = () => {
     selectedFiles.value = [];
@@ -56,8 +65,8 @@ export function useUploadDialog(options?: { onRefresh?: () => void }) {
           aesKey: item.key,
         })),
       );
-    } catch (error: any) {
-      if (error?.message === "__ENCRYPT_ABORTED__") return;
+    } catch (error: unknown) {
+      if (isAbortError(error)) return;
       console.error("批量加密失败", error);
       ElMessage.error(t("operationFailedRetry"));
     } finally {
@@ -87,6 +96,10 @@ export function useUploadDialog(options?: { onRefresh?: () => void }) {
     const file = uploadFile.raw;
     if (!file) return;
     addFilesToBuffer([file]);
+  };
+
+  const handleDragOver = (event: DragEvent) => {
+    event.preventDefault();
   };
 
   const handleDrop = (event: DragEvent) => {
@@ -124,9 +137,22 @@ export function useUploadDialog(options?: { onRefresh?: () => void }) {
   };
 
   const openFileDialog = () => {
-    const input: HTMLInputElement | null =
-      (uploaderRef.value as any)?.$el?.querySelector?.(".el-upload__input") ?? null;
-    input?.click();
+    const uploadElement = uploaderRef.value?.$el;
+    if (!(uploadElement instanceof HTMLElement)) return;
+    const input = uploadElement.querySelector(".el-upload__input");
+    if (input instanceof HTMLInputElement) {
+      input.click();
+    }
+  };
+
+  const closeRepeatFileDialog = () => {
+    showRepeatFileDialog.value = false;
+  };
+
+  const handleRepeatVisibleChange = (value: boolean) => {
+    if (!value) {
+      closeRepeatFileDialog();
+    }
   };
 
   const handleUpload = async () => {
@@ -135,11 +161,12 @@ export function useUploadDialog(options?: { onRefresh?: () => void }) {
       return;
     }
 
-    startUploadTask({
+    await startUploadTask({
       files: selectedFiles.value,
       encryptKeys: encryptKeys.value,
       contentId: uploadContentId.value,
       completeAllTasks() {
+        closeRepeatFileDialog();
         ElMessage.success(t("uploadSuccess"));
         options?.onRefresh?.();
       },
@@ -151,7 +178,7 @@ export function useUploadDialog(options?: { onRefresh?: () => void }) {
       },
     });
 
-    closeUpload();
+    uploadVisible.value = false;
   };
 
   const openUpload = () => {
@@ -174,16 +201,19 @@ export function useUploadDialog(options?: { onRefresh?: () => void }) {
     uploadTitle,
     uploadContentId,
     uploadIsPersonal,
-    uploaderRef,
+    bindUploaderRef,
     selectedFiles,
     loading,
+    hasSelectedFiles,
     showRepeatFileDialog,
     openUpload,
     closeUpload,
     openFileDialog,
     handleSelectChange,
+    handleDragOver,
     handleDrop,
     handleRemove,
     handleUpload,
+    handleRepeatVisibleChange,
   };
 }

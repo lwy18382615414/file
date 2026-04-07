@@ -25,6 +25,51 @@
       <div class="dialog-content">
         <div class="file-select">
           <div class="form-label">{{ t("chooseFile") }}:</div>
+          <el-upload
+            v-if="visible"
+            :ref="bindUploaderRef"
+            class="hidden-uploader"
+            :class="{ 'show-trigger': !hasSelectedFiles && !loading }"
+            action="#"
+            multiple
+            drag
+            :show-file-list="false"
+            :auto-upload="false"
+            :on-change="handleSelectChange"
+          >
+            <template #trigger>
+              <div class="file-wrapper" :class="{ 'no-file': !hasSelectedFiles }">
+                <div class="empty-file">
+                  <SvgIcon name="ic_empty_file" size="54" />
+                  <span class="text">{{ t("clickToChoose") }}</span>
+                </div>
+              </div>
+            </template>
+          </el-upload>
+
+          <div v-if="hasSelectedFiles || loading">
+            <div
+              class="file-list"
+              v-loading="loading"
+              :element-loading-text="t('fileLoading') + '...'"
+              :class="{ clickable: hasSelectedFiles && !loading }"
+              @click="hasSelectedFiles && !loading && openFileDialog()"
+              @dragover="handleDragOver"
+              @drop="handleDrop"
+            >
+              <div
+                v-for="file in selectedFiles"
+                :key="file.name"
+                class="file-item"
+              >
+                <div class="file-main">
+                  <SvgIcon :name="getFileIcon(file.name)" size="24" />
+                  <div class="file-name">{{ file.name }}</div>
+                </div>
+                <SvgIcon name="ic_close-bg" @click.stop="handleRemove(file.name)" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -33,29 +78,52 @@
           <el-button class="cancel-btn" @click="handleClose">
             {{ t("cancel") }}
           </el-button>
-          <el-button class="confirm-btn">
+          <el-button :disabled="loading" class="confirm-btn" @click="handleUpload">
             {{ t("Ok") }}
           </el-button>
         </div>
       </template>
     </el-dialog>
+
+    <RepeatFileDialog
+      :repeat-visible="showRepeatFileDialog"
+      :content-id="contentId"
+      @update:repeatVisible="handleRepeatVisibleChange"
+      @saveSuccess="emit('refresh')"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
+import type { UploadProps } from "element-plus";
 import { SvgIcon } from "@/components";
+import { getFileIcon } from "@/utils";
 import { useI18n } from "vue-i18n";
+import RepeatFileDialog from "@/views/pc/Layout/pop/RepeatFileDialog.vue";
 
 const props = defineProps<{
   show: boolean;
   title?: string;
   contentId?: number;
   isPersonal?: boolean;
+  bindUploaderRef: unknown;
+  selectedFiles: File[];
+  loading: boolean;
+  hasSelectedFiles: boolean;
+  showRepeatFileDialog: boolean;
+  openFileDialog: () => void;
+  handleSelectChange: UploadProps["onChange"];
+  handleDragOver: (event: DragEvent) => void;
+  handleDrop: (event: DragEvent) => void;
+  handleRemove: (fileName: string) => void;
+  handleUpload: () => void | Promise<void>;
+  handleRepeatVisibleChange: (value: boolean) => void;
 }>();
 
 const emit = defineEmits<{
   (e: "update:show", value: boolean): void;
+  (e: "refresh"): void;
 }>();
 
 const { t } = useI18n();
@@ -66,6 +134,21 @@ const visible = computed({
 });
 
 const title = computed(() => props.title || t("uploadFile"));
+const contentId = computed(() => props.contentId || 0);
+const bindUploaderRef = computed(() => props.bindUploaderRef);
+const selectedFiles = computed(() => props.selectedFiles);
+const loading = computed(() => props.loading);
+const hasSelectedFiles = computed(() => props.hasSelectedFiles);
+const showRepeatFileDialog = computed(() => props.showRepeatFileDialog);
+const openFileDialog = () => props.openFileDialog();
+const handleSelectChange: UploadProps["onChange"] = (...args) =>
+  props.handleSelectChange?.(...args);
+const handleDragOver = (event: DragEvent) => props.handleDragOver(event);
+const handleDrop = (event: DragEvent) => props.handleDrop(event);
+const handleRemove = (fileName: string) => props.handleRemove(fileName);
+const handleUpload = () => props.handleUpload();
+const handleRepeatVisibleChange = (value: boolean) =>
+  props.handleRepeatVisibleChange(value);
 
 const handleClose = () => {
   visible.value = false;
@@ -121,6 +204,10 @@ const handleClose = () => {
     border-radius: 6px;
     background-color: #fff;
 
+    &.clickable {
+      cursor: pointer;
+    }
+
     .file-item {
       display: flex;
       align-items: center;
@@ -129,6 +216,12 @@ const handleClose = () => {
 
       &:not(:last-child) {
         border-bottom: 1px solid #e3e6ec80;
+      }
+
+      .file-main {
+        display: flex;
+        align-items: center;
+        gap: 12px;
       }
 
       .file-name {

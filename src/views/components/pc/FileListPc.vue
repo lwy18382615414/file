@@ -42,6 +42,18 @@
       :title="uploadTitle"
       :content-id="uploadContentId"
       :is-personal="uploadIsPersonal"
+      :bind-uploader-ref="bindUploaderRef"
+      :selected-files="selectedFiles"
+      :loading="uploadLoading"
+      :has-selected-files="hasSelectedFiles"
+      :show-repeat-file-dialog="showRepeatFileDialog"
+      :open-file-dialog="openFileDialog"
+      :handle-select-change="handleSelectChange"
+      :handle-drag-over="handleDragOver"
+      :handle-drop="handleDrop"
+      :handle-remove="handleRemove"
+      :handle-upload="submitUpload"
+      :handle-repeat-visible-change="handleRepeatVisibleChange"
       @update:show="handleUploadVisibleChange"
       @refresh="emit('refresh')"
     />
@@ -207,9 +219,23 @@ const {
   uploadTitle,
   uploadContentId,
   uploadIsPersonal,
+  bindUploaderRef,
+  selectedFiles,
+  loading: uploadLoading,
+  hasSelectedFiles,
+  showRepeatFileDialog,
   openUpload,
   closeUpload,
-} = useUploadDialog();
+  openFileDialog,
+  handleSelectChange,
+  handleDragOver,
+  handleDrop,
+  handleRemove,
+  handleUpload: submitUpload,
+  handleRepeatVisibleChange,
+} = useUploadDialog({
+  onRefresh: () => emit("refresh"),
+});
 
 const {
   open,
