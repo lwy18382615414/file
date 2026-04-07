@@ -236,11 +236,11 @@ import { storeToRefs } from "pinia";
 import {
   useSetting,
   useShareFileStore,
-  useUploadInfo,
   useViewMode,
   useUploadStatus,
   useRouteStackStore,
 } from "@/stores";
+import { useUploadFlow } from "@/hooks/upload/useUploadFlow";
 import { useFileBelong } from "@/hooks/useFileBelong";
 import {
   copyToClipboard,
@@ -283,11 +283,10 @@ const { sortMode, viewMode } = storeToRefs(useViewMode());
 const { setSortMode } = useViewMode();
 const { fileBelong, permissionCount } = useFileBelong();
 const { settingVisible } = storeToRefs(useSetting());
-const { addUploadingTask, showOrHideUploadDialog } = useUploadInfo();
+const { addUploadingTask, openUploadDialog, showUpload } = useUploadFlow();
 const { uploadStatus } = storeToRefs(useUploadStatus());
-const { showUpload } = storeToRefs(useUploadInfo());
 const routeStackStore = useRouteStackStore();
-const { uploadFilesSmart } = useSmartUploader();
+'} to=functions.Edit  սխալ again. let's send proper JSON.{const { uploadFilesSmart } = useSmartUploader();
 const { fileMaxSize } = config()
 
 const mainHeaderRef = ref();
@@ -913,7 +912,7 @@ const handleDrop = async (e: DragEvent) => {
   for (const t of allCollectedFiles) addUploadingTask(t.file.name);
 
   if (!showUpload.value) {
-    showOrHideUploadDialog(true);
+    openUploadDialog();
   }
 
   const rawFiles = allCollectedFiles.map(item => item.file);

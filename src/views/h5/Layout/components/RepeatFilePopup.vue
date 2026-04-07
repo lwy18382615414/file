@@ -44,7 +44,9 @@
 <script lang="ts" setup>
 import { ref, computed } from "vue";
 import { uploadFileStep2Api } from "@/api/fileService";
-import { type Task, useUploadInfo, useUploadStatus } from "@/stores";
+import { useUploadStatus } from "@/stores";
+import type { Task } from "@/hooks/upload/useUploadFlow";
+import { useUploadFlow } from "@/hooks/upload/useUploadFlow";
 import { t } from "@/utils";
 
 const props = defineProps<{
@@ -57,7 +59,7 @@ const props = defineProps<{
 
 const emit = defineEmits(["update:show", "saveSuccess"]);
 
-const uploadInfo = useUploadInfo();
+const { duplicateTasks: flowDuplicateTasks, allTasks: flowAllTasks, clearUploadState } = useUploadFlow();
 
 const showPopup = computed({
   get: () => props.show,
@@ -65,9 +67,9 @@ const showPopup = computed({
 });
 
 const duplicateTasks = computed(
-  () => props.duplicateList || uploadInfo.duplicateTasks,
+  () => props.duplicateList || flowDuplicateTasks.value,
 );
-const allTasks = computed(() => props.allFileList || uploadInfo.allTasks);
+const allTasks = computed(() => props.allFileList || flowAllTasks.value);
 
 const activeIndex = ref(0);
 const operateList = [
@@ -91,7 +93,7 @@ const uploadStep2 = async (repeatType: number, index: number) => {
     } else {
       showToast({ message: t("operationSuccess"), type: "success" });
       useUploadStatus().updateAddFolder(true);
-      uploadInfo.clearUploadingStatus();
+      clearUploadState();
     }
     showPopup.value = false;
   }
@@ -99,7 +101,7 @@ const uploadStep2 = async (repeatType: number, index: number) => {
 
 const closePopup = () => {
   showPopup.value = false;
-  uploadInfo.clearUploadingStatus();
+  clearUploadState();
 };
 </script>
 

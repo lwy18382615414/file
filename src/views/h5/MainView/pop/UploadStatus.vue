@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- 上传进度面板 -->
     <van-action-sheet v-model:show="showUpload">
       <div class="header">
         <div class="title">
@@ -25,18 +24,33 @@
               <div class="progress-bar">
                 <van-progress :percentage="file.progress" />
               </div>
+              <div
+                v-if="file.status === 'error' || file.status === 'duplicate'"
+                class="error-msg"
+              >
+                {{ file.errorMsg || t("operationFailedRetry") }}
+                <span
+                  v-if="file.status === 'error'"
+                  class="operation"
+                  @click="retryFailedUploads"
+                >
+                  {{ t("retry") }}
+                </span>
+              </div>
             </div>
           </div>
+        </div>
+        <div v-if="hasFailedTasks" class="retry-all" @click="retryFailedUploads">
+          {{ t("retry") }}
         </div>
       </div>
     </van-action-sheet>
 
-    <!-- 浮动气泡 -->
     <van-floating-bubble
       v-if="uploadingTasks.length > 0 && !showUpload"
       axis="xy"
       z-index="1000"
-      @click="showOrHideUploadDialog(true)"
+      @click="openUploadDialog()"
     >
       <template #default>
         <SvgIcon name="ic_uploading" size="36" />
@@ -44,22 +58,26 @@
     </van-floating-bubble>
   </div>
 </template>
-<script lang="ts" setup>
-import { useUploadInfo } from "@/stores";
-import { getFileIcon, t } from "@/utils";
-import { storeToRefs } from "pinia";
-import { useUploader } from "@/hooks/upload/useUploader";
 
-const { resetUploader } = useUploader();
-const uploadInfo = useUploadInfo();
-const { showOrHideUploadDialog } = useUploadInfo();
-const { showUpload, uploadingTasks } = storeToRefs(uploadInfo)
+<script lang="ts" setup>
+import { useUploadFlow } from "@/hooks/upload/useUploadFlow";
+import { getFileIcon, t } from "@/utils";
+
+const {
+  showUpload,
+  uploadingTasks,
+  hasFailedTasks,
+  openUploadDialog,
+  closeUploadDialog,
+  clearUploadState,
+  retryFailedUploads,
+  allTasksSucceeded,
+} = useUploadFlow();
 
 const handleClose = () => {
-  showOrHideUploadDialog(false);
-  console.log("handleClose", uploadingTasks.value.every((task) => task.status === "success"));
-  if (uploadingTasks.value.every((task) => task.status === "success")) {
-    resetUploader();
+  closeUploadDialog();
+  if (allTasksSucceeded.value) {
+    clearUploadState();
   }
 };
 </script>
@@ -103,6 +121,7 @@ const handleClose = () => {
 
     .file-info {
       width: 100%;
+
       .file-name {
         margin-bottom: 6px;
         color: #2d2d2d;
@@ -113,10 +132,28 @@ const handleClose = () => {
         text-overflow: ellipsis;
         white-space: nowrap;
       }
+
+      .error-msg {
+        margin-top: 6px;
+        color: #f5222d;
+        font-size: calc(var(--base--font--size--12) * var(--scale-factor));
+
+        .operation {
+          margin-left: 12px;
+          color: #327edc;
+        }
+      }
     }
+
     .progress-bar {
       width: 100%;
     }
   }
+}
+
+.retry-all {
+  padding: 0 16px 16px;
+  color: #327edc;
+  text-align: right;
 }
 </style>

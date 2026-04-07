@@ -56,7 +56,9 @@
 
 <script setup lang="ts">
 import { computed, type PropType, ref } from "vue";
-import { type Task, useUploadInfo, useUploadStatus } from "@/stores";
+import { useUploadStatus } from "@/stores";
+import type { Task } from "@/hooks/upload/useUploadFlow";
+import { useUploadFlow } from "@/hooks/upload/useUploadFlow";
 import { t } from "@/utils";
 import { uploadFileStep2Api } from "@/api/fileService.ts";
 
@@ -85,7 +87,7 @@ const props = defineProps({
 
 const emit = defineEmits(["update:repeatVisible", "saveSuccess"]);
 
-const uploadInfo = useUploadInfo();
+const { duplicateTasks: flowDuplicateTasks, allTasks: flowAllTasks, clearUploadState } = useUploadFlow();
 const uploadStatus = useUploadStatus();
 const visible = computed(() => props.repeatVisible);
 const operateList = [
@@ -96,14 +98,14 @@ const operateList = [
 const activeIndex = ref(0);
 
 const duplicateTasks = computed(
-  () => props.duplicateList ?? uploadInfo.duplicateTasks,
+  () => props.duplicateList ?? flowDuplicateTasks.value,
 );
-const allTasks = computed(() => props.allFileList ?? uploadInfo.allTasks);
+const allTasks = computed(() => props.allFileList ?? flowAllTasks.value);
 
 const handleClose = () => {
   uploadStatus.updateUploadStatus(true);
-  uploadInfo.clearUploadingStatus();
-  emit("update:repeatVisible", false); // 关闭对话框时将 visible 设置为 false
+  clearUploadState();
+  emit("update:repeatVisible", false);
 };
 
 const uploadStep2 = async (repeatType: number, index: number) => {
@@ -123,7 +125,7 @@ const uploadStep2 = async (repeatType: number, index: number) => {
       ElMessage.success(t("operationSuccess"));
       handleClose();
       uploadStatus.updateUploadStatus(true);
-      uploadInfo.clearUploadingStatus();
+      clearUploadState();
     }
   }
 };

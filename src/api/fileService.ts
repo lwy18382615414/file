@@ -96,6 +96,7 @@ export function renameFileApi(
 export function requestUploadFileApi(
   data: UploadFileChunkParams,
 ): Promise<IResponse<string>> {
+  console.log("请求文件上传接口，参数：", cloudDriveUploadUrl.value, data);
   return request.post(
     `${cloudDriveUploadUrl.value}/api/file/requestuploadfile`,
     data,

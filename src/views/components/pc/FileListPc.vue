@@ -57,6 +57,7 @@
       @update:show="handleUploadVisibleChange"
       @refresh="emit('refresh')"
     />
+    <UploadProgress />
     <PcFileContextMenu
       :show="contextMenuVisible"
       :position="contextMenuPosition"
@@ -122,6 +123,7 @@ import { useUploadDialog } from "../../hooks/useUploadDialog";
 import CopyLinkPc from "./CopyLinkPc.vue";
 import NameEditDialogPc from "./NameEditDialogPc.vue";
 import UploadDialogPc from "./UploadDialogPc.vue";
+import UploadProgress from "./UploadProgress.vue";
 import PcExplorerGridView from "./PcExplorerGridView.vue";
 import PcExplorerHeader from "./PcExplorerHeader.vue";
 import PcExplorerListView from "./PcExplorerListView.vue";
@@ -459,10 +461,8 @@ watch(
     const recentCreate = SessionStorageUtil.get("recentCreateFolder");
     if (recentCreate === "1") {
       openCreate();
-    } else {
-      if (recentCreate === "2") {
-        toast(t("uploadSuccess"));
-      }
+    } else if (recentCreate === "2") {
+      openUpload();
     }
     SessionStorageUtil.remove("recentCreateFolder");
   },

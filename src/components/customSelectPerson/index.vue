@@ -111,7 +111,6 @@
                 <AvatarBox :avatar="item.avatar" />
                 <div class="item-name">{{ item.nickName }}</div>
                 <template v-if="item.permissionType !== Permission.SuperAdmin">
-                  {{ item.canEdit }}
                   <span
                     v-if="
                       myUserInfo.userId !== item.userId &&

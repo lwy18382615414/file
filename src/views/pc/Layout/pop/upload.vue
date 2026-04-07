@@ -117,8 +117,8 @@
 
 <script setup lang="ts">
 import { type PropType, ref, watch } from "vue";
-import { useUploadInfo } from "@/stores";
 import { ElMessage, type UploadProps, type UploadInstance } from "element-plus";
+import { useUploadFlow } from "@/hooks/upload/useUploadFlow";
 import { createFolderApi } from "@/api/fileService";
 import { checkFileSize, getFileIcon, t } from "@/utils";
 import { handleFileEncryption } from "@/utils/upload/encrypt";
@@ -148,7 +148,7 @@ const props = defineProps({
 
 const emits = defineEmits(["update:visible", "onRefreshData"]);
 
-const { showOrHideUploadDialog } = useUploadInfo();
+const { runUpload } = useUploadFlow();
 
 const uploader = ref<UploadInstance>()
 const chooseVisible = ref(props.visible);
@@ -257,8 +257,7 @@ const handleUpload = async () => {
       return;
     }
 
-    // 共享空间及其子空间 上传文件
-    startUploadTask({
+    runUpload({
       files: selectedFile.value,
       encryptKeys: encryptKey.value,
       contentId: props.contentId,
@@ -274,7 +273,6 @@ const handleUpload = async () => {
       },
     });
     handleClose();
-    showOrHideUploadDialog(true);
   } else {
     if (showErrorTip.value) {
       showErrorTip.value = false;

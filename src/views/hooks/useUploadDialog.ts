@@ -9,11 +9,12 @@ import { debounce } from "lodash-es";
 import { ExplorerPageType, getExplorerContext } from "@/views/fileExplorer";
 import { checkFileSize, t } from "@/utils";
 import { handleFileEncryption } from "@/utils/upload/encrypt";
-import { startUploadTask } from "@/utils/upload/uploadManager";
+import { useUploadFlow } from "@/hooks/upload/useUploadFlow";
 
 export function useUploadDialog(options?: { onRefresh?: () => void }) {
   const route = useRoute();
   const context = computed(() => getExplorerContext(route));
+  const { runUpload } = useUploadFlow();
 
   const uploadVisible = ref(false);
   const uploadTitle = ref(t("uploadFile"));
@@ -161,7 +162,13 @@ export function useUploadDialog(options?: { onRefresh?: () => void }) {
       return;
     }
 
-    await startUploadTask({
+    console.log("上传文件列表：", selectedFiles.value);
+    console.log("对应的加密信息：", encryptKeys.value);
+    console.log("上传到的目录ID：", uploadContentId.value);
+
+    uploadVisible.value = false;
+
+    void runUpload({
       files: selectedFiles.value,
       encryptKeys: encryptKeys.value,
       contentId: uploadContentId.value,
@@ -177,8 +184,6 @@ export function useUploadDialog(options?: { onRefresh?: () => void }) {
         ElMessage.error(t("errorOccurred"));
       },
     });
-
-    uploadVisible.value = false;
   };
 
   const openUpload = () => {

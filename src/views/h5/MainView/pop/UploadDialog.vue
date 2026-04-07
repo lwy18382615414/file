@@ -69,8 +69,7 @@ import { type PropType, watch, ref } from "vue";
 import type { UploaderFileListItem } from "vant";
 import { handleFileEncryption } from "@/utils/upload/encrypt";
 import type { EncryptedFileType } from "@/views/h5/MainView/type";
-import { startUploadTask } from "@/utils/upload/uploadManager";
-import { useUploadInfo } from "@/stores";
+import { useUploadFlow } from "@/hooks/upload/useUploadFlow";
 
 const props = defineProps({
   uploadVisible: {
@@ -88,7 +87,7 @@ const emits = defineEmits([
   "onRefreshData",
   "onRepeat",
 ]);
-const { showOrHideUploadDialog } = useUploadInfo();
+const { runUpload, closeUploadDialog } = useUploadFlow();
 
 const showUpload = ref(props.uploadVisible);
 const fileLoading = ref(false);
@@ -176,7 +175,7 @@ async function handleUpload() {
     showToast({ message: t("selectFile"), type: "fail" });
     return;
   }
-  startUploadTask({
+  runUpload({
     files: selectedFile.value,
     encryptKeys: encryptKeyList.value,
     contentId: props.contentId,
@@ -184,7 +183,7 @@ async function handleUpload() {
       showToast({ message: t("uploadSuccess"), type: "success" });
       emits("onRefreshData");
       showUpload.value = false;
-      showOrHideUploadDialog(false);
+      closeUploadDialog();
     },
     findDuplicateFiles() {
       showUpload.value = false;
@@ -195,7 +194,6 @@ async function handleUpload() {
     },
   });
   showUpload.value = false;
-  showOrHideUploadDialog(true);
 }
 
 watch(

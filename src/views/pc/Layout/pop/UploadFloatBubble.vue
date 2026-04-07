@@ -43,7 +43,7 @@
                   {{ file.name }}
                   <span
                     v-if="
-                      file.status === 'error' && file.errorType === 'duplicate'
+                      file.status === 'duplicate'
                     "
                     class="red-text"
                     >重复</span
@@ -52,9 +52,25 @@
                 <div class="progress-bar">
                   <el-progress :percentage="file.progress"> </el-progress>
                 </div>
+                <div
+                  v-if="file.status === 'error' || file.status === 'duplicate'"
+                  class="error-msg"
+                >
+                  {{ file.errorMsg || t('operationFailedRetry') }}
+                  <span
+                    v-if="file.status === 'error'"
+                    class="operation"
+                    @click="retryFailedUploads"
+                  >
+                    {{ t('retry') }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
+        </div>
+        <div v-if="hasFailedTasks" class="retry-all" @click="retryFailedUploads">
+          {{ t('retry') }}
         </div>
       </div>
     </el-dialog>
@@ -62,7 +78,7 @@
     <van-floating-bubble
       v-if="!showUpload && uploadingTasks.length > 0"
       axis="xy"
-      @click="showOrHideUploadDialog(true)"
+      @click="openUploadDialog()"
     >
       <template #default>
         <SvgIcon name="ic_uploading" size="36" />
@@ -73,17 +89,19 @@
 
 <script setup lang="ts">
 import { ref, nextTick, watch } from "vue";
-import { useUploader } from "@/hooks/upload/useUploader";
-import { useUploadInfo } from "@/stores";
+import { useUploadFlow } from "@/hooks/upload/useUploadFlow";
 import { getFileIcon, t } from "@/utils";
-import { storeToRefs } from "pinia";
 
-const { resetUploader } = useUploader();
-
-const uploadInfo = useUploadInfo();
-const { showOrHideUploadDialog } = useUploadInfo();
-
-const { showUpload, uploadingTasks } = storeToRefs(uploadInfo);
+const {
+  showUpload,
+  uploadingTasks,
+  hasFailedTasks,
+  openUploadDialog,
+  closeUploadDialog,
+  clearUploadState,
+  retryFailedUploads,
+  allTasksSucceeded,
+} = useUploadFlow();
 
 // 滚动相关
 const dialogContentRef = ref<HTMLElement | null>(null);
@@ -177,9 +195,9 @@ watch(showUpload, (isOpen) => {
 });
 
 const handleClose = () => {
-  showOrHideUploadDialog(false);
-  if (uploadingTasks.value.every((task) => task.status === "success")) {
-    resetUploader();
+  closeUploadDialog();
+  if (allTasksSucceeded.value) {
+    clearUploadState();
   }
 };
 </script>
@@ -222,8 +240,16 @@ const handleClose = () => {
       display: inline-block;
       margin-left: 12px;
       color: #327edc;
-      cursor: context-menu;
+      cursor: pointer;
     }
+  }
+
+  .retry-all {
+    margin-top: 12px;
+    color: #327edc;
+    text-align: right;
+    cursor: pointer;
+    font-size: calc(var(--base--font--size--12) * var(--scale-factor));
   }
 
   .red-text {

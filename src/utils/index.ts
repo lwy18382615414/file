@@ -965,6 +965,7 @@ export function getAssetUrl(file: string, dir: "images" | "icons" = "images") {
 
 // 校验文件大小
 export function checkFileSize(file: File): boolean {
+  console.log("file.size", file.size, fileMaxSize.value);
   return file.size > fileMaxSize.value + 5 * 1024 * 1024;
 }
 

@@ -1,4 +1,4 @@
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { getConfig } from "@/api/config";
 
 interface WebConfig {
@@ -13,103 +13,143 @@ interface WebConfig {
   [key: string]: any;
 }
 
-// 状态声明
-const avatarUrl = ref("");
-const fileUrl = ref("");
-const appResource = ref("");
-const docUrl = ref("");
-const policyUrl = ref("");
+const CACHE_KEY = "webConfig";
+const DEFAULT_FILE_CHUNK_SIZE = 1024 * 1024 * 5;
+const DEFAULT_FILE_MAX_SIZE = 1024 * 1024 * 300;
+
 const configData = ref<WebConfig>();
-const fileChunkSize = ref(0);
-const fileMaxSize = ref(0);
-const cloudDriveUploadUrl = ref("");
 const isConfigReady = ref(false);
 const configLoading = ref(false);
 let configPromise: Promise<WebConfig | undefined> | null = null;
 
-const updateState = (data: WebConfig) => {
-  configData.value = data;
-  avatarUrl.value = `${data.avatarUrl}?fileId=`;
-  policyUrl.value = `${data.policyUrl}/`;
-  fileChunkSize.value = data.fileChunkSize || 1024 * 1024 * 5;
-  fileMaxSize.value = data.fileMaxSize || 1024 * 1024 * 300;
-  fileUrl.value = data.fileUrl || "";
-  docUrl.value = data.docUrl || "";
-  appResource.value = data.appResource || "";
-  cloudDriveUploadUrl.value = data.cloudDriveUploadUrl || "";
-  isConfigReady.value = true;
+const getSessionStorage = () => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return window.sessionStorage;
 };
 
-const loadConfig = async (isRefresh: boolean = false) => {
-  const webConfigStr = sessionStorage.getItem("webConfig");
+const getCachedConfig = () => {
+  const storage = getSessionStorage();
+  const configStr = storage?.getItem(CACHE_KEY);
 
-  if (webConfigStr && !isRefresh) {
-    const data = JSON.parse(webConfigStr) as WebConfig;
-    updateState(data);
-    return data;
+  if (!configStr) {
+    return undefined;
+  }
+
+  try {
+    return JSON.parse(configStr) as WebConfig;
+  } catch (error) {
+    console.error("解析缓存配置失败", error);
+    storage?.removeItem(CACHE_KEY);
+    return undefined;
+  }
+};
+
+const setCachedConfig = (data: WebConfig) => {
+  getSessionStorage()?.setItem(CACHE_KEY, JSON.stringify(data));
+};
+
+const applyConfig = (data?: WebConfig) => {
+  configData.value = data;
+  isConfigReady.value = !!data;
+};
+
+applyConfig(getCachedConfig());
+
+const avatarUrl = computed(() => {
+  const value = configData.value?.avatarUrl || "";
+  return value ? `${value}?fileId=` : "";
+});
+
+const fileUrl = computed(() => configData.value?.fileUrl || "");
+const appResource = computed(() => configData.value?.appResource || "");
+const docUrl = computed(() => configData.value?.docUrl || "");
+const policyUrl = computed(() => {
+  const value = configData.value?.policyUrl || "";
+  return value ? `${value}/` : "";
+});
+const fileChunkSize = computed(
+  () => configData.value?.fileChunkSize || DEFAULT_FILE_CHUNK_SIZE,
+);
+const fileMaxSize = computed(
+  () => configData.value?.fileMaxSize || DEFAULT_FILE_MAX_SIZE,
+);
+const cloudDriveUploadUrl = computed(
+  () => configData.value?.cloudDriveUploadUrl || "",
+);
+
+const loadConfig = async (forceRefresh: boolean = false) => {
+  if (!forceRefresh) {
+    const cachedConfig = configData.value || getCachedConfig();
+    if (cachedConfig) {
+      if (configData.value !== cachedConfig) {
+        applyConfig(cachedConfig);
+      }
+      return cachedConfig;
+    }
   }
 
   const res = await getConfig();
-  const data = res.data;
-  sessionStorage.setItem("webConfig", JSON.stringify(data));
-  updateState(data);
+  const data = res.data as WebConfig;
+  setCachedConfig(data);
+  applyConfig(data);
   return data;
 };
 
-export default () => {
-  const getConfigFetch = async (isRefresh: boolean = false) => {
-    if (!isRefresh && isConfigReady.value && configData.value) {
-      return configData.value;
-    }
+const getConfigFetch = async (forceRefresh: boolean = false) => {
+  if (!forceRefresh && isConfigReady.value && configData.value) {
+    return configData.value;
+  }
 
-    if (configPromise) {
-      return configPromise;
-    }
-
-    if (isRefresh) {
-      isConfigReady.value = false;
-    }
-
-    configLoading.value = true;
-    configPromise = loadConfig(isRefresh)
-      .catch((error) => {
-        isConfigReady.value = false;
-        console.error("获取配置失败", error);
-        return undefined;
-      })
-      .finally(() => {
-        configLoading.value = false;
-        configPromise = null;
-      });
-
+  if (configPromise) {
     return configPromise;
-  };
+  }
 
-  const ensureConfigReady = async (forceRefresh: boolean = false) => {
-    if (forceRefresh) {
-      return getConfigFetch(true);
-    }
+  configLoading.value = true;
+  configPromise = loadConfig(forceRefresh)
+    .catch((error) => {
+      if (!configData.value) {
+        isConfigReady.value = false;
+      }
+      console.error("获取配置失败", error);
+      return undefined;
+    })
+    .finally(() => {
+      configLoading.value = false;
+      configPromise = null;
+    });
 
-    if (isConfigReady.value && configData.value) {
-      return configData.value;
-    }
-
-    return getConfigFetch();
-  };
-
-  return {
-    avatarUrl,
-    fileUrl,
-    docUrl,
-    policyUrl,
-    appResource,
-    fileChunkSize,
-    fileMaxSize,
-    configData,
-    isConfigReady,
-    configLoading,
-    getConfigFetch,
-    ensureConfigReady,
-    cloudDriveUploadUrl,
-  };
+  return configPromise;
 };
+
+const ensureConfigReady = async (forceRefresh: boolean = false) => {
+  if (forceRefresh) {
+    return getConfigFetch(true);
+  }
+
+  if (isConfigReady.value && configData.value) {
+    return configData.value;
+  }
+
+  return getConfigFetch();
+};
+
+const configStore = {
+  avatarUrl,
+  fileUrl,
+  docUrl,
+  policyUrl,
+  appResource,
+  fileChunkSize,
+  fileMaxSize,
+  configData,
+  isConfigReady,
+  configLoading,
+  getConfigFetch,
+  ensureConfigReady,
+  cloudDriveUploadUrl,
+};
+
+export default () => configStore;
