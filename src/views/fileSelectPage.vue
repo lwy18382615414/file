@@ -1,70 +1,74 @@
 <template>
   <div class="file-select-page">
-    <div class="page-content">
-      <div ref="breadcrumbContainer" v-if="showBreadcrumb" class="breadcrumb">
-        <div
-          v-for="(item, index) in breadcrumbList"
-          :key="getItemKey(item, index)"
-          class="breadcrumb-item"
-        >
-          <span
-            class="breadcrumb-item__name"
-            :class="{ active: index === breadcrumbList.length - 1 }"
-            @click="onClickBreadcrumb(item)"
-          >
-            {{ item.name }}
-          </span>
-          <span v-if="index !== breadcrumbList.length - 1">
-            <SvgIcon name="ic_right" />
-          </span>
-        </div>
-      </div>
+    <template v-if="isPcClient"></template>
 
-      <div
-        ref="scrollContainer"
-        class="folder-list"
-        :class="{ showBottomBtn: showBottomActions }"
-        @scroll.passive="onScroll"
-      >
-        <template v-if="folderList.length > 0">
+    <template v-else-if="isMobileApp">
+      <div class="page-content">
+        <div ref="breadcrumbContainer" v-if="showBreadcrumb" class="breadcrumb">
           <div
-            v-for="(item, index) in folderList"
+            v-for="(item, index) in breadcrumbList"
             :key="getItemKey(item, index)"
-            class="item-select"
-            @click="getFolderList(item)"
+            class="breadcrumb-item"
           >
-            <SvgIcon name="file-folder" size="30" />
-            <div class="item-select__title">{{ item.name }}</div>
+            <span
+              class="breadcrumb-item__name"
+              :class="{ active: index === breadcrumbList.length - 1 }"
+              @click="onClickBreadcrumb(item)"
+            >
+              {{ item.name }}
+            </span>
+            <span v-if="index !== breadcrumbList.length - 1">
+              <SvgIcon name="ic_right" />
+            </span>
           </div>
-        </template>
-        <div v-else-if="loading" class="skeleton-wrapper">
-          <FileListSkeleton :count="10" />
         </div>
-        <div v-else class="empty-wrapper">
-          <SvgIcon name="empty-folder" size="106" />
-          <div class="item-select__title">{{ t("noFolder") }}</div>
-        </div>
-      </div>
-    </div>
 
-    <div v-if="showBottomActions" class="page-bottom">
-      <div class="btn btn-secondary" @click="showCreateFolder = true">
-        {{ t("createFolder") }}
+        <div
+          ref="scrollContainer"
+          class="folder-list"
+          :class="{ showBottomBtn: showBottomActions }"
+          @scroll.passive="onScroll"
+        >
+          <template v-if="folderList.length > 0">
+            <div
+              v-for="(item, index) in folderList"
+              :key="getItemKey(item, index)"
+              class="item-select"
+              @click="getFolderList(item)"
+            >
+              <SvgIcon name="file-folder" size="30" />
+              <div class="item-select__title">{{ item.name }}</div>
+            </div>
+          </template>
+          <div v-else-if="loading" class="skeleton-wrapper">
+            <FileListSkeleton :count="10" />
+          </div>
+          <div v-else class="empty-wrapper">
+            <SvgIcon name="empty-folder" size="106" />
+            <div class="item-select__title">{{ t("noFolder") }}</div>
+          </div>
+        </div>
       </div>
-      <van-uploader
-        v-if="type === CloudDriveH5Enum.FromInput"
-        class="btn btn-primary uploader-btn"
-        :after-read="afterRead"
-        :before-read="beforeRead"
-        accept="*"
-        multiple
-      >
-        {{ t("upload") }}
-      </van-uploader>
-      <div v-else class="btn btn-primary" @click="handleSave">
-        {{ t("save") }}
+
+      <div v-if="showBottomActions" class="page-bottom">
+        <div class="btn btn-secondary" @click="showCreateFolder = true">
+          {{ t("createFolder") }}
+        </div>
+        <van-uploader
+          v-if="type === CloudDriveH5Enum.FromInput"
+          class="btn btn-primary uploader-btn"
+          :after-read="afterRead"
+          :before-read="beforeRead"
+          accept="*"
+          multiple
+        >
+          {{ t("upload") }}
+        </van-uploader>
+        <div v-else class="btn btn-primary" @click="handleSave">
+          {{ t("save") }}
+        </div>
       </div>
-    </div>
+    </template>
   </div>
 
   <CreateFolderComponent
@@ -108,7 +112,7 @@ import type { ShareContentType } from "@/views/share/types";
 import type { TransFileInfo } from "@/types/type";
 import type { EncryptedFileType } from "@/views/h5/MainView/type";
 import type { Task } from "@/stores/modules/upload";
-import SvgIcon from "@/components/SvgIcon.vue";
+import { SvgIcon } from "@/components";
 import FileListSkeleton from "@/views/h5/Components/FileListSkeleton.vue";
 import CreateFolderComponent from "@/views/share/components/mobile/CreateFolderPopup.vue";
 import RepeatFilePopup from "@/views/h5/Layout/components/RepeatFilePopup.vue";
@@ -120,6 +124,7 @@ import {
   handleFileEncryption,
 } from "@/utils/upload/encrypt";
 import { startUploadTask } from "@/utils/upload/uploadManager";
+import { useEnv } from "./share/hooks/useEnv";
 
 interface TransferUploadFileInfo extends Task {}
 interface ShareTransferResult {
@@ -130,6 +135,8 @@ interface UploadTransferResult {
   code: number;
   data: Task[];
 }
+
+const { isPcClient, isMobileApp } = useEnv();
 
 const route = useRoute();
 const breadcrumbContainer = ref<HTMLElement | null>(null);
@@ -250,17 +257,22 @@ const onScroll = async () => {
 };
 
 watch(
-  () => breadcrumbList.value.map((item) => `${item.contentId ?? 'root'}-${item.name}-${item.isPersonal}`).join('|'),
+  () =>
+    breadcrumbList.value
+      .map(
+        (item) => `${item.contentId ?? "root"}-${item.name}-${item.isPersonal}`,
+      )
+      .join("|"),
   async () => {
     await nextTick();
     const container = breadcrumbContainer.value;
     if (!container) return;
     container.scrollTo({
       left: container.scrollWidth,
-      behavior: 'smooth',
+      behavior: "smooth",
     });
   },
-  { flush: 'post' },
+  { flush: "post" },
 );
 
 const onToggleCreateFolder = (value: boolean) => {

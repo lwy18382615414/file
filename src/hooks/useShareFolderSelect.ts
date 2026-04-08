@@ -46,6 +46,23 @@ export function useShareFolderSelect({
   shareId,
   onSaveSuccess,
 }: UseShareFolderSelectOptions) {
+  const isRootFolder = (target: SelectFolder) => target.contentId === 0;
+
+  const isSameFolder = (source: SelectFolder, target: SelectFolder) => {
+    return (
+      source.contentId === target.contentId &&
+      source.isPersonal === target.isPersonal
+    );
+  };
+
+  const getTargetContentId = (target: SelectFolder) => {
+    return isRootFolder(target) ? 0 : (target.contentId ?? 0);
+  };
+
+  const isSelectSharedRoot = (target: SelectFolder | null) => {
+    return !!target && isRootFolder(target) && !target.isPersonal;
+  };
+
   const { runPermissionGuard } = usePermissionGuard();
 
   const loading = ref(false);
@@ -61,12 +78,7 @@ export function useShareFolderSelect({
   });
 
   const showBreadcrumb = computed(() => breadcrumbList.value.length > 1);
-  const isSharedRootFolder = computed(
-    () =>
-      !!selectFolder.value &&
-      selectFolder.value.contentId === 0 &&
-      !selectFolder.value.isPersonal,
-  );
+  const isSharedRootFolder = computed(() => isSelectSharedRoot(selectFolder.value));
   const showBottomActions = computed(
     () => breadcrumbList.value.length > 1 && !isSharedRootFolder.value,
   );
@@ -124,7 +136,7 @@ export function useShareFolderSelect({
     append = false,
   ) => {
     const apiFunc = target.isPersonal ? _getMySpaceContentApi : _getShareSpace;
-    const targetContentId = target.contentId ?? 0;
+    const targetContentId = getTargetContentId(target);
 
     try {
       loading.value = true;
@@ -152,10 +164,8 @@ export function useShareFolderSelect({
   const getFolderList = async (target: SelectFolder) => {
     selectFolder.value = target;
 
-    const existingIndex = breadcrumbList.value.findIndex(
-      (item) =>
-        item.contentId === target.contentId &&
-        item.isPersonal === target.isPersonal,
+    const existingIndex = breadcrumbList.value.findIndex((item) =>
+      isSameFolder(item, target),
     );
     if (existingIndex === -1) {
       breadcrumbList.value.push(target);

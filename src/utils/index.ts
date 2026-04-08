@@ -716,49 +716,54 @@ export const downloadFile = async (options: DownloadOptions) => {
   }
 };
 
-// 客户端外部下载文件
+// 辅助函数：增加延时
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export const downloadFileOut = async (shareId: number, contentId: number[]) => {
   const res = await downloadFileOutApi(shareId, contentId);
   if (res.code !== 1) {
     ElMessage.error(t("errorOccurred"));
     return;
-  } else {
-    for (const file of res.data) {
-      const { fileId, aesKey, fileName } = file;
-      try {
-        let fileBlob: Blob[];
-        // 调用API获取文件数据
-        const response = await downloadFileApi(fileId);
+  }
 
-        if (aesKey === "") {
-          // 无需解密直接下载
-          fileBlob = [response];
-        } else {
-          fileBlob = await decryptFile(response, aesKey);
-        }
+  for (const file of res.data) {
+    const { fileId, aesKey, fileName } = file;
+    try {
+      let fileBlob;
+      // 调用API获取文件数据
+      const response = await downloadFileApi(fileId);
 
-        // 创建Blob对象
-        const blob = new Blob(fileBlob);
-
-        // 创建临时链接
-        const link = document.createElement("a");
-        const url = URL.createObjectURL(blob);
-
-        // 设置下载属性
-        link.download = fileName;
-        link.href = url;
-
-        // 触发下载
-        document.body.appendChild(link);
-        link.click();
-
-        // 清理资源
-        URL.revokeObjectURL(url);
-        document.body.removeChild(link);
-      } catch (error) {
-        console.error("文件下载失败:", error);
-        throw error;
+      console.log("下载文件响应", response);
+      if (aesKey === "") {
+        // 无需解密直接下载
+        fileBlob = [response];
+      } else {
+        fileBlob = await decryptFile(response, aesKey);
       }
+
+      // 创建Blob对象
+      const blob = new Blob(fileBlob);
+
+      // 创建临时链接
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+
+      // 设置下载属性
+      link.download = fileName;
+      link.href = url;
+
+      // 触发下载
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+      }, 2000);
+
+      await delay(800);
+    } catch (error) {
+      console.error(`文件 [${fileName}] 下载或解密失败:`, error);
     }
   }
 };

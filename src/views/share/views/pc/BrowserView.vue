@@ -84,16 +84,13 @@ const appDownload = () => {
   justify-content: center;
 
   :deep(.share-content-container) {
-    width: 600px;
-    min-height: 388px;
+    width: 860px;
+    min-height: 450px;
     border-radius: 8px;
+    overflow: hidden;
     opacity: 1;
     background: #fff;
     box-shadow: 0 3px 0.375rem rgba(95, 95, 95, 0.4);
-  }
-
-  :deep(.share-content-container.share-content-container--wide) {
-    width: 900px;
   }
 }
 </style>

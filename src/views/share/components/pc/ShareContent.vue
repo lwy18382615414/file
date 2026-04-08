@@ -1,8 +1,5 @@
 <template>
-  <div
-    :class="{ 'share-content-container--wide': isInputPsw }"
-    class="share-content-container"
-  >
+  <div class="share-content-container">
     <div
       v-if="isLoading"
       v-loading="isLoading"
@@ -16,12 +13,12 @@
         <div class="share-status__text">{{ errorMsg || t("linkExpired") }}</div>
       </div>
 
-      <template v-else>
+      <template v-else-if="!isInputPsw">
         <div class="share-title">
           <span>{{ t("cloudDriveSharing") }}</span>
         </div>
 
-        <div v-if="!isInputPsw" class="share-password-card">
+        <div class="share-password-card">
           <div class="share-password-card__avatar">
             <AvatarBox :avatar="shareBaseInfo.avatarId" :size="52" />
           </div>
@@ -51,8 +48,42 @@
             {{ shareBaseInfo.expireTimeText }}
           </div>
         </div>
+      </template>
 
-        <div v-else class="share-info">
+      <template v-else-if="isSaveSuccess">
+        <div class="share-title">
+          <span>{{ t("saveToCloudDrive") }}</span>
+        </div>
+
+        <div class="share-success-content">
+          <div class="success-icon">
+            <SvgIcon name="ic_save-success" size="100" />
+          </div>
+          <div class="success-text">{{ t("fileSaveSuccess") }}</div>
+          <div class="taget-folder">
+            <span>{{ t("savedTo") }}：</span>
+            <span class="folder-name">{{ targetFolder }}</span>
+          </div>
+          <el-button type="primary" @click="goToCloudDrive">
+            {{ t("viewNow") }}
+          </el-button>
+        </div>
+      </template>
+
+      <template v-else>
+        <div class="share-title share-title--content">
+          <span v-if="!showFolderSelect">{{ t("cloudDriveSharing") }}</span>
+          <span
+            v-else
+            class="share-title__back"
+            @click="handleCancelFolderSelect"
+          >
+            <SvgIcon name="ic_arr_back" size="20" />
+            {{ t("saveToFolder") }}
+          </span>
+        </div>
+
+        <div v-if="!showFolderSelect" class="share-info">
           <div class="file-wrapper">
             <SvgIcon
               :name="
@@ -79,14 +110,12 @@
                 </span>
                 <div class="divider"></div>
                 <span class="share-time">
-                  {{
-                    dayjs(shareBaseInfo.shareTime).format(t("timeFormat"))
-                  }}</span
-                >
+                  {{ dayjs(shareBaseInfo.shareTime).format(t("timeFormat")) }}
+                </span>
                 <div class="divider"></div>
-                <span class="expire-time">
-                  {{ shareBaseInfo.expireTimeText }}</span
-                >
+                <span class="expire-time">{{
+                  shareBaseInfo.expireTimeText
+                }}</span>
               </div>
             </div>
             <a v-if="isBrowser" :href="schemeUrl" class="app-btn">
@@ -108,7 +137,7 @@
                     'breadcrumb-item',
                     { 'is-current': index === breadcrumbList.length - 1 },
                   ]"
-                  @click="handleBreadcrumbClick(item)"
+                  @click="handlePcBreadcrumbClick(item)"
                 >
                   {{ item.name }}
                 </el-breadcrumb-item>
@@ -120,13 +149,15 @@
               :table-columns="tableColumns"
               :table-data="fileList"
               class="share-table"
-              height="100%"
+              :height="tableHeight"
               @selection-change="handleSelectionChange"
               @row-dblclick="handleTableRowDblclick"
             >
               <template #headerText="{ column }">
-                <template v-if="column.property === 'name'">
-                  <div class="table-header-select" @click="toggleSelectAll">
+                <template
+                  v-if="column.property === 'name' && selectedFiles.length > 0"
+                >
+                  <div class="table-header-select">
                     <span class="selected-count">
                       {{ t("selectedItems", { count: selectedFiles.length }) }}
                     </span>
@@ -136,7 +167,7 @@
               </template>
 
               <template #name="{ row }">
-                <div class="file-name-cell" @click="handleNameCellClick(row)">
+                <div class="file-name-cell">
                   <SvgIcon
                     :name="row.isFolder ? 'file-folder' : getFileIcon(row.name)"
                     size="30"
@@ -158,6 +189,48 @@
               </template>
             </CommonTable>
           </div>
+
+          <div class="share-actions">
+            <div
+              v-if="isPcClient"
+              class="folder-select"
+              @click="saveToCloudDriver"
+            >
+              <div class="flex">
+                <div class="whitespace-nowrap">{{ t("saveToFolder") }}:</div>
+                <span class="folder-name">{{ folderName }}</span>
+              </div>
+              <span class="folder-icon">
+                <SvgIcon name="select-folder" />
+              </span>
+            </div>
+            <div class="share-actions__buttons">
+              <el-button
+                :disabled="!selectedFiles.some((item) => !item.isFolder)"
+                type="default"
+                @click="onDownload"
+              >
+                {{ t("download") }}
+              </el-button>
+              <el-button
+                v-if="isPcClient && isHaveFileApp"
+                :disabled="selectedFiles.length === 0"
+                type="primary"
+                @click="handleSaveToCloud"
+              >
+                {{ t("saveToCloudDrive") }}
+              </el-button>
+            </div>
+          </div>
+        </div>
+
+        <div v-else class="folder-select-wrapper">
+          <FolderSelectPc
+            :selected-files="selectedFiles"
+            :share-id="shareId"
+            @cancelSelect="handleCancelFolderSelect"
+            @saveSelect="handleSaveFolder"
+          />
         </div>
       </template>
     </template>
@@ -168,7 +241,9 @@
 import { computed, nextTick, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { ArrowRight } from "@element-plus/icons-vue";
+import { ElMessage } from "element-plus";
 import { CommonTable } from "@/components";
+import FolderSelectPc from "./FolderSelectPc.vue";
 import { useShareData } from "../../hooks/useShareData";
 import AvatarBox from "@/components/customSelectPerson/AvatarBox.vue";
 import dayjs from "dayjs";
@@ -177,13 +252,27 @@ import schemeConfig from "@/config";
 import { useEnv } from "../../hooks/useEnv";
 import type { ShareContentType } from "../../types";
 import type { TableColumn } from "@/types/type";
+import { useHandleSaveFolder } from "@/hooks/composable/useHandleSaveFolder";
+import { usePermissionGuard } from "@/hooks/composable/usePermissionGuard";
+import { saveToCloudDriveApi } from "@/api/share";
+import { useDialog } from "@/hooks/useDialog";
 
 const { t } = useI18n();
-const { isBrowser } = useEnv();
+const { isBrowser, isPcClient } = useEnv();
+const { folderName, targetFolderContentId, saveFolder } = useHandleSaveFolder();
+const { runPermissionGuard } = usePermissionGuard();
 const breadcrumbWrapperRef = ref<HTMLDivElement>();
-const commonTableRef = ref();
+const commonTableRef = ref<{
+  getTableRef?: () => {
+    clearSelection?: () => void;
+    toggleRowSelection?: (row: ShareContentType, selected?: boolean) => void;
+  };
+}>();
+const isSyncingTableSelection = ref(false);
+const isSaveSuccess = ref(false);
 
 const {
+  shareId,
   shareKey,
   isLoading,
   isExpired,
@@ -196,11 +285,14 @@ const {
   selectedFiles,
   breadcrumbList,
   isTopFolder,
-  selectAll,
-  chooseFile,
-  handleItemClick,
+  showFolderSelect,
+  isHaveFileApp,
+  openFolder,
   handleBreadcrumbClick,
   handleExtractFile,
+  onDownload,
+  handleFileDownload,
+  saveToCloudDriver,
 } = useShareData();
 
 const tableColumns: TableColumn[] = [
@@ -230,7 +322,49 @@ const tableColumns: TableColumn[] = [
   },
 ];
 
+const targetFolder = computed(
+  () =>
+    sessionStorage.getItem("lastSelectedName") ||
+    folderName.value ||
+    t("myFiles"),
+);
+
+const tableHeight = computed(() => {
+  if (isBrowser.value) {
+    return 264;
+  }
+  return isTopFolder.value
+    ? "calc(100vh - 42px - 100px - 72px)"
+    : "calc(100vh - 42px - 100px - 72px - 45px)";
+});
+
 const getTableRef = () => commonTableRef.value?.getTableRef?.();
+
+const syncTableSelection = async () => {
+  await nextTick();
+
+  const table = getTableRef();
+  if (!table) {
+    isSyncingTableSelection.value = false;
+    return;
+  }
+
+  const selectedIds = new Set(
+    selectedFiles.value.map((item) => item.contentId),
+  );
+
+  try {
+    table.clearSelection?.();
+    fileList.value.forEach((item) => {
+      if (selectedIds.has(item.contentId)) {
+        table.toggleRowSelection?.(item, true);
+      }
+    });
+  } finally {
+    await nextTick();
+    isSyncingTableSelection.value = false;
+  }
+};
 
 const scrollToCurrentBreadcrumb = async () => {
   await nextTick();
@@ -243,8 +377,85 @@ const scrollToCurrentBreadcrumb = async () => {
   });
 };
 
+const handleCancelFolderSelect = () => {
+  showFolderSelect.value = false;
+};
+
+const handleSaveFolder = async (
+  targetFolderName: string,
+  targetFolderId: number | null,
+) => {
+  await saveFolder({
+    targetFolderName,
+    targetFolderId,
+  });
+  showFolderSelect.value = false;
+};
+
+const handleSaveToCloud = async () => {
+  const contentIds = selectedFiles.value.map((item) => item.contentId);
+
+  await runPermissionGuard({
+    contentIds,
+    selectedRows: selectedFiles.value,
+    request: (ids) =>
+      saveToCloudDriveApi({
+        contentIds: ids,
+        targetContentId: targetFolderContentId.value,
+        ...(shareId.value ? { shareId: shareId.value } : {}),
+      }),
+    showConfirm: (count) => {
+      return useDialog({
+        title: t("saveToCloudDrive"),
+        content: t("savePermissionWarning", {
+          count,
+        }),
+        confirmText: t("Ok"),
+      });
+    },
+    notifySuccess: () => {
+      isSaveSuccess.value = true;
+    },
+    notifyError(type) {
+      if (type === "all-denied") {
+        ElMessage.error(t("noSavePermission"));
+      } else {
+        ElMessage.error(t("operationFailedRetry"));
+      }
+    },
+  });
+};
+
+const goToCloudDrive = () => {
+  console.log(
+    JSON.stringify({
+      type: "14",
+      data: {
+        path: "jump-page",
+        contentId: sessionStorage.getItem("lastSelectedId") || 0,
+      },
+    }),
+  );
+};
+
 watch(
-  () => breadcrumbList.value,
+  fileList,
+  () => {
+    isSyncingTableSelection.value = true;
+  },
+  { deep: true, flush: "sync" },
+);
+
+watch(
+  fileList,
+  () => {
+    syncTableSelection();
+  },
+  { deep: true, flush: "post" },
+);
+
+watch(
+  breadcrumbList,
   () => {
     scrollToCurrentBreadcrumb();
   },
@@ -252,58 +463,42 @@ watch(
 );
 
 watch(
-  () => fileList.value,
-  async (rows) => {
-    await nextTick();
-    const tableRef = getTableRef();
-    if (!tableRef) return;
-    tableRef.clearSelection();
-    rows.forEach((row: ShareContentType) => {
-      if (
-        selectedFiles.value.some((file) => file.contentId === row.contentId)
-      ) {
-        tableRef.toggleRowSelection(row, true);
-      }
-    });
+  commonTableRef,
+  (tableRef) => {
+    if (tableRef) {
+      isSyncingTableSelection.value = true;
+      syncTableSelection();
+    }
   },
-  { deep: true, flush: "post" },
+  { flush: "post" },
 );
 
 const handleSelectionChange = (rows: ShareContentType[]) => {
+  if (isSyncingTableSelection.value) return;
   selectedFiles.value = rows;
-};
-
-const toggleSelectAll = () => {
-  selectAll();
 };
 
 const handleTableRowDblclick = async (row: ShareContentType) => {
   if (row.isFolder) {
-    await handleNameCellClick(row);
-  }
-};
-
-const handleNameCellClick = async (row: ShareContentType) => {
-  if (row.isFolder) {
-    const currentBreadcrumb =
-      breadcrumbList.value[breadcrumbList.value.length - 1];
-    if (currentBreadcrumb?.contentId === row.contentId) return;
-    await handleItemClick(row);
+    isSyncingTableSelection.value = true;
+    await openFolder(row);
     return;
   }
 
-  chooseFile(row);
+  await handleFileDownload(row);
 };
 
-watch(
-  () => isTopFolder.value,
-  async (top) => {
-    if (top) {
-      await nextTick();
-      scrollToCurrentBreadcrumb();
-    }
-  },
-);
+const handlePcBreadcrumbClick = async (item: ShareContentType) => {
+  isSyncingTableSelection.value = true;
+  await handleBreadcrumbClick(item);
+};
+
+watch(isTopFolder, async (top) => {
+  if (top) {
+    await nextTick();
+    scrollToCurrentBreadcrumb();
+  }
+});
 
 const schemeUrl = computed(() => {
   const baseUrl = `${location.origin}${location.pathname}`;
@@ -320,12 +515,11 @@ const schemeUrl = computed(() => {
 <style lang="scss" scoped>
 .share-content-container {
   width: 100%;
-  height: 100%;
-  min-height: 388px;
   position: relative;
   display: flex;
   flex-direction: column;
   background: #fff;
+  min-height: 513px;
 }
 
 .share-loading {
@@ -339,6 +533,17 @@ const schemeUrl = computed(() => {
   font-weight: bold;
   color: #2d2d2d;
   padding: 10px 16px;
+
+  &--content {
+    display: flex;
+    align-items: center;
+  }
+
+  &__back {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+  }
 }
 
 .share-password-card {
@@ -381,7 +586,7 @@ const schemeUrl = computed(() => {
 }
 
 .share-info {
-  padding: 3px 16px 16px;
+  padding: 3px 16px 0;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -460,8 +665,6 @@ const schemeUrl = computed(() => {
 
 .share-file-list-wrapper {
   flex: 1;
-  min-height: 0;
-  max-height: 520px;
   border: 1px solid #f2f4f7;
   border-radius: 8px;
   overflow: hidden;
@@ -476,6 +679,8 @@ const schemeUrl = computed(() => {
   scrollbar-width: none;
   border-bottom: 1px solid #f2f4f7;
   background: #fff;
+  display: flex;
+  align-items: center;
 
   &::-webkit-scrollbar {
     display: none;
@@ -641,24 +846,105 @@ const schemeUrl = computed(() => {
   font-size: calc(var(--base--font--size--14) * var(--scale-factor));
 }
 
-:deep(.share-table .el-table__empty-block) {
-  min-height: 240px;
+.share-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0;
+
+  .folder-select {
+    width: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid #e3e6ec;
+    border-radius: 4px;
+    color: #747683;
+    padding: 10px;
+    cursor: pointer;
+
+    .folder-name {
+      margin-left: 8px;
+      color: #2d2d2d;
+      max-width: 188px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  &__buttons {
+    margin-left: auto;
+  }
+
+  :deep(.el-button) {
+    font-family: PingFang;
+    border: 1px solid var(--el-color-primary);
+    font-size: calc(var(--base--font--size--14) * var(--scale-factor));
+    font-weight: bold;
+
+    &.el-button--default {
+      color: var(--el-color-primary);
+    }
+
+    &.is-disabled {
+      background: #b7b7b7;
+      color: #fff;
+      font-weight: normal;
+      border: 1px solid #b7b7b7;
+    }
+  }
 }
 
-:deep(.share-table .el-table__empty-text) {
-  line-height: normal;
+.folder-select-wrapper {
+  flex: 1;
+  min-height: 452px;
+  display: flex;
+  flex-direction: column;
 }
 
-.empty-wrapper {
+.share-success-content {
+  width: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: auto;
+  padding: 40px 0;
+
+  .success-text {
+    white-space: nowrap;
+    font-size: 20px;
+    font-weight: 700;
+    color: #2d2d2d;
+    margin-top: 20px;
+  }
+
+  .taget-folder {
+    margin: 20px 0;
+
+    .folder-name {
+      color: #327edc;
+    }
+  }
+
+  .el-button {
+    width: 100%;
+    height: 48px;
+  }
+}
+
+.share-status {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  min-height: 450px;
   color: #747683;
-}
 
-.item-select__title {
-  margin-top: 8px;
+  &__text {
+    margin-top: 16px;
+    font-size: calc(var(--base--font--size--18) * var(--scale-factor));
+  }
 }
 </style>

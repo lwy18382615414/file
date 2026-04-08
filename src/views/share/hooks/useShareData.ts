@@ -120,10 +120,8 @@ export const useShareData = () => {
   };
 
   const resetSelectionForCurrentList = () => {
-    selectedFiles.value = [];
-    if (fileList.value.length > 0) {
-      selectedFiles.value = [...fileList.value];
-    }
+    selectedFiles.value =
+      fileList.value.length > 0 ? [...fileList.value] : [];
   };
 
   const resetToRoot = () => {
@@ -165,7 +163,7 @@ export const useShareData = () => {
         (file) => file.contentId !== item.contentId,
       );
     } else {
-      selectedFiles.value.push(item);
+      selectedFiles.value = [...selectedFiles.value, item];
     }
   };
 
@@ -199,10 +197,7 @@ export const useShareData = () => {
       isDelete: false,
     }));
 
-    selectedFiles.value = [];
-    if (fileList.value.length > 0) {
-      selectAll();
-    }
+    resetSelectionForCurrentList();
   };
 
   const handleItemClick = async (item: ShareContentType) => {
@@ -222,17 +217,17 @@ export const useShareData = () => {
     await openFolder(item, true);
   };
 
-  const onDownload = async () => {
+  const downloadFiles = async (items: ShareContentType[]) => {
     if (!cloudDriveUploadUrl.value) {
       await ensureConfigReady();
     }
 
-    if (selectedFiles.value.length === 0) {
+    if (items.length === 0) {
       showToast({ type: "fail", message: t("selectFile") });
       return;
     }
 
-    const contentIds = selectedFiles.value
+    const contentIds = items
       .filter((item) => !item.isFolder)
       .map((item) => item.contentId);
 
@@ -261,6 +256,14 @@ export const useShareData = () => {
     }
 
     await downloadFileOut(shareId.value, contentIds);
+  };
+
+  const onDownload = async () => {
+    await downloadFiles(selectedFiles.value);
+  };
+
+  const handleFileDownload = async (item: ShareContentType) => {
+    await downloadFiles([item]);
   };
 
   const saveToCloudDriver = () => {
@@ -332,8 +335,10 @@ export const useShareData = () => {
     handleBreadcrumbClick,
     handleExtractFile,
     onDownload,
+    handleFileDownload,
     saveToCloudDriver,
     handleSaveSuccess,
     resetToRoot,
+    openFolder,
   };
 };
