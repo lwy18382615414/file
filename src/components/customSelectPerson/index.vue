@@ -184,7 +184,7 @@ const alreadyChooseList = ref<Record<string, any>[]>([]);
 const nodeIdList = ref<Record<string, any>>([]);
 const contactsTree = ref();
 const superAdmin = ref<Record<string, any>>({});
-const myUserInfo = getMyUserInfo();
+const myUserInfo = getMyUserInfo() || {};
 
 const localTreeData = ref<Record<string, any>[]>([]);
 
@@ -200,7 +200,8 @@ const getEnterName = computed(() => {
   return "";
 });
 
-const departDisabled = (data: Record<string, any>) => {
+const departDisabled = (data: Record<string, any> | null) => {
+  if (!data?.userId) return true;
   if (data.userId === superAdmin.value.userId) return true;
   if (data.userId === myUserInfo.userId) return true;
   const findUser = props.hasSelectItem.find(
@@ -282,7 +283,8 @@ const searchList: any = computed(() => {
   return setCheckStatus(getUserBySearchKey(term));
 });
 
-const disableChoose = (item: Record<string, any>) => {
+const disableChoose = (item: Record<string, any> | null) => {
+  if (!item?.userId) return true;
   if (item.userId === superAdmin.value.userId) return true;
   if (item.userId === myUserInfo.userId) return true;
   const findUser = props.hasSelectItem.find((i) => i.userId === item.userId);
@@ -294,6 +296,8 @@ const disableChoose = (item: Record<string, any>) => {
   if (findUser && findUser.permissionType === props.myPermissionType) {
     return true;
   }
+
+  return false;
 };
 
 const handleClose = () => {
@@ -319,7 +323,8 @@ const getUserData = async () => {
   resolveDepartAndUser(clonedData);
   localTreeData.value = clonedData;
 };
-const setOneCheck = (nodeId: Record<string, any>, status = true) => {
+const setOneCheck = (nodeId?: string, status = true) => {
+  if (!nodeId || !contactsTree.value) return;
   contactsTree.value.setChecked(nodeId, status);
 };
 
@@ -399,7 +404,7 @@ const userCheck = (val: Record<string, any>, check: boolean) => {
 
 const removeChooseItem = (item: Record<string, any>) => {
   let nodeIds = findCheckNodeId(item.userId);
-  nodeIds?.forEach((nodeId: Record<string, any>) => {
+  nodeIds.forEach((nodeId) => {
     setOneCheck(nodeId, false);
   });
   let index = alreadyChooseList.value.findIndex(
@@ -410,11 +415,14 @@ const removeChooseItem = (item: Record<string, any>) => {
   }
 };
 
-const findCheckNodeId = (userId: number, data = getContactsList.value) => {
-  let nodeIds = [];
-  if (!userId) return;
+const findCheckNodeId = (
+  userId: number,
+  data = getContactsList.value,
+): string[] => {
+  let nodeIds: string[] = [];
+  if (!userId) return [];
   let nodeId = "";
-  let children = [];
+  let children: Record<string, any>[] = [];
   for (const item of data) {
     if (item.user) {
       for (const itemU of item.user) {
@@ -448,7 +456,7 @@ const setPropsKey = async () => {
     );
     alreadyChooseList.value.forEach((item) => {
       let nodeIds = findCheckNodeId(item.userId);
-      nodeIds?.forEach((nodeId: Record<string, string>) => {
+      nodeIds.forEach((nodeId) => {
         setOneCheck(nodeId, true);
       });
     });

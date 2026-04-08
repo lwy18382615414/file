@@ -23,7 +23,9 @@ export type PcFileContextActionKey =
   | "delete"
   | "restore"
   | "deletePermanently"
-  | "cancelShare";
+  | "cancelShare"
+  | "permission"
+  | "exit";
 
 export type PcFileContextAction = {
   key: PcFileContextActionKey;
@@ -55,10 +57,7 @@ export function usePcFileContextMenu(options: {
   ) => {
     const permissionType = getPermissionType(item);
 
-    if (
-      pageType === ExplorerPageType.SHARED ||
-      pageType === ExplorerPageType.SEARCH
-    ) {
+    if (pageType === ExplorerPageType.SHARED) {
       if (permissionType == null) return false;
     }
 
@@ -69,6 +68,7 @@ export function usePcFileContextMenu(options: {
     item: ContentType,
     pageType: ExplorerPageType,
   ): PcFileContextAction[] => {
+    console.log("buildSingleActions", { item, pageType });
     if (pageType === ExplorerPageType.RECYCLE) {
       return [
         { key: "restore", label: t("restore") },

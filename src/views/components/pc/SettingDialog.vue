@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="setting-dialpg">
     <el-dialog
       :model-value="visible"
       :show-close="false"
@@ -618,7 +618,7 @@ watch(
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 24px 16px;
+  padding: 16px 12px 16px 16px;
   border-bottom: 1px solid #edf1f5;
 }
 

@@ -20,9 +20,9 @@
         <div class="search-result">
           <div class="title">
             {{ t("file") }}
-            <span v-if="searchResult && searchResult.length"
-              >({{ searchState.total }})</span
-            >
+            <span v-if="searchResult && searchResult.length">
+              ({{ searchState.total }})
+            </span>
           </div>
           <div class="result-container" ref="scrollContainerRef">
             <!-- 初始加载状态 -->
@@ -49,7 +49,7 @@
                       <SvgIcon
                         :name="
                           getIsFolder(item)
-                            ? 'icon_folder'
+                            ? 'file-folder'
                             : getFileIcon(getName(item))
                         "
                         size="22"
@@ -85,9 +85,9 @@
 import { reactive, ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { debounce } from "lodash-es";
-import { useShareSpace } from "@/hooks/useShareSpace";
 import { getFileIcon } from "@/utils";
 import { searchGlobalApi } from "@/api/common";
+import { getParentFolderContentIdApi } from "@/api/common";
 import { t } from "@/utils";
 import type { CloudSearchResultItem } from "@/types/type";
 import {
@@ -97,17 +97,12 @@ import {
   getParentId,
   getContentId,
 } from "@/utils/typeUtils";
-import { useFileBelong } from "@/hooks/useFileBelong";
-import { useRouteStackStore } from "@/stores";
+import { buildFolderRoute, ExplorerPageType } from "@/views/fileExplorer";
 
-const { activeIndex, activeSubIndex, handleMenuHighlight } = useShareSpace();
 const router = useRouter();
-const { fileBelong } = useFileBelong();
-const storeStack = useRouteStackStore();
 
 const searchBoxRef = ref<HTMLElement | null>(null);
 const searchPopoverVisible = ref(false);
-const scrollContainerRef = ref<HTMLElement | null>(null);
 
 const searchState = reactive({
   keywords: "",
@@ -195,32 +190,28 @@ const handleSearchItemClick = async (item: CloudSearchResultItem) => {
   const parentId = getParentId(item) ?? 0;
   const name = getName(item);
   const isShare = getIsShare(item) ?? false;
+  const pageType = isShare ? ExplorerPageType.SHARED : ExplorerPageType.MY;
+  const targetFolderId = getIsFolder(item) ? contentId : parentId;
 
-  if (parentId === 0) {
-    if (isShare) handleMenuHighlight(isShare, contentId);
-    await router.push(
-      isShare ? `/share-space/${contentId}?contentName=${name}` : "/my-space",
-    );
-    return;
-  }
+  const res = await getParentFolderContentIdApi(targetFolderId);
+  const pathIds = (res.data.path || "").split("/").filter(Boolean);
+  const rawPathNames = (res.data.name || "").split("/").filter(Boolean);
+  const pathNames = rawPathNames.slice(1);
+  const targetName = pathNames[pathNames.length - 1] || name;
+  const currentNames = pathNames.slice(0, -1);
 
-  fileBelong.value = item.isShare ? "shareSpace" : "mySpace";
+  const target = buildFolderRoute(
+    pageType,
+    pathIds,
+    { contentId: targetFolderId, contentName: targetName },
+    currentNames,
+  );
 
-  await router.push({
-    name: "Folder",
-    params: {
-      contentId: getIsFolder(item) ? contentId : parentId,
-    },
-    query: {
-      contentName: name,
-    },
-  });
+  await router.push(target);
 };
 
 const handleClickViewAll = () => {
-  activeIndex.value = null;
-  activeSubIndex.value = null;
-  storeStack.stack = [];
+  searchPopoverVisible.value = false;
   router.push({
     path: "/search-result",
     query: {
@@ -299,6 +290,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   padding: 8px 16px;
+  line-height: 1.5;
   cursor: pointer;
 
   &:hover {

@@ -3,6 +3,7 @@ import "regenerator-runtime/runtime";
 import "element-plus/dist/index.css";
 import "vant/lib/index.css";
 import "normalize.css/normalize.css";
+import "./styles/theme.css";
 import "./styles/index.css";
 import "virtual:svg-icons-register";
 
