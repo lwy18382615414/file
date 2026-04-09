@@ -19,6 +19,8 @@ import { longPress } from "@/directives/longpress";
 import "./styles/scrollbar.scss";
 
 import { initRem } from "@/utils/rem";
+import { getDeviceType } from "./utils";
+import { DeviceType } from "./enum/baseEnum";
 
 const app = createApp(App);
 
@@ -26,7 +28,11 @@ app.directive("border-cursor", borderCursor);
 app.directive("truncate-middle", truncateMiddle);
 app.directive("long-press", longPress);
 
-initRem();
+const deviceType = getDeviceType();
+
+if (deviceType === DeviceType.H5) {
+  initRem();
+}
 
 app.use(i18n).use(pinia).use(router);
 

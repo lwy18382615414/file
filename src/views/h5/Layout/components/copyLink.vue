@@ -248,7 +248,7 @@ const copyLinkToClipboard = async () => {
       const count = shareList.value.length;
       const shareLink = res.data.shareKey;
 
-      const link = `${prefix}#/share-page?shareKey=${shareLink}`;
+      const link = `${prefix}#/share-page?shareKey=${shareLink}${res.data.password ? `&psw=${encodeURIComponent(res.data.password)}` : ""}`;
       const copyText = generateShareText({
         count,
         fileName: getName(firstFile.value!),
@@ -293,7 +293,7 @@ const copyLinkToClipboard = async () => {
             if (apiRes.code === 1) {
               const count = newShareList.length;
               const shareLink = apiRes.data.shareKey;
-              const link = `${prefix}#/share-page?shareKey=${shareLink}`;
+              const link = `${prefix}#/share-page?shareKey=${shareLink}${apiRes.data.password ? `&psw=${encodeURIComponent(apiRes.data.password)}` : ""}`;
               const copyText = generateShareText({
                 count,
                 fileName: getName(firstFile.value!),

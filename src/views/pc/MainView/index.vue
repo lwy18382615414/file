@@ -668,7 +668,7 @@ const handelRenameFile = () => {
 async function copyLink() {
   if (route.path === "/my-share") {
     const prefix = window.location.origin + location.pathname;
-    const link = `${prefix}#/share-page?shareKey=${selectedRow.value?.shareKey}`;
+    const link = `${prefix}#/share-page?shareKey=${selectedRow.value?.shareKey}${selectedRow.value?.sharePassword ? `&psw=${encodeURIComponent(selectedRow.value.sharePassword)}` : ""}`;
     const copyText = generateShareText({
       count: selectedRow.value?.shareCount || 0,
       fileName: getName(selectedRow.value),

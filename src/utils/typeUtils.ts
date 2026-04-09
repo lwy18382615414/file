@@ -3,6 +3,9 @@ import type { ContentType } from "@/types/type";
 type RowKey = string | number;
 
 export function getRowKey(row: ContentType): RowKey {
+  if ('__tempRowId' in row) {
+    return row.__tempRowId;
+  }
   if ('contentId' in row) {
     return row.contentId;
   }

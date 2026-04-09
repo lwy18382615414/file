@@ -149,7 +149,7 @@ const pageTitleMap: Record<string, string> = {
 }
 
 .search-box {
-  width: 280px;
+  width: 200px;
 }
 
 .action-button {

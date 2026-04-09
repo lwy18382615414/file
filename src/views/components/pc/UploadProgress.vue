@@ -74,6 +74,10 @@ import { ref } from "vue";
 import { useUploadFlow, type UploadingTask } from "@/hooks/upload/useUploadFlow";
 import { getFileIcon, t } from "@/utils";
 
+const emit = defineEmits<{
+  (e: "close"): void;
+}>();
+
 const { showUpload, uploadingTasks, cancelCurrentUpload, retryFailedUploads } =
   useUploadFlow();
 
@@ -110,6 +114,7 @@ const toggleMinimize = () => {
 
 const handleClose = () => {
   cancelCurrentUpload();
+  emit("close");
 };
 </script>
 

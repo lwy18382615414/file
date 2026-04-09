@@ -96,7 +96,23 @@ export type PageDataItemMap = {
   searchResult: CloudSearchResultItem;
 };
 
-export type ContentType = PageDataItemMap[keyof PageDataItemMap];
+export type ExplorerDraftItem = PersonalCloudContent & {
+  permissionType?: number;
+  __tempRowId: string;
+  __isDraftCreate: true;
+};
+
+export type ExplorerUploadingFolderItem = PersonalCloudContent & {
+  permissionType?: number;
+  __tempRowId: string;
+  __isUploadingFolder: true;
+  isUploading: boolean;
+};
+
+export type ContentType =
+  | PageDataItemMap[keyof PageDataItemMap]
+  | ExplorerDraftItem
+  | ExplorerUploadingFolderItem;
 
 // 人员权限
 export interface PermissionItem {
@@ -134,7 +150,7 @@ export type TableColumn<T = any> = {
   renderType?: string;
   align?: "left" | "center" | "right";
   headerSlot?: string;
-  selectable?: boolean;
+  selectable?: boolean | ((row: any, index: number) => boolean);
   resizable?: boolean;
 } & Omit<
   Partial<InstanceType<typeof ElTableColumn>["$props"]>,

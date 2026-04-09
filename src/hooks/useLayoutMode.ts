@@ -13,15 +13,21 @@ export function useLayoutMode() {
     return layoutModeMap.value[route.path] || LayoutMode.LIST;
   });
 
+  const setLayoutMode = (mode: LayoutMode) => {
+    layoutModeMap.value[route.path] = mode;
+  };
+
   const toggleLayoutMode = () => {
-    layoutModeMap.value[route.path] =
+    setLayoutMode(
       currentViewMode.value === LayoutMode.LIST
         ? LayoutMode.GRID
-        : LayoutMode.LIST;
+        : LayoutMode.LIST,
+    );
   };
 
   return {
     currentViewMode,
+    setLayoutMode,
     toggleLayoutMode,
   };
 }

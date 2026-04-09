@@ -354,7 +354,7 @@ export function useShareLinkSettings(options: {
 
     const count = ids.length;
     const shareLink = res.data.shareKey;
-    const link = `${prefix}#/share-page?shareKey=${shareLink}`;
+    const link = `${prefix}#/share-page?shareKey=${shareLink}${res.data.password ? `&psw=${encodeURIComponent(res.data.password)}` : ""}`;
     const copyText = generateShareText({
       count,
       fileName: getName(firstFile.value!),

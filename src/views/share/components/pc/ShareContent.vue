@@ -519,7 +519,7 @@ const schemeUrl = computed(() => {
   display: flex;
   flex-direction: column;
   background: #fff;
-  min-height: 513px;
+  min-height: 488px;
 }
 
 .share-loading {
@@ -941,6 +941,13 @@ const schemeUrl = computed(() => {
   justify-content: center;
   min-height: 450px;
   color: #747683;
+  position: absolute;
+  inset: 0;
+
+  img {
+    width: 240px;
+    height: 240px;
+  }
 
   &__text {
     margin-top: 16px;

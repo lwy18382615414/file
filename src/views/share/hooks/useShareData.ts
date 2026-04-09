@@ -34,7 +34,7 @@ const createRootBreadcrumb = (): ShareContentType => ({
 });
 
 export const useShareData = () => {
-  const { isClient } = useEnv();
+  const { isClient, isPcClient } = useEnv();
   const route = useRoute();
   const { cloudDriveUploadUrl, ensureConfigReady } = config();
 
@@ -120,8 +120,7 @@ export const useShareData = () => {
   };
 
   const resetSelectionForCurrentList = () => {
-    selectedFiles.value =
-      fileList.value.length > 0 ? [...fileList.value] : [];
+    selectedFiles.value = fileList.value.length > 0 ? [...fileList.value] : [];
   };
 
   const resetToRoot = () => {
@@ -239,6 +238,15 @@ export const useShareData = () => {
     if (!shareId.value) return;
 
     if (isClient.value && isHaveFileApp.value) {
+      if (isPcClient.value) {
+        console.log(
+          JSON.stringify({
+            type: "12",
+            data: { contentIds: contentIds, shareId: shareId.value },
+          }),
+        );
+        return;
+      }
       const res = await downloadFileOutApi(shareId.value, contentIds);
       if (res.code !== 1) return;
 

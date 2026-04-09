@@ -5,7 +5,7 @@
     border
     :row-key="getRowKey"
     :table-data="list"
-    :table-columns="columns"
+    :table-columns="resolvedColumns"
     :loading="loading"
     class="explorer-table"
     @header-click="handleHeaderClick"
@@ -38,9 +38,29 @@
             size="24"
           />
         </div>
-        <span class="name-cell__text">
-          {{ getName(scope.row) }}
-        </span>
+        <el-input
+          v-if="isDraftCreateRow(scope.row)"
+          :ref="bindDraftInputRefFor(scope.row)"
+          class="name-cell__input"
+          :model-value="scope.row.contentName"
+          maxlength="100"
+          show-word-limit
+          :placeholder="t('inputFolderName')"
+          @update:model-value="emitDraftNameChange(String($event || ''))"
+          @blur="emitDraftSubmit"
+          @keydown.enter.prevent="emitDraftSubmit"
+          @keydown.esc.prevent="emitDraftCancel"
+        />
+
+        <div v-else class="name-cell__content">
+          <span class="name-cell__text">
+            {{ getName(scope.row) }}
+          </span>
+          <div
+            v-if="isUploadingFolderRow(scope.row) && scope.row.isUploading"
+            class="loading"
+          ></div>
+        </div>
       </div>
     </template>
 
@@ -91,7 +111,13 @@
 
 <script lang="ts" setup>
 import { CommonTable } from "@/components";
-import type { ContentType, TableColumn } from "@/types/type";
+import type { ElInput } from "element-plus";
+import type {
+  ContentType,
+  ExplorerDraftItem,
+  ExplorerUploadingFolderItem,
+  TableColumn,
+} from "@/types/type";
 import {
   formatFileSize,
   formatTime,
@@ -116,7 +142,14 @@ import {
   type ExplorerQueryState,
 } from "@/views/fileExplorer";
 import { useFileSelection } from "@/hooks/useFileSelection";
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
+} from "vue";
 import { useI18n } from "vue-i18n";
 
 const tableRef = ref<{
@@ -142,25 +175,31 @@ const {
 } = useFileSelection();
 
 const emit = defineEmits<{
-  sortChange: [
+  (
+    e: "sortChange",
     payload: {
       sortBy: ExplorerQueryState["sortBy"];
       sortOrder: ExplorerQueryState["sortOrder"];
     },
-  ];
-  loadMore: [];
-  rowContextmenu: [
+  ): void;
+  (e: "loadMore"): void;
+  (
+    e: "rowContextmenu",
     payload: {
       row: ContentType;
       event: MouseEvent;
     },
-  ];
-  rowDblclick: [
-    payload: {
-      row: ContentType;
-    },
-  ];
+  ): void;
+  (e: "rowDblclick", payload: { row: ContentType }): void;
+  (e: "draftNameChange", value: string): void;
+  (e: "draftSubmit"): void;
+  (e: "draftCancel"): void;
+  (e: "draftInputRef", value: InstanceType<typeof ElInput> | null): void;
 }>();
+
+const emitDraftSubmit = () => emit("draftSubmit");
+const emitDraftCancel = () => emit("draftCancel");
+const emitDraftNameChange = (value: string) => emit("draftNameChange", value);
 
 const props = withDefaults(
   defineProps<{
@@ -183,12 +222,52 @@ const props = withDefaults(
 const sentinelRef = ref<HTMLElement | null>(null);
 let observer: IntersectionObserver | null = null;
 
+const isDraftCreateRow = (item: ContentType): item is ExplorerDraftItem => {
+  return "__isDraftCreate" in item && item.__isDraftCreate === true;
+};
+
+const isUploadingFolderRow = (
+  item: ContentType,
+): item is ExplorerUploadingFolderItem => {
+  return "__isUploadingFolder" in item && item.__isUploadingFolder === true;
+};
+
+const isTemporaryRow = (item: ContentType) => {
+  return isDraftCreateRow(item) || isUploadingFolderRow(item);
+};
+
+const bindDraftInputRef = (
+  row: ContentType,
+  input: InstanceType<typeof ElInput> | null,
+) => {
+  if (!isDraftCreateRow(row)) return;
+  emit("draftInputRef", input);
+};
+
+const bindDraftInputRefFor = (row: ContentType) => {
+  return (input: InstanceType<typeof ElInput> | null) => {
+    bindDraftInputRef(row, input);
+  };
+};
+
+const resolvedColumns = computed(() => {
+  return props.columns.map((column) => {
+    if (column.type !== "selection") return column;
+
+    return {
+      ...column,
+      selectable: (row: ContentType) => !isTemporaryRow(row),
+    } as TableColumn;
+  });
+});
+
 function syncTableSelection() {
   const table = tableRef.value?.getTableRef();
   if (!table) return;
 
   table.clearSelection?.();
   props.list.forEach((item) => {
+    if (isTemporaryRow(item)) return;
     if (isSelected(item)) {
       table.toggleRowSelection?.(item, true);
     }
@@ -197,6 +276,8 @@ function syncTableSelection() {
 
 function handleSelectionChange(rows: ContentType[]) {
   props.list.forEach((item) => {
+    if (isTemporaryRow(item)) return;
+
     const checked = rows.some((row) => getRowKey(row) === getRowKey(item));
     const selected = isSelected(item);
 
@@ -282,6 +363,8 @@ async function handleRowContextmenu(
 ) {
   event.preventDefault();
 
+  if (isTemporaryRow(row)) return;
+
   const table = tableRef.value?.getTableRef();
   const selectedCount = getSelectedCount();
   const rowSelected = isSelected(row);
@@ -301,6 +384,7 @@ async function handleRowContextmenu(
 }
 
 async function handleDbClick(row: ContentType) {
+  if (isTemporaryRow(row)) return;
   emit("rowDblclick", { row });
 }
 
@@ -477,6 +561,14 @@ onBeforeUnmount(() => {
   }
 }
 
+.name-cell__content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
 .name-cell__text {
   flex: 1;
   min-width: 0;
@@ -487,6 +579,27 @@ onBeforeUnmount(() => {
   font-size: 14px;
   font-weight: 600;
   line-height: 20px;
+}
+
+.loading {
+  flex-shrink: 0;
+  border: 3px solid hsla(213, 71%, 53%, 0.2);
+  border-top-color: #327edc;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.name-cell__input {
+  flex: 1;
+  min-width: 0;
 }
 
 .sort-header {

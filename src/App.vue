@@ -3,17 +3,31 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted } from "vue";
+import { onMounted, ref } from "vue";
 import { useClientEnv } from "./hooks/useClientEnv";
 import config from "./hooks/config";
-
+import i18n from "@/lang";
+import { getLanguageCode } from "./utils/auth";
 const { isMobileApp } = useClientEnv();
 
-const { ensureConfigReady } = config()
+const { ensureConfigReady } = config();
+
+const curCode = ref("zh-hans");
+
+window.setLanguageCode = (code: "zh" | "en") => {
+  if (code) {
+    i18n.global.locale.value = code;
+    curCode.value = code;
+  } else {
+    const languageCode = getLanguageCode();
+    curCode.value = languageCode;
+    i18n.global.locale.value = languageCode === "zh-hans" ? "zh" : languageCode;
+  }
+};
 
 onMounted(() => {
-  ensureConfigReady()
-})
+  ensureConfigReady();
+});
 </script>
 
 <style lang="scss" scoped></style>

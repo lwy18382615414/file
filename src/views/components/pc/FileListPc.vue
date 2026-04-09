@@ -57,7 +57,7 @@
       @update:show="handleUploadVisibleChange"
       @refresh="emit('refresh')"
     />
-    <UploadProgress />
+    <UploadProgress @close="emit('refresh')" />
     <PcFileContextMenu
       :show="contextMenuVisible"
       :position="contextMenuPosition"
@@ -76,11 +76,18 @@
       :content-id="getExplorerContext(route).currentFolderId"
       :is-personal="props.pageType === ExplorerPageType.MY"
       @refresh="emit('refresh')"
+      @uploading-folder-start="handleUploadingFolderStart"
+      @uploading-folder-finish="handleUploadingFolderFinish"
+      @uploading-folder-fail="handleUploadingFolderFail"
     >
       <PcExplorerListView
-        v-if="currentViewMode === LayoutMode.LIST"
+        v-if="
+          currentViewMode === LayoutMode.LIST ||
+          !!draftCreateRow ||
+          uploadingFolderRows.length > 0
+        "
         class="file-list-table"
-        :list="list"
+        :list="displayList"
         :columns="columns"
         :page-type="pageType"
         :loading="loading"
@@ -91,6 +98,10 @@
         @load-more="handleLoadMore"
         @row-contextmenu="handleRowContextmenu"
         @row-dblclick="handleRowDbClick"
+        @draft-name-change="handleDraftNameChange"
+        @draft-submit="commitInlineCreate"
+        @draft-cancel="cancelInlineCreate"
+        @draft-input-ref="bindInlineCreateInputRef"
       >
       </PcExplorerListView>
       <PcExplorerGridView v-else :list="list" :loading="loading">
@@ -103,8 +114,9 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, reactive, toRef, watch, ref } from "vue";
+import { computed, reactive, toRef, watch, ref, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { createFolderApi } from "@/api/fileService";
 import { getExplorerContext } from "../../fileExplorer";
 import { LayoutMode } from "@/enum/baseEnum";
 import { Permission } from "@/enum/permission";
@@ -113,9 +125,23 @@ import { useExplorerSort } from "@/hooks/sort/useExplorerSort";
 import { setExplorerSortMode } from "@/hooks/sort/state";
 import { useFileSelection } from "@/hooks/useFileSelection";
 import { useUiFeedback } from "@/hooks/useUiFeedback";
-import type { ContentType, TableColumn } from "@/types/type";
-import { getIsFolder, getPermissionType } from "@/utils/typeUtils";
-import { hasPermission, SessionStorageUtil, t } from "@/utils";
+import type {
+  ContentType,
+  ExplorerDraftItem,
+  ExplorerUploadingFolderItem,
+  TableColumn,
+} from "@/types/type";
+import {
+  checkNameValidity,
+  hasPermission,
+  SessionStorageUtil,
+  t,
+} from "@/utils";
+import {
+  getContentId,
+  getIsFolder,
+  getPermissionType,
+} from "@/utils/typeUtils";
 import { ExplorerPageType, type ExplorerQueryState } from "../../fileExplorer";
 import { parseQueryDate } from "@/utils";
 import { useFileActions } from "../../hooks/useFileActions";
@@ -139,10 +165,10 @@ import SettingDialog from "./SettingDialog.vue";
 
 const route = useRoute();
 const router = useRouter();
-const { currentViewMode } = useLayoutMode();
+const { currentViewMode, setLayoutMode } = useLayoutMode();
 const { currentSortMethod, currentSortOrder } = useExplorerSort();
 const { selected, clear } = useFileSelection();
-const { toast } = useUiFeedback();
+const { toast, confirm } = useUiFeedback();
 
 const emit = defineEmits<{
   (e: "loadMore"): void;
@@ -218,7 +244,6 @@ const {
   mode,
   renameVisible,
   renameItem,
-  openCreate,
   openRename,
   confirmRename,
   closeRename,
@@ -280,7 +305,211 @@ const {
   pageType: toRef(props, "pageType"),
 });
 
+type UploadingFolderEventPayload = {
+  tempRowId: string;
+  contentId: number;
+  folderName: string;
+};
+
 const settingVisible = ref(false);
+const draftCreateRow = ref<ExplorerDraftItem | null>(null);
+const uploadingFolderRows = ref<ExplorerUploadingFolderItem[]>([]);
+const isSavingInline = ref(false);
+const inlineCreateInputRef = ref<{
+  focus?: () => void;
+  select?: () => void;
+} | null>(null);
+
+const isDraftCreateRow = (item: ContentType): item is ExplorerDraftItem => {
+  return "__isDraftCreate" in item && item.__isDraftCreate === true;
+};
+
+const getExistingContentIds = (list: ContentType[]) => {
+  return new Set(
+    list
+      .map((item) => getContentId(item))
+      .filter(
+        (contentId): contentId is number => typeof contentId === "number",
+      ),
+  );
+};
+
+const displayList = computed<ContentType[]>(() => {
+  const existingContentIds = getExistingContentIds(props.list);
+  const visibleUploadingFolders = uploadingFolderRows.value.filter(
+    (item) => !existingContentIds.has(item.contentId),
+  );
+
+  return [
+    ...(draftCreateRow.value ? [draftCreateRow.value] : []),
+    ...visibleUploadingFolders,
+    ...props.list,
+  ];
+});
+
+const removeUploadingFolderRow = (tempRowId: string) => {
+  uploadingFolderRows.value = uploadingFolderRows.value.filter(
+    (item) => item.__tempRowId !== tempRowId,
+  );
+};
+
+const handleUploadingFolderStart = (payload: UploadingFolderEventPayload) => {
+  removeUploadingFolderRow(payload.tempRowId);
+  uploadingFolderRows.value.unshift({
+    __tempRowId: payload.tempRowId,
+    __isUploadingFolder: true,
+    isUploading: true,
+    contentId: payload.contentId,
+    parentId: getExplorerContext(route).currentFolderId,
+    contentName: payload.folderName,
+    operateTime: new Date().toLocaleString(),
+    userName: "",
+    contentSize: 0,
+    isFolder: true,
+    path: "",
+    isSetTop: false,
+    ...(props.pageType === ExplorerPageType.SHARED &&
+    props.currentFolderPermissionType != null
+      ? { permissionType: props.currentFolderPermissionType }
+      : {}),
+  });
+};
+
+const handleUploadingFolderFinish = (payload: UploadingFolderEventPayload) => {
+  uploadingFolderRows.value = uploadingFolderRows.value.map((item) => {
+    if (item.__tempRowId !== payload.tempRowId) return item;
+    return {
+      ...item,
+      contentId: payload.contentId,
+      contentName: payload.folderName,
+    };
+  });
+};
+
+const handleUploadingFolderFail = (payload: UploadingFolderEventPayload) => {
+  removeUploadingFolderRow(payload.tempRowId);
+};
+
+const clearInlineCreateState = () => {
+  draftCreateRow.value = null;
+  inlineCreateInputRef.value = null;
+  isSavingInline.value = false;
+};
+
+const bindInlineCreateInputRef = (
+  input: {
+    focus?: () => void;
+    select?: () => void;
+  } | null,
+) => {
+  inlineCreateInputRef.value = input;
+};
+
+const focusInlineCreateInput = async () => {
+  await nextTick();
+  inlineCreateInputRef.value?.focus?.();
+  inlineCreateInputRef.value?.select?.();
+};
+
+const buildDraftCreateRow = (): ExplorerDraftItem => {
+  const context = getExplorerContext(route);
+
+  return {
+    __tempRowId: `draft-create-${Date.now()}`,
+    __isDraftCreate: true,
+    contentId: 0,
+    parentId: context.currentFolderId,
+    contentName: "",
+    operateTime: new Date().toLocaleString(),
+    userName: "",
+    contentSize: 0,
+    isFolder: true,
+    path: "",
+    isSetTop: false,
+    ...(props.pageType === ExplorerPageType.SHARED &&
+    props.currentFolderPermissionType != null
+      ? { permissionType: props.currentFolderPermissionType }
+      : {}),
+  };
+};
+
+const handleDraftNameChange = (value: string) => {
+  if (!draftCreateRow.value) return;
+  draftCreateRow.value.contentName = value;
+};
+
+const cancelInlineCreate = () => {
+  clearInlineCreateState();
+};
+
+const startInlineCreate = async () => {
+  if (draftCreateRow.value) {
+    await focusInlineCreateInput();
+    return;
+  }
+
+  clear();
+  closeContextMenu();
+  draftCreateRow.value = buildDraftCreateRow();
+  await focusInlineCreateInput();
+};
+
+const commitInlineCreate = async () => {
+  const row = draftCreateRow.value;
+  if (!row || isSavingInline.value) return;
+
+  const folderName = row.contentName.trim();
+  if (!folderName) {
+    try {
+      await confirm({
+        title: t("hint"),
+        message: t("folderNameRequired"),
+        confirmButtonText: t("Ok"),
+        cancelButtonText: t("cancel"),
+        showCancelButton: true,
+      });
+      await focusInlineCreateInput();
+    } catch {
+      cancelInlineCreate();
+    }
+    return;
+  }
+
+  const { isValid, message } = checkNameValidity(folderName);
+  if (!isValid) {
+    toast(message, "error");
+    await focusInlineCreateInput();
+    return;
+  }
+
+  isSavingInline.value = true;
+
+  try {
+    const context = getExplorerContext(route);
+    const res = await createFolderApi({
+      currentContentId: context.currentFolderId,
+      viewRanges: [],
+      editRanges: [],
+      folderName,
+      isPersonal: props.pageType !== ExplorerPageType.SHARED,
+    });
+
+    if (res.code !== 1) {
+      toast(t("createFailed"), "error");
+      await focusInlineCreateInput();
+      return;
+    }
+
+    toast(t("createSuccess"), "success");
+    cancelInlineCreate();
+    emit("refresh");
+  } catch {
+    toast(t("createFailed"), "error");
+    await focusInlineCreateInput();
+  } finally {
+    isSavingInline.value = false;
+  }
+};
 
 const handleCreate = async () => {
   if (!canCreate.value) return;
@@ -293,7 +522,12 @@ const handleCreate = async () => {
     return;
   }
 
-  openCreate();
+  if (currentViewMode.value === LayoutMode.GRID) {
+    setLayoutMode(LayoutMode.LIST);
+    await nextTick();
+  }
+
+  await startInlineCreate();
 };
 
 const handleRenameVisibleChange = (value: boolean) => {
@@ -408,11 +642,13 @@ const handleRowContextmenu = (payload: {
   row: ContentType;
   event: MouseEvent;
 }) => {
+  if (isDraftCreateRow(payload.row)) return;
   openForRow(payload.row, payload.event);
 };
 
 const handleRowDbClick = async (payload: { row: ContentType }) => {
   const row = payload.row;
+  if (isDraftCreateRow(row)) return;
   await open(row);
   clear();
 };
@@ -441,6 +677,7 @@ function handleSortChange(payload: {
   sortBy: ExplorerQueryState["sortBy"];
   sortOrder: ExplorerQueryState["sortOrder"];
 }) {
+  clearInlineCreateState();
   setExplorerSortMode({
     currentPage: route.path,
     sortMethod: getSortMethod(payload.sortBy),
@@ -467,10 +704,13 @@ watch(
 watch(
   () => route.fullPath,
   async () => {
+    clearInlineCreateState();
+    uploadingFolderRows.value = [];
+
     if (props.pageType !== ExplorerPageType.MY) return;
     const recentCreate = SessionStorageUtil.get("recentCreateFolder");
     if (recentCreate === "1") {
-      openCreate();
+      await startInlineCreate();
     } else if (recentCreate === "2") {
       openUpload();
     }

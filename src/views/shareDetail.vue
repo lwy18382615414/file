@@ -112,7 +112,7 @@ const cancelShare = async () => {
 
 const copyLinkToClipboard = async () => {
   const prefix = location.origin + location.pathname;
-  const shareLink = `${prefix}#/share-page?shareKey=${shareInfo.shareKey}`;
+  const shareLink = `${prefix}#/share-page?shareKey=${shareInfo.shareKey}${shareInfo.sharePassword ? `&psw=${encodeURIComponent(shareInfo.sharePassword)}` : ""}`;
 
   const copyText = generateShareText({
     count: 1,

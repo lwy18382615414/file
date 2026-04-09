@@ -20,6 +20,7 @@ import {
 } from "@/views/fileExplorer";
 import {
   checkCanShare,
+  copyToClipboard,
   downloadFile,
   downloadInAppFile,
   downloadShareFileInApp,
@@ -446,6 +447,23 @@ export function useFileActions(options?: {
 
   // 打开设置分享链接的弹窗
   const copyLink = async (item: ContentType | ContentType[]) => {
+    const context = getExplorerContext(route);
+    if (context.pageType === ExplorerPageType.MY_SHARES) {
+      const items = Array.isArray(item) ? item : [item];
+      const target = items[0];
+      try {
+        if (!target || !("shareKey" in target)) {
+          toast(t("copyFailed"), "error");
+          return;
+        }
+        const link = `${location.origin}${location.pathname}#/share-page?shareKey=${target.shareKey}${target.sharePassword ? `&psw=${encodeURIComponent(target.sharePassword)}` : ""}`;
+        await copyToClipboard(link);
+        toast(t("copySuccess"), "success");
+      } catch {
+        toast(t("copyFailed"), "error");
+      }
+      return;
+    }
     if (Array.isArray(item)) {
       onCopyLinkDialog?.(item);
     } else {
@@ -502,6 +520,8 @@ export function useFileActions(options?: {
     };
 
     const rowAction = rowActionMap[key];
+
+    console.log("key", key, "items", items, "row", row);
 
     if (rowAction) {
       if (!row) return;

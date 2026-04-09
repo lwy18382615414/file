@@ -238,6 +238,11 @@ const runUploadBatch = async (
 
   const { completeAllTasks, ...restBatch } = batch;
 
+  const finalizeSuccessfulBatch = (callbackData?: unknown) => {
+    completeAllTasks?.(callbackData);
+    clearUploadState();
+  };
+
   const uploadContext: UploadContext = {
     ...restBatch,
     signal: currentController.value.signal,
@@ -259,7 +264,7 @@ const runUploadBatch = async (
     },
     onComplete(callbackData) {
       if (allTasksSucceeded.value) {
-        completeAllTasks?.(callbackData);
+        finalizeSuccessfulBatch(callbackData);
       }
     },
   };

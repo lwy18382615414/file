@@ -81,6 +81,11 @@ const router = createRouter({
       component: () => import("@/views/share/index.vue"),
     },
     {
+      path: "/share-content",
+      name: "ShareContent",
+      component: () => import("@/views/share/index.vue"),
+    },
+    {
       path: "/file-select",
       name: "FileSelect",
       component: () => import("@/views/fileSelectPage.vue"),
