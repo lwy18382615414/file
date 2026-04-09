@@ -42,6 +42,7 @@
     <div class="actions-wrapper">
       <div class="file-actions">
         <button
+          v-if="!isSearchPage"
           class="action-button primary"
           :class="{ disabled: !props.canCreate }"
           :disabled="!props.canCreate"
@@ -52,6 +53,7 @@
           <span>{{ t("new") }}</span>
         </button>
         <button
+          v-if="!isSearchPage"
           class="action-button"
           :class="{ disabled: !props.canUpload }"
           :disabled="!props.canUpload"
@@ -161,8 +163,11 @@ const props = defineProps<{
   canDownload: boolean;
   canShare: boolean;
   canDelete: boolean;
+  hasSelection: boolean;
   currentFolderPermissionCount: number | null;
 }>();
+
+const isSearchPage = computed(() => props.pageType === ExplorerPageType.SEARCH);
 
 const emit = defineEmits<{
   (e: "create"): void;

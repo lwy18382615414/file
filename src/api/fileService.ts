@@ -18,6 +18,7 @@ export function uploadFileStep1Api(
   file: FormData,
   config?: {
     onUploadProgress?: (e: ProgressEvent) => void;
+    signal?: AbortSignal;
   },
 ): Promise<IResponse<UploadFileStep1CallbackParams>> {
   return request.post(

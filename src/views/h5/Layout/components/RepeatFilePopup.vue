@@ -43,7 +43,7 @@
 
 <script lang="ts" setup>
 import { ref, computed } from "vue";
-import { uploadFileStep2Api } from "@/api/fileService";
+import { replayGroupedUploadStep2 } from "@/utils/upload/uploadManager";
 import { useUploadStatus } from "@/stores";
 import type { Task } from "@/hooks/upload/useUploadFlow";
 import { useUploadFlow } from "@/hooks/upload/useUploadFlow";
@@ -80,23 +80,24 @@ const operateList = [
 
 const uploadStep2 = async (repeatType: number, index: number) => {
   activeIndex.value = index;
-  const res = await uploadFileStep2Api({
-    fileInfos: allTasks.value,
-    contentId: props.contentId,
+  const result = await replayGroupedUploadStep2({
+    tasks: allTasks.value,
+    defaultContentId: props.contentId,
     repeatFileOperateType: repeatType,
-    viewRanges: [],
-    editRanges: [],
   });
-  if (res.code === 1) {
-    if (props.isTransfer) {
-      emit("saveSuccess");
-    } else {
-      showToast({ message: t("operationSuccess"), type: "success" });
-      useUploadStatus().updateAddFolder(true);
-      clearUploadState();
-    }
-    showPopup.value = false;
+
+  if (result.failedTasks.length || result.duplicateTasks.length) {
+    return;
   }
+
+  if (props.isTransfer) {
+    emit("saveSuccess");
+  } else {
+    showToast({ message: t("operationSuccess"), type: "success" });
+    useUploadStatus().updateAddFolder(true);
+    clearUploadState();
+  }
+  showPopup.value = false;
 };
 
 const closePopup = () => {

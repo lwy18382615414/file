@@ -5,14 +5,16 @@ export function useSimpleUploader() {
     file: File,
     opts?: {
       onProgress?: (fileName: string, percent: number) => void;
+      signal?: AbortSignal;
     },
   ) => {
-    const { onProgress } = opts || {};
+    const { onProgress, signal } = opts || {};
 
     const formData = new FormData();
     formData.append("file", file);
 
     const res = await uploadFileStep1Api(formData, {
+      signal,
       onUploadProgress: (e) => {
         const percent = Math.floor((e.loaded / e.total) * 100);
         if (onProgress) {

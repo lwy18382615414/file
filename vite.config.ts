@@ -11,8 +11,8 @@ import basicSsl from "@vitejs/plugin-basic-ssl";
 import postcssPxToRem from "postcss-pxtorem";
 import { viteVConsole } from "vite-plugin-vconsole";
 import legacy from "@vitejs/plugin-legacy";
-import vitePluginZipDist from 'vite-plugin-dist-zip'
-import { name } from './package.json'
+import vitePluginZipDist from "vite-plugin-dist-zip";
+import { name } from "./package.json";
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -34,22 +34,23 @@ export default defineConfig(({ mode }) => {
       symbolId: "icon-[dir]-[name]",
     }),
     vitePluginZipDist({ zipName: `${name}-${mode}` }),
-    basicSsl(),
+    // basicSsl(),
     legacy({
-      targets: ['defaults',
-        'Chrome >= 49',
-        'Safari >= 10',
-        'iOS >= 10',
-        'Android >= 5'
+      targets: [
+        "defaults",
+        "Chrome >= 49",
+        "Safari >= 10",
+        "iOS >= 10",
+        "Android >= 5",
       ],
       // 需要的 polyfill
       additionalLegacyPolyfills: [
-        'core-js/stable',
-        'regenerator-runtime/runtime'
+        "core-js/stable",
+        "regenerator-runtime/runtime",
       ],
       // 生成的 legacy bundle 会自动插入到 HTML
-      renderLegacyChunks: true
-    })
+      renderLegacyChunks: true,
+    }),
   ];
 
   if (isDevLike) {

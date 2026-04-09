@@ -25,9 +25,13 @@ export interface Task {
   fileId: string;
   size: number;
   aesKey?: string;
+  contentId?: number;
 }
 
-type EncryptKey = { name: string; aesKey: string };
+export type UploadSourceItem = {
+  file: File;
+  contentId?: number;
+};
 
 type UploadCallbacks = {
   completeAllTasks?: (callbackData?: unknown) => void;
@@ -36,16 +40,16 @@ type UploadCallbacks = {
 };
 
 type UploadBatchContext = UploadCallbacks & {
-  files: File[];
-  encryptKeys: EncryptKey[];
+  files?: File[];
+  uploadItems?: UploadSourceItem[];
   contentId: number;
   isByChat?: boolean;
 };
 
 type UploadTaskEntry = {
   id: string;
-  file: File;
-  encryptKey?: EncryptKey;
+  sourceFile: File;
+  contentId?: number;
 };
 
 type ActiveUploadBatch = UploadCallbacks & {
@@ -62,17 +66,29 @@ const allTasks = ref<Task[]>([]);
 const duplicateTasks = ref<Task[]>([]);
 const showBubbleWarning = ref(false);
 const currentBatch = ref<ActiveUploadBatch | null>(null);
+const currentController = ref<AbortController | null>(null);
 
 const createTaskId = () =>
   globalThis.crypto?.randomUUID?.() ??
   `upload-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 
-const createBatchTasks = (files: File[], encryptKeys: EncryptKey[] = []) =>
-  files.map((file, index) => ({
+const createBatchTasks = (
+  files: File[] = [],
+  uploadItems: UploadSourceItem[] = [],
+) => {
+  if (uploadItems.length) {
+    return uploadItems.map((item) => ({
+      id: createTaskId(),
+      sourceFile: item.file,
+      contentId: item.contentId,
+    }));
+  }
+
+  return files.map((file) => ({
     id: createTaskId(),
-    file,
-    encryptKey: encryptKeys[index],
+    sourceFile: file,
   }));
+};
 
 const getTask = (taskId: string) =>
   uploadingTasks.value.find((task) => task.id === taskId);
@@ -104,7 +120,7 @@ const addUploadingTask = (taskInput: UploadingTaskInput) => {
 const registerUploadTasks = (files: File[]) => {
   const tasks = createBatchTasks(files);
   tasks.forEach((task) => {
-    addUploadingTask({ id: task.id, name: task.file.name });
+    addUploadingTask({ id: task.id, name: task.sourceFile.name });
   });
   showUpload.value = true;
   return tasks;
@@ -189,6 +205,12 @@ const clearUploadState = () => {
   duplicateTasks.value = [];
   showBubbleWarning.value = false;
   currentBatch.value = null;
+  currentController.value = null;
+};
+
+const cancelCurrentUpload = () => {
+  currentController.value?.abort();
+  clearUploadState();
 };
 
 const getFailedTaskIds = () =>
@@ -201,10 +223,13 @@ const runUploadBatch = async (
   options?: { register?: boolean },
 ) => {
   currentBatch.value = batch;
+  currentController.value = new AbortController();
+
+  console.log("Starting upload batch with tasks:", batch.tasks, options);
 
   if (options?.register !== false) {
     batch.tasks.forEach((task) => {
-      addUploadingTask({ id: task.id, name: task.file.name });
+      addUploadingTask({ id: task.id, name: task.sourceFile.name });
     });
     showUpload.value = true;
   } else {
@@ -215,18 +240,18 @@ const runUploadBatch = async (
 
   const uploadContext: UploadContext = {
     ...restBatch,
-    files: batch.tasks.map((task) => task.file),
-    encryptKeys: batch.tasks.flatMap((task) =>
-      task.encryptKey ? [task.encryptKey] : [],
-    ),
+    signal: currentController.value.signal,
     tasks: batch.tasks.map((task) => ({
       taskId: task.id,
-      file: task.file,
-      encryptKey: task.encryptKey,
+      sourceFile: task.sourceFile,
+      contentId: task.contentId,
     })),
     onProgress: updateTaskProgress,
     onTaskSuccess: markTaskSuccess,
-    onTaskError: markTaskError,
+    onTaskError(taskId, errorMsg, errorType) {
+      if (errorType === "abort") return;
+      markTaskError(taskId, errorMsg, errorType);
+    },
     onDuplicate(tasks, duplicates) {
       setAllTasks(tasks);
       setDuplicateTasks(duplicates);
@@ -239,7 +264,11 @@ const runUploadBatch = async (
     },
   };
 
-  await startUploadTask(uploadContext);
+  try {
+    await startUploadTask(uploadContext);
+  } finally {
+    currentController.value = null;
+  }
 };
 
 const runUpload = async (
@@ -252,7 +281,7 @@ const runUpload = async (
     completeAllTasks: context.completeAllTasks,
     findDuplicateFiles: context.findDuplicateFiles,
     uploadError: context.uploadError,
-    tasks: createBatchTasks(context.files, context.encryptKeys),
+    tasks: createBatchTasks(context.files, context.uploadItems),
   };
 
   await runUploadBatch(batch, options);
@@ -321,6 +350,7 @@ export function useUploadFlow() {
     openUploadDialog,
     closeUploadDialog,
     clearUploadState,
+    cancelCurrentUpload,
     runUpload,
     retryFailedUploads,
   };

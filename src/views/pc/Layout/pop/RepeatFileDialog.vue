@@ -60,7 +60,7 @@ import { useUploadStatus } from "@/stores";
 import type { Task } from "@/hooks/upload/useUploadFlow";
 import { useUploadFlow } from "@/hooks/upload/useUploadFlow";
 import { t } from "@/utils";
-import { uploadFileStep2Api } from "@/api/fileService.ts";
+import { replayGroupedUploadStep2 } from "@/utils/upload/uploadManager";
 
 const props = defineProps({
   isTransfer: {
@@ -110,23 +110,24 @@ const handleClose = () => {
 
 const uploadStep2 = async (repeatType: number, index: number) => {
   activeIndex.value = index;
-  const res = await uploadFileStep2Api({
-    fileInfos: allTasks.value,
-    contentId: props.contentId,
+  const result = await replayGroupedUploadStep2({
+    tasks: allTasks.value,
+    defaultContentId: props.contentId,
     repeatFileOperateType: repeatType,
-    viewRanges: [],
-    editRanges: [],
   });
-  if (res.code === 1) {
-    if (props.isTransfer) {
-      emit("saveSuccess");
-      emit("update:repeatVisible", false);
-    } else {
-      ElMessage.success(t("operationSuccess"));
-      handleClose();
-      uploadStatus.updateUploadStatus(true);
-      clearUploadState();
-    }
+
+  if (result.failedTasks.length || result.duplicateTasks.length) {
+    return;
+  }
+
+  if (props.isTransfer) {
+    emit("saveSuccess");
+    emit("update:repeatVisible", false);
+  } else {
+    ElMessage.success(t("operationSuccess"));
+    handleClose();
+    uploadStatus.updateUploadStatus(true);
+    clearUploadState();
   }
 };
 </script>

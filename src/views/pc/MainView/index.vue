@@ -65,9 +65,7 @@
                   : t("selectAll")
               }}</span>
               <span class="ml-2">
-                {{
-                  t("selectedDocuments", { count: shareList.length })
-                }}</span
+                {{ t("selectedDocuments", { count: shareList.length }) }}</span
               >
             </template>
             <span v-else>{{ t(column.label) }}</span>
@@ -77,11 +75,15 @@
           <div class="flex items-center gap-3">
             <div v-if="route.path !== '/my-share'" class="flex-shrink-0">
               <SvgIcon
-                :name="row.isFolder ? 'icon_folder' : getFileIcon(row.contentName)"
+                :name="
+                  row.isFolder ? 'icon_folder' : getFileIcon(row.contentName)
+                "
                 size="24"
               />
             </div>
-            <template v-if="isEdit && row.contentId === getContentId(selectedRow)">
+            <template
+              v-if="isEdit && row.contentId === getContentId(selectedRow)"
+            >
               <el-input
                 ref="inputRef"
                 maxlength="100"
@@ -100,7 +102,13 @@
               }}
             </template>
             <template v-else-if="!row.isDeleteAll">
-              <div class="file-name-wrapper" :class="[{ 'not-my-share': route.path !== '/my-share' }, { 'not-width': route.path === '/recycle-bin' }]">
+              <div
+                class="file-name-wrapper"
+                :class="[
+                  { 'not-my-share': route.path !== '/my-share' },
+                  { 'not-width': route.path === '/recycle-bin' },
+                ]"
+              >
                 <div class="name-text">{{ getName(row) }}</div>
                 <div v-if="row.isUploading" class="loading"></div>
                 <span v-if="row.shareCount > 1">{{
@@ -114,7 +122,9 @@
           <span>{{ formatTime(row.operateTime) }}</span>
         </template>
         <template #contentSize="{ row }">
-          <span>{{ row.contentSize ? formatFileSize(row.contentSize) : "-" }}</span>
+          <span>{{
+            row.contentSize ? formatFileSize(row.contentSize) : "-"
+          }}</span>
         </template>
         <template #shareTime="{ row }">
           <span>{{ formatTime(row.shareTime) }}</span>
@@ -218,7 +228,6 @@
 </template>
 
 <script setup lang="ts">
-import { handleFileEncryption } from "@/utils/upload/encrypt";
 import RepeatFileDialog from "@/views/pc/Layout/pop/RepeatFileDialog.vue";
 import { computed, ref, watch, reactive, nextTick } from "vue";
 import { useRoute } from "vue-router";
@@ -270,6 +279,7 @@ import RenameDialog from "@/views/pc/Layout/pop/RenameDialog.vue";
 import { createFolderApi } from "@/api/fileService";
 import { useSmartUploader } from "@/hooks/upload/useSmartUpload";
 import config from "@/hooks/config";
+import { handleFileEncryption } from "@/utils/upload/encrypt";
 import type { PageConfig } from "./types";
 import { getColumnKeyByPath, getPageConfig } from "./pageConfig";
 import { getContentId, getIsFolder, getName, getRowKey } from "@/utils/typeUtils";
@@ -286,8 +296,8 @@ const { settingVisible } = storeToRefs(useSetting());
 const { addUploadingTask, openUploadDialog, showUpload } = useUploadFlow();
 const { uploadStatus } = storeToRefs(useUploadStatus());
 const routeStackStore = useRouteStackStore();
-'} to=functions.Edit  սխալ again. let's send proper JSON.{const { uploadFilesSmart } = useSmartUploader();
-const { fileMaxSize } = config()
+const { uploadFilesSmart } = useSmartUploader();
+const { fileMaxSize } = config();
 
 const mainHeaderRef = ref();
 const pageConfig = ref<PageConfig<TableColumnKey>>();
@@ -536,7 +546,7 @@ const getBatchPermission = async (
 };
 
 // 判断是否需要进行权限校验（共享空间或搜索结果页）
-const isShareSpace = computed(() => 
+const isShareSpace = computed(() =>
   fileBelong.value === "shareSpace" || isSearchResultPage.value
 );
 
@@ -1064,12 +1074,11 @@ watch(
 
 .loading {
   border: 3px solid hsla(213, 71%, 53%, 0.2);
-  border-top-color: #327EDC;
+  border-top-color: #327edc;
   border-radius: 50%;
   width: 21px;
   height: 21px;
   animation: spin 1s linear infinite;
-
 
   @keyframes spin {
     to {

@@ -70,7 +70,13 @@
       :content-id="getExplorerContext(route).currentFolderId"
       @update:show="settingVisible = $event"
     />
-    <div class="file-list-wrapper">
+    <PcDragUploadContainer
+      class="file-list-wrapper"
+      :can-drop="canUpload"
+      :content-id="getExplorerContext(route).currentFolderId"
+      :is-personal="props.pageType === ExplorerPageType.MY"
+      @refresh="emit('refresh')"
+    >
       <PcExplorerListView
         v-if="currentViewMode === LayoutMode.LIST"
         class="file-list-table"
@@ -92,7 +98,7 @@
           <slot name="item" v-bind="scope" />
         </template>
       </PcExplorerGridView>
-    </div>
+    </PcDragUploadContainer>
   </div>
 </template>
 
@@ -124,6 +130,7 @@ import CopyLinkPc from "./CopyLinkPc.vue";
 import NameEditDialogPc from "./NameEditDialogPc.vue";
 import UploadDialogPc from "./UploadDialogPc.vue";
 import UploadProgress from "./UploadProgress.vue";
+import PcDragUploadContainer from "./PcDragUploadContainer.vue";
 import PcExplorerGridView from "./PcExplorerGridView.vue";
 import PcExplorerHeader from "./PcExplorerHeader.vue";
 import PcExplorerListView from "./PcExplorerListView.vue";
@@ -184,18 +191,21 @@ const canUpload = computed(() => props.allowUpload);
 const canDownload = computed(() => {
   if (!hasSelection.value) return false;
   if (selectedItems.value.every((item) => getIsFolder(item))) return false;
+  if (props.pageType === ExplorerPageType.SEARCH) return true;
   return selectedItems.value.every((item) =>
     hasExplicitPermission(item, Permission.View),
   );
 });
 const canShare = computed(() => {
   if (!hasSelection.value) return false;
+  if (props.pageType === ExplorerPageType.SEARCH) return true;
   return selectedItems.value.every((item) =>
     hasExplicitPermission(item, Permission.Share),
   );
 });
 const canDelete = computed(() => {
   if (!hasSelection.value) return false;
+  if (props.pageType === ExplorerPageType.SEARCH) return true;
   return selectedItems.value.every((item) =>
     hasExplicitPermission(item, Permission.Edit),
   );

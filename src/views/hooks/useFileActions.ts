@@ -478,7 +478,10 @@ export function useFileActions(options?: {
     row: ContentType | null,
   ) => {
     const rowActionMap: Partial<
-      Record<PcFileContextActionKey, (item: ContentType) => void | Promise<void>>
+      Record<
+        PcFileContextActionKey,
+        (item: ContentType) => void | Promise<void>
+      >
     > = {
       open,
       top,
@@ -493,6 +496,9 @@ export function useFileActions(options?: {
       download: downloadMany,
       share: shareToFriendMany,
       delete: removeMany,
+      restore: restoreMany,
+      deletePermanently: deletePermanentlyMany,
+      cancelShare: cancelShareMany,
     };
 
     const rowAction = rowActionMap[key];

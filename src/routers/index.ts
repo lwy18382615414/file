@@ -1,5 +1,9 @@
 import { createRouter, createWebHashHistory } from "vue-router";
 import { getQueryVariable, initFontScale, SessionStorageUtil } from "@/utils";
+import { getToken } from "@/utils/auth";
+import useMyUserInfo from "@/hooks/useMyUserInfo";
+
+const { getMyInfoByAuth } = useMyUserInfo();
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -106,7 +110,7 @@ const router = createRouter({
 
 const isSetFontScale = initFontScale();
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   // pc通信 云盘成功打开网站
   console.log(JSON.stringify({ type: "3", message: "云盘h5连接成功" }));
 
@@ -117,6 +121,16 @@ router.beforeEach((to, from, next) => {
   // 如果 URL 中有值，且和缓存里的不一样，才进行覆盖存储
   if (urlTenantId && urlTenantId !== cachedTenantId) {
     SessionStorageUtil.set("tenantId", Number(urlTenantId));
+  }
+
+  const token = getToken();
+
+  if (!token) {
+    const auth = getQueryVariable("Auth");
+    if (auth) {
+      const tenantId: number = Number(urlTenantId) || Number(cachedTenantId);
+      getMyInfoByAuth(auth, tenantId);
+    }
   }
 
   // 设置字体缩放

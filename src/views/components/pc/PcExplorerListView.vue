@@ -82,10 +82,15 @@
         <span v-else-if="!hasMore" class="no-more">没有更多文件了</span>
       </div>
     </template>
+
+    <template #empty-content>
+      <div class="drag-upload__text">{{ t("dragUpload") }}</div>
+    </template>
   </CommonTable>
 </template>
 
 <script lang="ts" setup>
+import { CommonTable } from "@/components";
 import type { ContentType, TableColumn } from "@/types/type";
 import {
   formatFileSize,

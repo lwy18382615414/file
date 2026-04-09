@@ -68,7 +68,6 @@ export function usePcFileContextMenu(options: {
     item: ContentType,
     pageType: ExplorerPageType,
   ): PcFileContextAction[] => {
-    console.log("buildSingleActions", { item, pageType });
     if (pageType === ExplorerPageType.RECYCLE) {
       return [
         { key: "restore", label: t("restore") },
@@ -120,11 +119,14 @@ export function usePcFileContextMenu(options: {
     items: ContentType[],
     pageType: ExplorerPageType,
   ): PcFileContextAction[] => {
-    if (
-      pageType === ExplorerPageType.RECYCLE ||
-      pageType === ExplorerPageType.MY_SHARES
-    ) {
-      return [];
+    if (pageType === ExplorerPageType.RECYCLE) {
+      return [
+        { key: "restore", label: t("restore") },
+        { key: "deletePermanently", label: t("deletePermanently") },
+      ];
+    }
+    if (pageType === ExplorerPageType.MY_SHARES) {
+      return [{ key: "cancelShare", label: t("cancelShare") }];
     }
 
     const nextActions: PcFileContextAction[] = [];

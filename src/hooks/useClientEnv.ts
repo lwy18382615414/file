@@ -1,36 +1,49 @@
 import { SessionStorageUtil } from "@/utils";
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 
-const isInit = ref(false);
-const isFromAppStr = ref(null);
-const useByPcStr = ref(null);
+const isFromAppStr = ref<number | null>(null);
+const useByPcStr = ref<number | null>(null);
 
-const initEnv = () => {
-  isFromAppStr.value = SessionStorageUtil.get("isFromApp");
-  useByPcStr.value = SessionStorageUtil.get("useByPc");
-  isInit.value = true;
+const refreshClientEnv = () => {
+  isFromAppStr.value = SessionStorageUtil.get<number>("isFromApp");
+  useByPcStr.value = SessionStorageUtil.get<number>("useByPc");
+};
+
+const waitClientEnvReady = () => {
+  refreshClientEnv();
+
+  if (isFromAppStr.value !== null || useByPcStr.value !== null) {
+    return;
+  }
+
+  let count = 0;
+  const timer = window.setInterval(() => {
+    refreshClientEnv();
+    count += 1;
+
+    if (
+      isFromAppStr.value !== null ||
+      useByPcStr.value !== null ||
+      count >= 20
+    ) {
+      window.clearInterval(timer);
+    }
+  }, 100);
 };
 
 export function useClientEnv() {
-  if (!isInit.value) {
-    initEnv();
-  }
-
-  // 转换为响应式的布尔值
-  const isMobileApp = computed(() => isFromAppStr.value === 1);
-  const isPcClient = computed(() => useByPcStr.value === 1);
-
-  console.log("Client Environment:", {
-    isMobileApp: isMobileApp.value,
-    isPcClient: isPcClient.value,
+  onMounted(() => {
+    waitClientEnvReady();
   });
 
-  // 兜底判断：如果都不是，说明可能是普通浏览器访问（便于本地开发调试）
+  const isMobileApp = computed(() => isFromAppStr.value === 1);
+  const isPcClient = computed(() => useByPcStr.value === 1);
   const isWebBrowser = computed(() => !isMobileApp.value && !isPcClient.value);
 
   return {
     isMobileApp,
     isPcClient,
     isWebBrowser,
+    refreshClientEnv,
   };
 }

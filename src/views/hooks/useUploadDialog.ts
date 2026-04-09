@@ -8,7 +8,6 @@ import {
 import { debounce } from "lodash-es";
 import { ExplorerPageType, getExplorerContext } from "@/views/fileExplorer";
 import { checkFileSize, t } from "@/utils";
-import { handleFileEncryption } from "@/utils/upload/encrypt";
 import { useUploadFlow } from "@/hooks/upload/useUploadFlow";
 
 export function useUploadDialog(options?: { onRefresh?: () => void }) {
@@ -27,52 +26,26 @@ export function useUploadDialog(options?: { onRefresh?: () => void }) {
     uploaderRef.value = instance ?? undefined;
   };
   const selectedFiles = ref<File[]>([]);
-  const encryptKeys = ref<{ name: string; aesKey: string }[]>([]);
   const fileBuffer = ref<File[]>([]);
   const loading = ref(false);
   const showRepeatFileDialog = ref(false);
   const hasSelectedFiles = computed(() => selectedFiles.value.length > 0);
-  let controller = new AbortController();
-
-  const isAbortError = (error: unknown): error is Error => {
-    return error instanceof Error && error.message === "__ENCRYPT_ABORTED__";
-  };
 
   const resetUploadState = () => {
     selectedFiles.value = [];
-    encryptKeys.value = [];
     fileBuffer.value = [];
     loading.value = false;
     showRepeatFileDialog.value = false;
   };
 
-  const processBufferedFiles = debounce(async () => {
+  const processBufferedFiles = debounce(() => {
     if (!fileBuffer.value.length) return;
 
-    const filesToEncrypt = [...fileBuffer.value];
+    const nextFiles = [...fileBuffer.value];
     fileBuffer.value = [];
     loading.value = true;
-
-    try {
-      const encrypted = await handleFileEncryption(
-        filesToEncrypt,
-        controller.signal,
-      );
-
-      selectedFiles.value.push(...encrypted.map((item) => item.file));
-      encryptKeys.value.push(
-        ...encrypted.map((item) => ({
-          name: item.name,
-          aesKey: item.key,
-        })),
-      );
-    } catch (error: unknown) {
-      if (isAbortError(error)) return;
-      console.error("批量加密失败", error);
-      ElMessage.error(t("operationFailedRetry"));
-    } finally {
-      loading.value = false;
-    }
+    selectedFiles.value.push(...nextFiles);
+    loading.value = false;
   }, 300);
 
   const addFilesToBuffer = (files: File[]) => {
@@ -134,7 +107,6 @@ export function useUploadDialog(options?: { onRefresh?: () => void }) {
     if (index === -1) return;
 
     selectedFiles.value.splice(index, 1);
-    encryptKeys.value.splice(index, 1);
   };
 
   const openFileDialog = () => {
@@ -162,15 +134,10 @@ export function useUploadDialog(options?: { onRefresh?: () => void }) {
       return;
     }
 
-    console.log("上传文件列表：", selectedFiles.value);
-    console.log("对应的加密信息：", encryptKeys.value);
-    console.log("上传到的目录ID：", uploadContentId.value);
-
     uploadVisible.value = false;
 
     void runUpload({
       files: selectedFiles.value,
-      encryptKeys: encryptKeys.value,
       contentId: uploadContentId.value,
       completeAllTasks() {
         closeRepeatFileDialog();
@@ -190,14 +157,12 @@ export function useUploadDialog(options?: { onRefresh?: () => void }) {
     uploadTitle.value = t("uploadFile");
     uploadContentId.value = context.value.currentFolderId;
     uploadIsPersonal.value = context.value.pageType !== ExplorerPageType.SHARED;
-    controller = new AbortController();
     resetUploadState();
     uploadVisible.value = true;
   };
 
   const closeUpload = () => {
     uploadVisible.value = false;
-    controller.abort();
     resetUploadState();
   };
 

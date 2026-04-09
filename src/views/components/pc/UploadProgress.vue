@@ -1,84 +1,72 @@
 <template>
-  <div>
-    <Transition name="slide-fade">
-      <div
-        v-if="showUpload && uploadingTasks.length > 0"
-        class="upload-panel"
-        :class="{ 'is-minimized': isMinimized }"
-      >
-        <div class="panel-header">
-          <div class="header-left">
-            <span class="title">{{ t('fileUpload') }} ({{ uploadingTasks.length }})</span>
-          </div>
-          <div class="header-right">
-            <i class="icon-btn" @click="toggleMinimize">
-              {{ isMinimized ? '▴' : '▾' }}
-            </i>
-            <i class="icon-btn" @click="handleClose">✕</i>
-          </div>
+  <Transition name="slide-fade">
+    <div
+      v-if="showUpload && uploadingTasks.length > 0"
+      class="upload-panel"
+      :class="{ 'is-minimized': isMinimized }"
+    >
+      <div class="panel-header">
+        <div class="header-left">
+          <span class="title">{{ t('fileUpload') }} ({{ uploadingTasks.length }})</span>
+        </div>
+        <div class="header-right">
+          <i class="icon-btn" @click="toggleMinimize">
+            {{ isMinimized ? '▴' : '▾' }}
+          </i>
+          <i class="icon-btn" @click="handleClose">✕</i>
+        </div>
+      </div>
+
+      <div v-show="!isMinimized" class="panel-body">
+        <div v-if="uploadingTasks.length === 0" class="empty-tip">
+          {{ t('uploadFile') }}
         </div>
 
-        <div v-show="!isMinimized" class="panel-body">
-          <div v-if="uploadingTasks.length === 0" class="empty-tip">
-            {{ t('uploadFile') }}
+        <div
+          v-for="task in uploadingTasks"
+          :key="task.id"
+          class="task-item"
+        >
+          <div class="file-icon">
+            <SvgIcon :name="getFileIcon(task.name)" size="24" />
           </div>
 
-          <div
-            v-for="task in uploadingTasks"
-            :key="task.id"
-            class="task-item"
-          >
-            <div class="file-icon">
-              <SvgIcon :name="getFileIcon(task.name)" size="24" />
+          <div class="file-info">
+            <div class="file-name" :title="task.name">{{ task.name }}</div>
+
+            <div class="progress-wrapper">
+              <div class="progress-bg">
+                <div
+                  class="progress-bar"
+                  :class="getStatusColorClass(task.status)"
+                  :style="{ width: task.progress + '%' }"
+                ></div>
+              </div>
             </div>
 
-            <div class="file-info">
-              <div class="file-name" :title="task.name">{{ task.name }}</div>
+            <div class="file-meta">
+              <span class="status-text">{{ getStatusText(task) }}</span>
+              <span class="percent-text">{{ task.progress }}%</span>
+            </div>
 
-              <div class="progress-wrapper">
-                <div class="progress-bg">
-                  <div
-                    class="progress-bar"
-                    :class="getStatusColorClass(task.status)"
-                    :style="{ width: task.progress + '%' }"
-                  ></div>
-                </div>
-              </div>
-
-              <div class="file-meta">
-                <span class="status-text">{{ getStatusText(task) }}</span>
-                <span class="percent-text">{{ task.progress }}%</span>
-              </div>
-
-              <div
-                v-if="task.status === 'error' || task.status === 'duplicate'"
-                class="error-msg"
+            <div
+              v-if="task.status === 'error' || task.status === 'duplicate'"
+              class="error-msg"
+            >
+              {{ task.errorMsg || t('operationFailedRetry') }}
+              <span
+                v-if="task.status === 'error'"
+                class="retry-text"
+                @click="retryFailedUploads"
               >
-                {{ task.errorMsg || t('operationFailedRetry') }}
-                <span
-                  v-if="task.status === 'error'"
-                  class="retry-text"
-                  @click="retryFailedUploads"
-                >
-                  {{ t('retry') }}
-                </span>
-              </div>
+                {{ t('retry') }}
+              </span>
             </div>
           </div>
         </div>
       </div>
-    </Transition>
-
-    <van-floating-bubble
-      v-if="uploadingTasks.length > 0 && !showUpload"
-      axis="xy"
-      @click="openUploadDialog()"
-    >
-      <template #default>
-        <SvgIcon name="ic_uploading" size="36" />
-      </template>
-    </van-floating-bubble>
-  </div>
+    </div>
+  </Transition>
 </template>
 
 <script setup lang="ts">
@@ -86,15 +74,8 @@ import { ref } from "vue";
 import { useUploadFlow, type UploadingTask } from "@/hooks/upload/useUploadFlow";
 import { getFileIcon, t } from "@/utils";
 
-const {
-  showUpload,
-  uploadingTasks,
-  openUploadDialog,
-  closeUploadDialog,
-  clearUploadState,
-  retryFailedUploads,
-  allTasksSucceeded,
-} = useUploadFlow();
+const { showUpload, uploadingTasks, cancelCurrentUpload, retryFailedUploads } =
+  useUploadFlow();
 
 const isMinimized = ref(false);
 
@@ -128,10 +109,7 @@ const toggleMinimize = () => {
 };
 
 const handleClose = () => {
-  closeUploadDialog();
-  if (allTasksSucceeded.value) {
-    clearUploadState();
-  }
+  cancelCurrentUpload();
 };
 </script>
 
