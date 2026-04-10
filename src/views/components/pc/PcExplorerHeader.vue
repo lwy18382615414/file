@@ -12,6 +12,7 @@
       :can-upload="props.canUpload"
       :can-download="props.canDownload"
       :can-share="props.canShare"
+      :can-move="props.canMove"
       :can-delete="props.canDelete"
       :current-folder-permission-count="props.currentFolderPermissionCount"
       :has-selection="props.hasSelection"
@@ -19,6 +20,7 @@
       @upload="$emit('upload')"
       @download="$emit('download')"
       @share="$emit('share')"
+      @move="$emit('move')"
       @copy-link="$emit('copyLink')"
       @delete="$emit('delete')"
       @restore="$emit('restore')"
@@ -67,6 +69,7 @@ const props = defineProps<{
   canUpload: boolean;
   canDownload: boolean;
   canShare: boolean;
+  canMove: boolean;
   canDelete: boolean;
   hasSelection: boolean;
   currentFolderPermissionCount: number | null;
@@ -77,6 +80,7 @@ const emit = defineEmits<{
   (e: "upload"): void;
   (e: "download"): void;
   (e: "share"): void;
+  (e: "move"): void;
   (e: "copyLink"): void;
   (e: "delete"): void;
   (e: "restore"): void;

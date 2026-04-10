@@ -55,6 +55,14 @@
         <div v-else class="name-cell__content">
           <span class="name-cell__text">
             {{ getName(scope.row) }}
+            <template
+              v-if="
+                pageType === ExplorerPageType.MY_SHARES &&
+                scope.row.shareCount > 1
+              "
+            >
+              {{ t("andItem", { count: scope.row.shareCount }) }}
+            </template>
           </span>
           <div
             v-if="isUploadingFolderRow(scope.row) && scope.row.isUploading"

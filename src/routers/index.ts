@@ -91,6 +91,11 @@ const router = createRouter({
       component: () => import("@/views/fileSelectPage.vue"),
     },
     {
+      path: "/move-file",
+      name: "MoveFile",
+      component: () => import("@/views/moveFilePage.vue"),
+    },
+    {
       path: "/space-setting",
       name: "SpaceInfo",
       component: () => import("@/views/mobileSpaceInfo.vue"),

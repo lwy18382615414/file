@@ -103,6 +103,16 @@
           </div>
         </div>
         <button
+          v-if="pageType !== ExplorerPageType.RECENT"
+          class="action-button"
+          :class="{ disabled: !props.canMove }"
+          :disabled="!props.canMove"
+          type="button"
+          @click="handleMove"
+        >
+          <span>{{ t("move") }}</span>
+        </button>
+        <button
           class="action-button danger"
           :class="{ disabled: !props.canDelete }"
           :disabled="!props.canDelete"
@@ -162,6 +172,7 @@ const props = defineProps<{
   canUpload: boolean;
   canDownload: boolean;
   canShare: boolean;
+  canMove: boolean;
   canDelete: boolean;
   hasSelection: boolean;
   currentFolderPermissionCount: number | null;
@@ -174,6 +185,7 @@ const emit = defineEmits<{
   (e: "upload"): void;
   (e: "download"): void;
   (e: "share"): void;
+  (e: "move"): void;
   (e: "copyLink"): void;
   (e: "delete"): void;
   (e: "openSharedSpaceSetting"): void;
@@ -256,6 +268,11 @@ const handleShare = () => {
 const handleCopyLink = () => {
   if (!props.canShare) return;
   emit("copyLink");
+};
+
+const handleMove = () => {
+  if (!props.canMove) return;
+  emit("move");
 };
 
 const handleDelete = () => {

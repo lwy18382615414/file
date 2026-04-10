@@ -26,7 +26,7 @@
         <SvgIcon
           :name="
             getIsFolder(firstFile)
-              ? 'icon_folder'
+              ? 'file-folder'
               : getFileIcon(getName(firstFile))
           "
           size="48"

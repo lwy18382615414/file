@@ -37,10 +37,19 @@ import {
 import { useI18n } from "vue-i18n";
 import { useUiFeedback } from "@/hooks/useUiFeedback";
 
+export type MovePayload = {
+  items: ContentType[];
+  pageType: ExplorerPageType;
+  currentFolderId: number;
+  folderPath: number[];
+  folderNames: string[];
+};
+
 export function useFileActions(options?: {
   onRefresh?: () => void | Promise<void>;
   onRenameDialog?: (item: ContentType) => void;
   onCopyLinkDialog?: (items: ContentType[]) => void;
+  onMoveDialog?: (payload: MovePayload) => void;
   onDuplicateFiles?: (data: Record<number, string>[]) => void;
   onAfterAction?: () => void;
 }) {
@@ -52,6 +61,7 @@ export function useFileActions(options?: {
   const onRefresh = options?.onRefresh;
   const onRenameDialog = options?.onRenameDialog;
   const onCopyLinkDialog = options?.onCopyLinkDialog;
+  const onMoveDialog = options?.onMoveDialog;
   const onDuplicateFiles = options?.onDuplicateFiles;
   const onAfterAction = options?.onAfterAction;
 
@@ -206,6 +216,32 @@ export function useFileActions(options?: {
   // 打开重命名弹窗
   const rename = async (item: ContentType) => {
     onRenameDialog?.(item);
+  };
+
+  const buildMovePayload = (items: ContentType[]): MovePayload => {
+    const context = getExplorerContext(route);
+
+    return {
+      items,
+      pageType: context.pageType,
+      currentFolderId: context.currentFolderId,
+      folderPath: [...context.folderPath],
+      folderNames: [...context.folderNames],
+    };
+  };
+
+  const moveMany = async (items: ContentType[]) => {
+    if (!items.length) {
+      toast(t("selectFile"));
+      return false;
+    }
+
+    onMoveDialog?.(buildMovePayload(items));
+    return true;
+  };
+
+  const move = async (item: ContentType) => {
+    await moveMany([item]);
   };
 
   // 分享文件
@@ -475,6 +511,7 @@ export function useFileActions(options?: {
     open: open,
     download: download,
     rename: rename,
+    move: move,
     share: shareToFriend,
     delete: remove,
     top: top,
@@ -513,6 +550,7 @@ export function useFileActions(options?: {
       copyLink,
       download: downloadMany,
       share: shareToFriendMany,
+      move: moveMany,
       delete: removeMany,
       restore: restoreMany,
       deletePermanently: deletePermanentlyMany,
@@ -546,6 +584,8 @@ export function useFileActions(options?: {
     download,
     downloadMany,
     rename,
+    move,
+    moveMany,
     shareToFriend,
     shareToFriendMany,
     cancelShareMany,

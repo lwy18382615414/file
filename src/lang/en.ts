@@ -293,6 +293,13 @@ export default {
   expirationTime: "Expiration Time",
   timeFormat: "YYYY/MM/DD HH:mm",
   operation: "Operation",
+  move: "Move",
+  moveTo: "Move to",
+  moveHere: "Move here",
+  searchFolders: "Search folders",
+  movePlaceholder: "Move dialog content will be added later",
+  movePagePlaceholder: "Move page content will be added later",
+  moveSelectedItems: "{name} and {count} items",
   emptyRecycleBinMessage: "Your recycle bin is empty",
   recycleBinNotice:
     "The recycle bin saves the files you deleted within 10 days",

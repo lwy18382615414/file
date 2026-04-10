@@ -82,6 +82,15 @@ export function useFileActions(options: {
     setShowLinkDialog(true);
   };
 
+  const move = async (item: ContentType) => {
+    await router.push({
+      path: "/move-file",
+      state: {
+        movePayload: JSON.stringify({ items: [item] }),
+      },
+    });
+  };
+
   const deleteEntry = async (item: ContentType) => {
     const itemContentId = getContentId(item) ?? 0;
     const res = await checkIsShared([itemContentId]);
@@ -213,5 +222,6 @@ export function useFileActions(options: {
     deletePermanently,
     shareToFriend,
     copyLink,
+    move,
   };
 }

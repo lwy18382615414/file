@@ -8,6 +8,7 @@
       :can-upload="canUpload"
       :can-download="canDownload"
       :can-share="canShare"
+      :can-move="canMove"
       :can-delete="canDelete"
       :has-selection="hasSelection"
       :current-folder-permission-count="currentFolderPermissionCount"
@@ -15,6 +16,7 @@
       @upload="handleUpload"
       @download="handleDownload"
       @share="handleShare"
+      @move="handleMove"
       @copy-link="handleCopyLink"
       @delete="handleDelete"
       @restore="handleRestore"
@@ -29,6 +31,11 @@
       :show="shareLinkVisible"
       :items="shareLinkItems"
       @update:show="handleShareLinkVisibleChange"
+    />
+    <MoveDialogPc
+      :show="moveVisible"
+      :payload="movePayload"
+      @update:show="handleMoveVisibleChange"
     />
     <NameEditDialogPc
       :show="renameVisible"
@@ -144,7 +151,10 @@ import {
 } from "@/utils/typeUtils";
 import { ExplorerPageType, type ExplorerQueryState } from "../../fileExplorer";
 import { parseQueryDate } from "@/utils";
-import { useFileActions } from "../../hooks/useFileActions";
+import {
+  useFileActions,
+  type MovePayload,
+} from "../../hooks/useFileActions";
 import {
   usePcFileContextMenu,
   type PcFileContextActionKey,
@@ -153,6 +163,7 @@ import { useRenameDialog } from "../../hooks/useRenameDialog";
 import { useShareLink } from "../../hooks/useShareLink";
 import { useUploadDialog } from "../../hooks/useUploadDialog";
 import CopyLinkPc from "./CopyLinkPc.vue";
+import MoveDialogPc from "./MoveDialogPc.vue";
 import NameEditDialogPc from "./NameEditDialogPc.vue";
 import UploadDialogPc from "./UploadDialogPc.vue";
 import UploadProgress from "./UploadProgress.vue";
@@ -229,6 +240,18 @@ const canShare = computed(() => {
     hasExplicitPermission(item, Permission.Share),
   );
 });
+const canMove = computed(() => {
+  if (!hasSelection.value) return false;
+  if (
+    props.pageType !== ExplorerPageType.MY &&
+    props.pageType !== ExplorerPageType.SHARED
+  ) {
+    return false;
+  }
+  return selectedItems.value.every((item) =>
+    hasExplicitPermission(item, Permission.Edit),
+  );
+});
 const canDelete = computed(() => {
   if (!hasSelection.value) return false;
   if (props.pageType === ExplorerPageType.SEARCH) return true;
@@ -239,6 +262,19 @@ const canDelete = computed(() => {
 
 const { shareLinkVisible, shareLinkItems, openShareLink, closeShareLink } =
   useShareLink();
+
+const moveVisible = ref(false);
+const movePayload = ref<MovePayload | null>(null);
+
+const openMoveDialog = (payload: MovePayload) => {
+  movePayload.value = payload;
+  moveVisible.value = true;
+};
+
+const closeMoveDialog = () => {
+  moveVisible.value = false;
+  movePayload.value = null;
+};
 
 const {
   mode,
@@ -278,6 +314,7 @@ const {
   open,
   downloadMany,
   shareToFriendMany,
+  moveMany,
   removeMany,
   deletePermanentlyMany,
   restoreMany,
@@ -287,6 +324,7 @@ const {
   onRefresh: () => emit("refresh"),
   onRenameDialog: openRename,
   onCopyLinkDialog: openShareLink,
+  onMoveDialog: openMoveDialog,
   onAfterAction: clear,
   onDuplicateFiles: (data) => {
     toast(t("duplicateFilesWarning", { count: data.length }), "warning");
@@ -565,6 +603,13 @@ const handleShare = async () => {
   clear();
 };
 
+const handleMove = async () => {
+  if (!canMove.value) return;
+  const moved = await moveMany(selectedItems.value);
+  if (!moved) return;
+  clear();
+};
+
 const handleDelete = async () => {
   if (!canDelete.value) return;
   await removeMany(selectedItems.value);
@@ -604,6 +649,15 @@ const handleShareLinkVisibleChange = (value: boolean) => {
   if (value) return;
   closeShareLink();
   clear();
+};
+
+const handleMoveVisibleChange = (value: boolean) => {
+  if (value) {
+    moveVisible.value = true;
+    return;
+  }
+
+  closeMoveDialog();
 };
 
 const handleUploadVisibleChange = (value: boolean) => {

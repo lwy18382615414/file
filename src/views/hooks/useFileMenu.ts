@@ -24,10 +24,15 @@ export function useFileMenu() {
 
     const isSetTop = getIsSetTop(activeItem.value);
 
+    const context = getExplorerContext(route);
     const commonActions: FileMenuAction[] = [
       { key: "share", label: t("shareToFriend"), icon: "co_share" },
       { key: "copy", label: t("copyLink"), icon: "co_copy" },
       { key: "rename", label: t("rename"), icon: "co_rename" },
+      ...(context.pageType === ExplorerPageType.MY ||
+      context.pageType === ExplorerPageType.SHARED
+        ? [{ key: "move", label: t("move"), icon: "co_open" }]
+        : []),
       {
         key: isSetTop ? "unTop" : "top",
         label: isSetTop ? t("unpin") : t("pin"),

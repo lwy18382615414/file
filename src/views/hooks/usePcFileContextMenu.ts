@@ -20,6 +20,7 @@ export type PcFileContextActionKey =
   | "unTop"
   | "top"
   | "rename"
+  | "move"
   | "delete"
   | "restore"
   | "deletePermanently"
@@ -109,6 +110,12 @@ export function usePcFileContextMenu(options: {
 
     if (canUsePermission(item, Permission.Edit, pageType)) {
       nextActions.push({ key: "rename", label: t("rename") });
+      if (
+        pageType === ExplorerPageType.MY ||
+        pageType === ExplorerPageType.SHARED
+      ) {
+        nextActions.push({ key: "move", label: t("moveTo") });
+      }
       nextActions.push({ key: "delete", label: t("delete"), danger: true });
     }
 
@@ -142,6 +149,12 @@ export function usePcFileContextMenu(options: {
     if (
       items.every((item) => canUsePermission(item, Permission.Edit, pageType))
     ) {
+      if (
+        pageType === ExplorerPageType.MY ||
+        pageType === ExplorerPageType.SHARED
+      ) {
+        nextActions.push({ key: "move", label: t("moveTo") });
+      }
       nextActions.push({ key: "delete", label: t("delete"), danger: true });
     }
 

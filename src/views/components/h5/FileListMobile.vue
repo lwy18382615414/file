@@ -125,7 +125,7 @@ import { ExplorerPageType, type ExplorerQueryState } from "../../fileExplorer";
 import { getContentId } from "@/utils/typeUtils";
 import { useI18n } from "vue-i18n";
 import FileMenuPopup from "./FileMenuPopup.vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import FileExplorerItem from "./FileExplorerItem.vue";
 import FileExplorerGridItem from "./FileExplorerGridItem.vue";
 import { useLongPress } from "@/hooks/useLongPress";
@@ -167,6 +167,7 @@ const {
 } = useFileSelection();
 const { toast } = useUiFeedback();
 const route = useRoute();
+const router = useRouter();
 const listRef = ref();
 const isMySharePage = computed(
   () => props.pageType === ExplorerPageType.MY_SHARES,
@@ -217,6 +218,20 @@ const handleShareLinkVisibleChange = (value: boolean) => {
   clearLongPressState();
 };
 
+const openMovePage = async (items: ContentType[]) => {
+  if (!items.length) {
+    toast(t("selectFile"));
+    return;
+  }
+
+  await router.push({
+    path: "/move-file",
+    state: {
+      movePayload: JSON.stringify({ items }),
+    },
+  });
+};
+
 const actions = [
   {
     icon: "download",
@@ -234,6 +249,16 @@ const actions = [
     action: async () => {
       const removed = await removeMany(getSelectedItems());
       if (!removed) return;
+      clear();
+      clearLongPressState();
+    },
+  },
+  {
+    icon: "copy",
+    color: "#252f43",
+    action: async () => {
+      const selectedItems = getSelectedItems();
+      await openMovePage(selectedItems);
       clear();
       clearLongPressState();
     },
@@ -315,9 +340,12 @@ const handleOpen = async (item: ContentType) => {
 const handlePopupSelect = async (key: string) => {
   const item = activeItem.value;
   if (!item) return;
+  if (key === "move") {
+    await openMovePage([item]);
+    return;
+  }
   await handleMenuAction(key, item);
-};
-</script>
+};</script>
 
 <style lang="scss" scoped>
 .file-list-mobile {
