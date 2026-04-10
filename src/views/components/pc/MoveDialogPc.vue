@@ -13,7 +13,7 @@
         <div class="dialog-header">
           <div class="dialog-header__left">
             <span class="dialog-title">{{ t("move") }}：</span>
-            <span class="dialog-title__name">{{ getName(firstItem) }}</span>
+            <span class="dialog-title__name">{{ titlePrimary }}</span>
             <button
               v-if="items.length > 1"
               type="button"
@@ -335,6 +335,11 @@ const buildBreadcrumbItem = (
 
 const buildRootBreadcrumb = () =>
   buildBreadcrumbItem(0, spaceLabel.value, rootPath);
+
+const titlePrimary = computed(() => {
+  const item = firstItem.value;
+  return item ? (getName(item) ?? "") : t("selectFile");
+});
 
 const filteredRows = computed(() => {
   if (!keyword.value) return allRows.value;
