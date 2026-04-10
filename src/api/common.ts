@@ -113,6 +113,28 @@ export function transferSuperAdminApi(
   });
 }
 
+export function addFolderNotifyUsersApi(
+  contentId: number,
+  userIds: number[],
+): Promise<IResponse<Record<string, any>>> {
+  return request.put("/rest/api/clouddrivecontent/foldernotifyusers", {
+    contentId,
+    userIds,
+  });
+}
+
+export function removeFolderNotifyUsersApi(
+  contentId: number,
+  userIds: number[],
+): Promise<IResponse<Record<string, any>>> {
+  return request.delete("/rest/api/clouddrivecontent/foldernotifyusers", {
+    data: {
+      contentId,
+      userIds,
+    },
+  });
+}
+
 // 置顶空间
 export function topSpaceApi(
   contentId: number,

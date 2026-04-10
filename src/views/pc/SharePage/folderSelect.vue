@@ -144,7 +144,7 @@ const fileInfo = computed<TransFileInfo[]>(() => {
   return [];
 });
 
-console.log('客户端传递的数据', fileInfo.value)
+console.log("客户端传递的数据", fileInfo.value);
 
 const disabledSaveBtn = computed(
   () => props.isSaveBtnDisabled || selectedId.value === -1,
@@ -156,27 +156,27 @@ const titleText = computed(() => {
   const chatTypeMap: Record<number, string> = {
     0: t("saveToCloud"),
     1: t("uploadToCloud"),
-    2: t('transferToCloud')
-  }
-  return chatTypeMap[Number(isFromInput.value)]
-})
+    2: t("transferToCloud"),
+  };
+  return chatTypeMap[Number(isFromInput.value)];
+});
 
 const closeDialog = () => {
   setTimeout(() => {
     console.log(JSON.stringify({ type: "6" }));
-  }, 500)
-}
+  }, 500);
+};
 
 const handleSelectFiles = async () => {
-  const canSelect = await checkIsHaveFile()
+  const canSelect = await checkIsHaveFile();
   if (canSelect) {
-    const inputEl = uploader.value?.$el.querySelector('input[type="file"]')
-    if (inputEl) inputEl.click()
+    const inputEl = uploader.value?.$el.querySelector('input[type="file"]');
+    if (inputEl) inputEl.click();
   } else {
-    ElMessage.error(t("fileStopped"))
-    closeDialog()
+    ElMessage.error(t("fileStopped"));
+    closeDialog();
   }
-}
+};
 
 const selectFolder = (contentId: number, folderName: string) => {
   selectedId.value = contentId;
@@ -231,11 +231,11 @@ const initSelectedFolder = async () => {
 };
 
 const handleSaveFolder = debounce(async () => {
-  const canSelect = await checkIsHaveFile()
+  const canSelect = await checkIsHaveFile();
   if (!canSelect) {
-    ElMessage.error(t("fileStopped"))
-    closeDialog()
-    return
+    ElMessage.error(t("fileStopped"));
+    closeDialog();
+    return;
   }
   console.log("选择保存文件夹的名称", selectedFolderName.value);
   console.log("选择保存文件夹的ContentId", selectedId.value);
@@ -244,11 +244,14 @@ const handleSaveFolder = debounce(async () => {
     sessionStorage.getItem("lastSelectedName") ||
     t("myFiles");
 
-  if (isFolderSelectPage.value && isFromInput.value !== CloudDriveH5Enum.FromInput) {
+  if (
+    isFolderSelectPage.value &&
+    isFromInput.value !== CloudDriveH5Enum.FromInput
+  ) {
     loading.value = ElLoading.service({
       lock: false,
-      background: '#fff',
-    })
+      background: "#fff",
+    });
     await getTransferFiles(selectedId.value ?? 0);
   } else {
     emit("saveSelect", targetFolderName, selectedId.value);
@@ -287,7 +290,7 @@ const getTransferFiles = async (targetContentId: number) => {
         uploadRes = await shareContentByChatApi({
           fileInfos: fileInfos,
           contentId: targetContentId,
-        })
+        });
       } else {
         uploadRes = await uploadFileStep2Api({
           fileInfos: fileInfos,
@@ -346,36 +349,36 @@ const beforeUpload = async (rawFile: UploadRawFile) => {
 
   validFiles.value.push(rawFile);
 
-  if (uploadTimer) clearTimeout(uploadTimer)
+  if (uploadTimer) clearTimeout(uploadTimer);
   uploadTimer = setTimeout(() => {
-    triggerUpload()
-  }, 500)
+    triggerUpload();
+  }, 500);
 
   return false;
 };
 
 const triggerUpload = async () => {
-  if (isEncrypting || !validFiles.value.length) return
-  isEncrypting = true
+  if (isEncrypting || !validFiles.value.length) return;
+  isEncrypting = true;
 
-  const filesToEncrypt = [...validFiles.value]
-  validFiles.value = []
+  const filesToEncrypt = [...validFiles.value];
+  validFiles.value = [];
 
   try {
     loading.value = ElLoading.service({
       lock: false,
-      text: t('uploading'),
-      background: '#fff',
-    })
+      text: t("uploading"),
+      background: "#fff",
+    });
 
-    const encryptedFiles = await handleFileEncryption(filesToEncrypt)
-    await uploadFile(encryptedFiles)
+    const encryptedFiles = await handleFileEncryption(filesToEncrypt);
+    await uploadFile(encryptedFiles);
   } catch (err) {
-    ElMessage.error(t("encryptionError"))
+    ElMessage.error(t("encryptionError"));
   } finally {
-    isEncrypting = false
+    isEncrypting = false;
   }
-}
+};
 
 const uploadFile = async (
   files: { file: File; key: string; name: string }[],

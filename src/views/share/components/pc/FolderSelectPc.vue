@@ -45,13 +45,13 @@
 
     <div class="btn-box">
       <el-button
-        :disabled="!canCreateFolder"
+        :disabled="!canCreateFolderWithPermission"
         class="create-folder-btn"
         @click="showCreateFolder = true"
       >
         <SvgIcon
           name="share-add"
-          :color="canCreateFolder ? '' : '#fff'"
+          :color="canCreateFolderWithPermission ? '' : '#fff'"
           style="margin-right: 8px"
         />
         {{ t("createFolder") }}
@@ -61,13 +61,31 @@
         <el-button class="cancel-btn" @click="emit('cancelSelect')">
           {{ t("cancel") }}
         </el-button>
+        <el-upload
+          v-if="isUploadMode"
+          action="#"
+          multiple
+          :show-file-list="false"
+          :before-upload="beforeUpload"
+          :disabled="!canConfirmFolder"
+          class="upload-trigger"
+        >
+          <el-button
+            :disabled="!canConfirmFolder"
+            class="confirm-btn"
+            type="primary"
+          >
+            {{ confirmButtonText }}
+          </el-button>
+        </el-upload>
         <el-button
+          v-else
           :disabled="!canConfirmFolder"
           class="confirm-btn"
           type="primary"
           @click="handleConfirm"
         >
-          {{ t("Ok") }}
+          {{ confirmButtonText }}
         </el-button>
       </div>
     </div>
@@ -101,6 +119,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, toRefs, watch } from "vue";
+import type { UploadRawFile } from "element-plus";
 import { ElMessage, ElMessageBox } from "element-plus";
 import SvgIcon from "@/components/SvgIcon.vue";
 import FileListSkeleton from "@/views/h5/Components/FileListSkeleton.vue";
@@ -109,31 +128,33 @@ import {
   type SelectFolder,
 } from "@/hooks/useShareFolderSelect";
 import type { ShareContentType } from "@/views/share/types";
+import { hasCreateSharePermissionApi } from "@/api/common";
 import { createFolderApi } from "@/api/fileService";
-import { checkNameValidity, t } from "@/utils";
+import { checkFileSize, checkNameValidity, t } from "@/utils";
 import { EmptyState } from "@/components";
+import { CloudDriveH5Enum } from "@/enum/baseEnum";
 
 const props = withDefaults(
   defineProps<{
     selectedFiles: ShareContentType[];
     shareId: number | null;
+    saveType?: number;
     isSaveBtnDisabled?: boolean;
   }>(),
   {
     selectedFiles: () => [],
     shareId: null,
+    saveType: undefined,
     isSaveBtnDisabled: false,
   },
 );
 
 const emit = defineEmits<{
-  (e: "cancelSelect"): void;
-  (
-    e: "saveSelect",
-    targetFolderName: string,
-    targetFolderId: number | null,
-  ): void;
-  (e: "selectFolder", contentId: number, folderName: string): void;
+  cancelSelect: [];
+  saveSelect: [targetFolderName: string, targetFolderId: number | null];
+  uploadSelect: [targetFolderId: number | null, file: UploadRawFile];
+  transferSelect: [targetFolderId: number | null];
+  selectFolder: [contentId: number, folderName: string];
 }>();
 
 const { selectedFiles, shareId } = toRefs(props);
@@ -141,6 +162,7 @@ const scrollContainer = ref<HTMLElement | null>(null);
 const breadcrumbContainer = ref<HTMLElement | null>(null);
 const showCreateFolder = ref(false);
 const newFolderName = ref("");
+const canCreateSharedRootFolder = ref(false);
 
 const {
   loading,
@@ -149,6 +171,8 @@ const {
   selectFolder,
   showBreadcrumb,
   isSharedRootFolder,
+  canCreateFolder,
+  canConfirmTargetFolder,
   getItemKey,
   resetRootState,
   getFolderList,
@@ -160,15 +184,21 @@ const {
   shareId,
 });
 
-const canCreateFolder = computed(
-  () => !!selectFolder.value && !isSharedRootFolder.value,
+const isUploadMode = computed(
+  () => props.saveType === CloudDriveH5Enum.FromInput,
 );
+const canCreateFolderWithPermission = computed(() => {
+  if (!canCreateFolder.value) return false;
+  if (!isSharedRootFolder.value) return true;
+  return canCreateSharedRootFolder.value;
+});
 const canConfirmFolder = computed(
-  () =>
-    !!selectFolder.value &&
-    !isSharedRootFolder.value &&
-    !props.isSaveBtnDisabled,
+  () => canConfirmTargetFolder.value && !props.isSaveBtnDisabled,
 );
+const confirmButtonText = computed(() => {
+  if (props.saveType === CloudDriveH5Enum.FromInput) return t("upload");
+  return t("Ok");
+});
 
 const onScroll = async () => {
   await handleScroll(scrollContainer.value);
@@ -229,8 +259,28 @@ const handleCreateFolder = async () => {
   ElMessage.error(t("errorOccurred"));
 };
 
+const beforeUpload = (rawFile: UploadRawFile) => {
+  if (!canConfirmFolder.value || !selectFolder.value) return false;
+  if (rawFile.isDirectory) return false;
+
+  const isTooBig = checkFileSize(rawFile);
+  if (isTooBig) {
+    ElMessage.error(t("fileSizeLimit"));
+    return false;
+  }
+
+  emit("uploadSelect", selectFolder.value.contentId ?? 0, rawFile);
+  return false;
+};
+
 const handleConfirm = () => {
   if (!canConfirmFolder.value || !selectFolder.value) return;
+
+  if (props.saveType === CloudDriveH5Enum.TransferSource) {
+    emit("transferSelect", selectFolder.value.contentId ?? 0);
+    return;
+  }
+
   emit(
     "saveSelect",
     selectFolder.value.name,
@@ -257,6 +307,25 @@ watch(
   { flush: "post" },
 );
 
+watch(
+  () => isSharedRootFolder.value,
+  async (value) => {
+    if (!value) {
+      canCreateSharedRootFolder.value = false;
+      return;
+    }
+
+    try {
+      const res = await hasCreateSharePermissionApi();
+      canCreateSharedRootFolder.value = res.code === 1 ? !!res.data : false;
+    } catch (error) {
+      console.error("获取共享根目录创建权限失败:", error);
+      canCreateSharedRootFolder.value = false;
+    }
+  },
+  { immediate: true },
+);
+
 onMounted(() => {
   resetRootState();
 });
@@ -268,6 +337,18 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   position: relative;
+}
+
+.upload-trigger {
+  display: inline-flex;
+}
+
+.upload-trigger :deep(.el-upload) {
+  display: inline-flex;
+}
+
+.upload-trigger :deep(.el-upload.is-disabled) {
+  cursor: not-allowed;
 }
 
 .breadcrumb {

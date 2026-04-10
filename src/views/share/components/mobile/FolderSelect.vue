@@ -64,10 +64,18 @@
         </div>
       </div>
       <div v-if="showBottomActions" class="van-popup__bottom">
-        <div class="btn van-button--new" @click="showCreateFolder = true">
+        <div
+          v-if="canCreateFolderButton"
+          class="btn van-button--new"
+          @click="showCreateFolder = true"
+        >
           {{ t("createFolder") }}
         </div>
-        <div class="btn van-button--save" @click="saveToCloudDrive">
+        <div
+          v-if="canConfirmTargetFolder"
+          class="btn van-button--save"
+          @click="saveToCloudDrive"
+        >
           {{ t("save") }}
         </div>
       </div>
@@ -98,14 +106,16 @@
   <CreateFolderComponent
     :visible="showCreateFolder"
     :choose-folder="currentFolder"
+    :can-create="canCreateFolderButton"
     @update:visible="onToggleCreateFolder"
     @confirm="refreshCurrentFolder"
   />
 </template>
 
 <script setup lang="ts">
-import { ref, toRefs, watch } from "vue";
+import { computed, ref, toRefs, watch } from "vue";
 import { useRouter } from "vue-router";
+import { hasCreateSharePermissionApi } from "@/api/common";
 import { t } from "@/utils";
 import { useShareFolderSelect } from "@/hooks/useShareFolderSelect";
 import type { ShareContentType } from "@/views/share/types";
@@ -138,6 +148,7 @@ const showBottom = ref(false);
 const showCreateFolder = ref(false);
 const showSaveSuccess = ref(false);
 const scrollContainer = ref<HTMLElement | null>(null);
+const canCreateSharedRootFolder = ref(false);
 
 const {
   loading,
@@ -147,6 +158,8 @@ const {
   currentFolder,
   showBreadcrumb,
   showBottomActions,
+  canCreateFolder,
+  canConfirmTargetFolder,
   selectedFilesCountText,
   getItemKey,
   resetRootState,
@@ -161,6 +174,13 @@ const {
   onSaveSuccess: () => {
     showSaveSuccess.value = true;
   },
+});
+
+const canCreateFolderButton = computed(() => {
+  if (!canCreateFolder.value) return false;
+  if (!selectFolder.value) return false;
+  if (selectFolder.value.contentId !== 0 || selectFolder.value.isPersonal) return true;
+  return canCreateSharedRootFolder.value;
 });
 
 const onScroll = async () => {
@@ -196,6 +216,25 @@ watch(
     showBottom.value = value;
     if (value && !oldValue) {
       resetRootState();
+    }
+  },
+  { immediate: true },
+);
+
+watch(
+  () => selectFolder.value,
+  async (value) => {
+    if (!value || value.contentId !== 0 || value.isPersonal) {
+      canCreateSharedRootFolder.value = false;
+      return;
+    }
+
+    try {
+      const res = await hasCreateSharePermissionApi();
+      canCreateSharedRootFolder.value = res.code === 1 ? !!res.data : false;
+    } catch (error) {
+      console.error("获取共享根目录创建权限失败:", error);
+      canCreateSharedRootFolder.value = false;
     }
   },
   { immediate: true },

@@ -277,7 +277,6 @@ const chooseContact = (item: Record<string, string>) => {
   if (myUserInfo && myUserInfo.userId === item.userId) return;
   let index = optionUserList.value.findIndex((i) => i.userId === item.userId);
   if (index !== -1) {
-    if (optionUserList.value[index].canEdit === false) return
     optionUserList.value.splice(index, 1);
   } else {
     optionUserList.value.push(item);
@@ -395,10 +394,9 @@ const handleDelete = (list: Array<Record<string, any>>) => {
 };
 
 const handleConfirm = async (selectedList: Array<Record<string, any>>) => {
-  const ranges = selectedList.filter(range => range.canEdit !== false)
   const res = await addFolderPermissionApi(
     parseInt(contentId.value.toString()),
-    ranges,
+    selectedList,
     Permission.View
   );
   if (res.code === 1) {

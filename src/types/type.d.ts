@@ -118,12 +118,12 @@ export type ContentType =
 export interface PermissionItem {
   id: number;
   label: string;
-  canEdit: boolean;
   avatar?: string;
   permissionType: number;
   userId?: number;
   orgId?: string | number;
   tagId?: string | number;
+  isNotify?: boolean;
   children?: PermissionItem[];
 }
 
@@ -187,6 +187,7 @@ export type TransFileInfo = {
   fileUrl: string;
   fileSize: number;
   fileName: string;
+  name: string;
 };
 
 // 定义收集到的项结构

@@ -114,8 +114,7 @@
                   <span
                     v-if="
                       myUserInfo.userId !== item.userId &&
-                      myPermissionType !== item.permissionType &&
-                      item.canEdit !== false
+                      myPermissionType !== item.permissionType
                     "
                     class="ml-auto"
                     @click="removeChooseItem(item)"
@@ -201,21 +200,17 @@ const getEnterName = computed(() => {
 });
 
 const departDisabled = (data: Record<string, any> | null) => {
-  if (!data?.userId) return true;
+  if (!data?.userId) return false;
   if (data.userId === superAdmin.value.userId) return true;
   if (data.userId === myUserInfo.userId) return true;
   const findUser = props.hasSelectItem.find(
     (item) => item.userId === data.userId,
   );
 
-  if (findUser && findUser.canEdit === false) {
-    return true;
-  }
-
-  if (findUser && findUser.permissionType === props.myPermissionType) {
-    return true;
-  }
-  return false;
+  return !!(
+    findUser &&
+    findUser.permissionType === props.myPermissionType
+  );
 };
 
 const defaultProps = ref({
@@ -288,10 +283,6 @@ const disableChoose = (item: Record<string, any> | null) => {
   if (item.userId === superAdmin.value.userId) return true;
   if (item.userId === myUserInfo.userId) return true;
   const findUser = props.hasSelectItem.find((i) => i.userId === item.userId);
-
-  if (findUser && findUser.canEdit === false) {
-    return true;
-  }
 
   if (findUser && findUser.permissionType === props.myPermissionType) {
     return true;

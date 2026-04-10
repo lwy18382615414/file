@@ -2,10 +2,15 @@
   <div class="siderbar-container" :style="{ width: `${sidebarWidth}px` }">
     <main>
       <SearchBox />
-      <div class="new" @click="handleCreateFolder">
+      <div
+        v-if="canCreateFolder === true"
+        class="new"
+        @click="handleCreateFolder"
+      >
         <SvgIcon name="action-create" size="20" />
         <span> {{ t("createFolder") }}</span>
       </div>
+      <div v-else class="new-placeholder"></div>
 
       <NameEditDialogPc
         :show="createDialogVisible"
@@ -61,36 +66,57 @@
           </div>
         </div>
 
-        <div class="menu-item-wrapper shared-item">
+        <div
+          :class="[
+            'menu-item-wrapper',
+            'shared-item',
+            { expanded: sharedMenuExpanded },
+          ]"
+          @click="handleSharedMenuToggle"
+        >
           <div class="menu-item">
             <div class="menu-item-title">
               {{ t("route.shared") }}
             </div>
-          </div>
-        </div>
-
-        <div ref="sharedScrollRef" class="shared-scroll">
-          <div
-            v-for="item in sharedMenu"
-            :key="item.path"
-            :data-path="item.path"
-            :class="['menu-item-wrapper', { active: item.path === activePath }]"
-            @click="menuClick(item)"
-            @dblclick="menuDoubleClick(item)"
-            @contextmenu.stop.prevent="
-              handleSharedItemContextmenu(item, $event)
-            "
-          >
-            <div class="menu-item">
-              <div class="menu-item-icon">
-                <SvgIcon :name="'file-' + item.icon" />
-              </div>
-              <div class="menu-item-title">
-                {{ item.name }}
-              </div>
+            <div
+              :class="['shared-item-arrow', { expanded: sharedMenuExpanded }]"
+            >
+              <SvgIcon name="ic_arr_down_more" />
             </div>
           </div>
         </div>
+
+        <transition name="shared-menu-collapse">
+          <div
+            v-show="sharedMenuExpanded"
+            ref="sharedScrollRef"
+            class="shared-scroll"
+          >
+            <div
+              v-for="item in sharedMenu"
+              :key="item.path"
+              :data-path="item.path"
+              :class="[
+                'menu-item-wrapper',
+                { active: item.path === activePath },
+              ]"
+              @click="menuClick(item)"
+              @dblclick="menuDoubleClick(item)"
+              @contextmenu.stop.prevent="
+                handleSharedItemContextmenu(item, $event)
+              "
+            >
+              <div class="menu-item">
+                <div class="menu-item-icon">
+                  <SvgIcon :name="'file-' + item.icon" />
+                </div>
+                <div class="menu-item-title">
+                  {{ item.name }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </transition>
       </div>
     </main>
     <div class="usage-content">
@@ -114,6 +140,7 @@ import {
   cancelTopSpaceApi,
   exitSpaceApi,
   getMySpaceUsageApi,
+  hasCreateSharePermissionApi,
   topSpaceApi,
 } from "@/api/common";
 import {
@@ -153,9 +180,12 @@ const { sidebarWidth, startResize, stopResize } = useSidebarResize();
 const { shareLinkVisible, shareLinkItems, openShareLink, closeShareLink } =
   useShareLink();
 
+const CREATE_PERMISSION_POLL_INTERVAL = 30000;
+
 const createDialogVisible = ref(false);
 const renameDialogVisible = ref(false);
 const renameItem = ref<ContentType | null>(null);
+const canCreateFolder = ref<boolean | null>(null);
 const creating = ref(false);
 const renaming = ref(false);
 const settingVisible = ref(false);
@@ -164,8 +194,10 @@ const contextMenuVisible = ref(false);
 const contextMenuPosition = ref({ x: 0, y: 0 });
 const contextMenuActions = ref<PcFileContextAction[]>([]);
 const sharedScrollRef = ref<HTMLElement | null>(null);
+const sharedMenuExpanded = ref(true);
 const usedCapacity = ref("0 B");
 const progress = ref(0);
+let createPermissionTimer: ReturnType<typeof setInterval> | null = null;
 
 const fixedMenu = [
   { path: "/recent", name: "route.recentView", icon: "recent" },
@@ -190,9 +222,7 @@ const sharedMenu = ref<SharedMenuItem[]>([]);
 const { activePath, isSameLocation, resolveMenuTarget } =
   useSidebarLastVisited(fixedMenu);
 
-const isSharedMenuItem = (
-  item: SidebarMenuItem,
-): item is SharedMenuItem => {
+const isSharedMenuItem = (item: SidebarMenuItem): item is SharedMenuItem => {
   return item.path.startsWith("/shared/");
 };
 
@@ -244,6 +274,16 @@ const updateMenuWithShareSpace = (shareSpaces: SharedCloudContent[]) => {
     },
     raw: item,
   }));
+};
+
+const handleSharedMenuToggle = async () => {
+  const nextExpanded = !sharedMenuExpanded.value;
+  sharedMenuExpanded.value = nextExpanded;
+
+  if (!nextExpanded) return;
+
+  await getShareSpace();
+  scrollToSharedItem(activePath.value);
 };
 
 watch(
@@ -329,8 +369,39 @@ const handleShareLinkVisibleChange = (value: boolean) => {
   closeShareLink();
 };
 
-const handleCreateFolder = () => {
+const syncCreateFolderPermission = async () => {
+  try {
+    const res = await hasCreateSharePermissionApi();
+    canCreateFolder.value = res.code === 1 ? res.data : false;
+    return canCreateFolder.value;
+  } catch (error) {
+    console.error("获取新建共享目录权限失败", error);
+    canCreateFolder.value = false;
+    return false;
+  }
+};
+
+const startCreatePermissionPolling = () => {
+  syncCreateFolderPermission();
+  createPermissionTimer = setInterval(() => {
+    syncCreateFolderPermission();
+  }, CREATE_PERMISSION_POLL_INTERVAL);
+};
+
+const stopCreatePermissionPolling = () => {
+  if (!createPermissionTimer) return;
+  clearInterval(createPermissionTimer);
+  createPermissionTimer = null;
+};
+
+const handleCreateFolder = async () => {
   if (creating.value) return;
+
+  const hasPermission = await syncCreateFolderPermission();
+  if (!hasPermission) {
+    toast(t("noPermission"), "warning");
+    return;
+  }
 
   closeContextMenu();
   createDialogVisible.value = true;
@@ -618,9 +689,11 @@ const getShareSpace = (waitForUpdate = false) => {
 onMounted(() => {
   getShareSpace();
   getSpaceUsage();
+  startCreatePermissionPolling();
 });
 
 onBeforeUnmount(() => {
+  stopCreatePermissionPolling();
   stopResize();
 });
 </script>
@@ -639,13 +712,17 @@ onBeforeUnmount(() => {
     padding: 12px;
     border-right: 1px solid #e7edf4;
 
+    .new,
+    .new-placeholder {
+      margin: 12px 0;
+    }
+
     .new {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 4px;
       padding: 8px 12px;
-      margin: 12px 0;
       font-size: 14px;
       border-radius: 8px;
       background-color: #5665bb;
@@ -654,6 +731,10 @@ onBeforeUnmount(() => {
       line-height: 20px;
       color: #fff;
       cursor: pointer;
+    }
+
+    .new-placeholder {
+      height: 36px;
     }
 
     .menu-container {
@@ -667,6 +748,30 @@ onBeforeUnmount(() => {
         gap: 4px;
         height: calc(100vh - 388px);
         overflow-y: auto;
+        transform-origin: top;
+      }
+
+      .shared-menu-collapse-enter-active,
+      .shared-menu-collapse-leave-active {
+        transition:
+          max-height 0.24s ease,
+          opacity 0.24s ease,
+          transform 0.24s ease;
+        overflow: hidden;
+      }
+
+      .shared-menu-collapse-enter-from,
+      .shared-menu-collapse-leave-to {
+        max-height: 0;
+        opacity: 0;
+        transform: translateY(-6px);
+      }
+
+      .shared-menu-collapse-enter-to,
+      .shared-menu-collapse-leave-from {
+        max-height: calc(100vh - 388px);
+        opacity: 1;
+        transform: translateY(0);
       }
 
       .menu-item-wrapper {
@@ -703,10 +808,43 @@ onBeforeUnmount(() => {
         }
 
         &.shared-item {
-          cursor: default;
+          cursor: pointer;
+
+          .menu-item {
+            justify-content: space-between;
+          }
+
           .menu-item-title {
             font-size: 12px;
             color: #9ca3af;
+          }
+
+          .shared-item-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            transition: color 0.2s ease;
+
+            :deep(svg) {
+              width: 14px;
+              height: 14px;
+              transform: rotate(-90deg);
+              transition: transform 0.24s ease;
+            }
+
+            &.expanded {
+              :deep(svg) {
+                transform: rotate(0deg);
+              }
+            }
+          }
+
+          &.expanded {
+            .menu-item-title,
+            .shared-item-arrow {
+              color: #5665bb;
+            }
           }
         }
       }

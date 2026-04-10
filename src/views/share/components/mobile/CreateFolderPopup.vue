@@ -13,7 +13,7 @@
         <div class="van-popup__header-title">{{ t("createFolder") }}</div>
         <div
           class="van-popup__header-right"
-          :class="{ disabled: !folderName }"
+          :class="{ disabled: !canConfirmCreate }"
           @click="handleConfirm"
         >
           {{ t("Ok") }}
@@ -37,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, ref, watch } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 import { showDialog, showToast } from "vant";
 import { createFolderApi } from "@/api/fileService";
 import SvgIcon from "@/components/SvgIcon.vue";
@@ -53,6 +53,7 @@ const props = withDefaults(
   defineProps<{
     visible: boolean;
     chooseFolder: ISelectFolder;
+    canCreate?: boolean;
   }>(),
   {
     visible: false,
@@ -67,9 +68,10 @@ const emit = defineEmits<{
 const showBottom = ref(false);
 const folderName = ref("");
 const vanFieldRef = ref();
+const canConfirmCreate = computed(() => !!props.canCreate && !!folderName.value);
 
 const handleConfirm = async () => {
-  if (!folderName.value) return;
+  if (!canConfirmCreate.value) return;
 
   const { isValid, message } = checkNameValidity(folderName.value);
   if (!isValid) {

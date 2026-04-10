@@ -39,16 +39,24 @@
       <van-cell
         :title="t('viewAllMembers')"
         is-link
-        :value="personCount + '人'"
+        class="person-cell"
+        :value="personCount"
         @click="toStaffList(contentId, permissionType)"
+      />
+      <van-cell
+        :title="t('notifyUsers')"
+        is-link
+        class="person-cell"
+        :value="notifyCount"
+        @click="toNotifyList(contentId, permissionType)"
       />
     </div>
     <div class="divider"></div>
     <div class="space-info">
       <van-cell
         :title="t('folderName')"
-        v-if="hasPermission(permissionType, Permission.SuperAdmin)"
-        is-link
+        :is-link="hasPermission(permissionType, Permission.SuperAdmin)"
+        class="name-cell"
         :value="title"
         @click="renameSpace"
       >
@@ -56,17 +64,12 @@
           <div class="custom-title">{{ title }}</div>
         </template>
       </van-cell>
-      <van-cell :title="t('folderName')" v-else :value="title">
-        <template #value>
-          <div class="custom-title">{{ title }}</div>
-        </template>
-      </van-cell>
-      <van-cell :title="t('pinFolder')" is-link>
+
+      <van-cell :title="t('pinFolder')">
         <template #right-icon>
           <van-switch v-model="checked" size="20" @change="changeTop" />
         </template>
       </van-cell>
-      <van-cell v-if="false" title="安全设置" is-link />
     </div>
 
     <div class="btn-group">
@@ -138,6 +141,7 @@ const rename = reactive({
 const title = ref("");
 const permissionType = ref(0);
 const personCount = ref(0);
+const notifyCount = ref(0);
 
 const contentId = computed<number>(() => {
   const queryId = route.query.contentId;
@@ -149,6 +153,13 @@ const isSgMode = import.meta.env.MODE === "SG";
 const toStaffList = (contentId: number, permissionType: number) => {
   router.push({
     path: "/space-staff",
+    query: { contentId, permissionType },
+  });
+};
+
+const toNotifyList = (contentId: number, permissionType: number) => {
+  router.push({
+    path: "/space-notify",
     query: { contentId, permissionType },
   });
 };
@@ -172,8 +183,7 @@ const toAppSelect = () => {
       (p) =>
         p.permissionType === Permission.SuperAdmin ||
         p.userId === myUserInfo.userId ||
-        p.permissionType === permissionType.value ||
-        p.canEdit === false,
+        p.permissionType === permissionType.value,
     )
     .map(createPersonData);
 
@@ -191,24 +201,9 @@ const toAppSelect = () => {
 const setDataCallBack = async (data: string) => {
   const selectedPerson = JSON.parse(data);
 
-  const existingMap = new Map();
-  personList.value.forEach((item) => {
-    if (item.userId) {
-      existingMap.set(item.userId, item.canEdit);
-    }
-  });
-
-  const filteredData = selectedPerson.filter((item: any) => {
-    const userId = item.userId;
-    const isExist = existingMap.has(userId);
-    const currentCanEdit = existingMap.get(userId);
-
-    return !isExist || (isExist && currentCanEdit !== false);
-  });
-
   const res = await addFolderPermissionApi(
     contentId.value,
-    filteredData,
+    selectedPerson,
     Permission.View,
   );
   if (res.code === 1) {
@@ -356,12 +351,17 @@ const getSpaceInfo = async () => {
     checked.value = res.data.isSetTop;
     permissionType.value = res.data.permissionType;
     personCount.value = res.data.personCount;
+    notifyCount.value = res.data.permissions.filter(
+      (item: { isNotify?: boolean; userId?: number }) =>
+        item.isNotify && item.userId,
+    ).length;
 
     countStaffNum();
   } else {
     personList.value = [];
     title.value = "";
     checked.value = false;
+    notifyCount.value = 0;
   }
 };
 
@@ -472,6 +472,14 @@ onMounted(() => {
     left: 0;
     border-bottom: 1px solid #ebedf0;
     transform: scaleY(0.5);
+  }
+}
+
+.person-cell,
+.name-cell {
+  :deep(.van-badge__wrapper) {
+    line-height: 24px;
+    padding-top: 1px;
   }
 }
 

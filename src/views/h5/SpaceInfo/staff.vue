@@ -158,15 +158,11 @@ const filteredPermissionList = computed(() => {
     if (b.permissionType !== a.permissionType) {
       return b.permissionType - a.permissionType;
     }
-    const canEditA = Number(Boolean(a.canEdit));
-    const canEditB = Number(Boolean(b.canEdit));
-
-    return canEditA - canEditB;
+    return 0;
   });
 });
 
 const isReadOnly = (item: PermissionItem) => {
-  if (!item.canEdit) return true
   return (
     item.permissionType === Permission.SuperAdmin ||
     item.permissionType === userPermission.value ||

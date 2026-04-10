@@ -1,10 +1,11 @@
 <template>
-  <div class="setting-dialpg">
+  <div class="setting-dialog-container">
     <el-dialog
       :model-value="visible"
       :show-close="false"
       :before-close="handleClose"
       :modal="false"
+      class="setting-dialog"
       destroy-on-close
       @click.stop="contextMenuVisible = false"
     >
@@ -30,8 +31,11 @@
             @click="handleChoose(index)"
           >
             <span>{{ t(item) }}</span>
-            <span v-if="index === 0" class="nav-count">{{
+            <span v-if="item === 'spaceMembers'" class="nav-count">{{
               permissionCount
+            }}</span>
+            <span v-else-if="item === 'notifyUsers'" class="nav-count">{{
+              notifyPermissionList.length
             }}</span>
           </div>
         </div>
@@ -62,7 +66,9 @@
                   disabled: !hasPermission(permissionType, Permission.Admin),
                 }"
                 type="button"
-                @click="addMember"
+                @click="
+                  option === 'notifyUsers' ? addNotifyUser() : addMember()
+                "
               >
                 <SvgIcon
                   v-if="hasPermission(permissionType, Permission.Admin)"
@@ -94,27 +100,36 @@
                 <div
                   class="permission-trigger"
                   :class="{ 'is-readonly': isReadOnly(item) }"
-                  @click.stop="handleMenu(item, false, $event)"
+                  @click.stop="
+                    option === 'notifyUsers'
+                      ? handleRemoveNotifyUser(item)
+                      : handleMenu(item, false, $event)
+                  "
                 >
-                  <span
-                    v-if="item.permissionType === Permission.SuperAdmin"
-                    class="permission"
-                  >
-                    {{ getHighestPermission(item.permissionType).name }}
-                  </span>
-                  <el-tooltip
-                    v-else
-                    effect="dark"
-                    :content="setContent(item)"
-                    placement="top"
-                  >
-                    <span class="permission">
+                  <template v-if="option === 'notifyUsers'">
+                    <span class="permission">{{ t("remove") }}</span>
+                  </template>
+                  <template v-else>
+                    <span
+                      v-if="item.permissionType === Permission.SuperAdmin"
+                      class="permission"
+                    >
                       {{ getHighestPermission(item.permissionType).name }}
                     </span>
-                  </el-tooltip>
-                  <span v-if="!isReadOnly(item)" class="arrow-icon">
-                    <SvgIcon name="ic_arr_down_more" />
-                  </span>
+                    <el-tooltip
+                      v-else
+                      effect="dark"
+                      :content="setContent(item)"
+                      placement="top"
+                    >
+                      <span class="permission">
+                        {{ getHighestPermission(item.permissionType).name }}
+                      </span>
+                    </el-tooltip>
+                    <span v-if="!isReadOnly(item)" class="arrow-icon">
+                      <SvgIcon name="ic_arr_down_more" />
+                    </span>
+                  </template>
                 </div>
               </div>
             </div>
@@ -137,7 +152,7 @@
   />
 
   <CustomSelectPerson
-    v-if="orgVisible"
+    v-if="orgVisible && option !== 'notifyUsers'"
     :visible="orgVisible"
     :contact-list="contactList"
     :has-select-item="selectedItems"
@@ -145,26 +160,37 @@
     @update:visible="closeChoose"
     @submit="handleConfirm"
   />
+
+  <AddNotifyUserDialog
+    v-if="notifyDialogVisible"
+    :visible="notifyDialogVisible"
+    :users="notifyCandidateList"
+    :selected-users="notifySelectedItems"
+    @update:visible="notifyDialogVisible = $event"
+    @confirm="handleNotifyConfirm"
+  />
 </template>
 
 <script setup lang="ts">
-import { SvgIcon } from "@/components";
 import { useFileBelong } from "@/hooks/useFileBelong";
 import { useShareSpace } from "@/hooks/useShareSpace";
 import type { OrgTreeCallbackParams } from "@/api/type";
 import { computed, ref, watch, watchEffect, nextTick } from "vue";
 import { debounce } from "lodash-es";
 import {
+  addFolderNotifyUsersApi,
   addFolderPermissionApi,
   editFolderPermissionApi,
   getFolderPermissionApi,
   getUserTreeApi,
+  removeFolderNotifyUsersApi,
   removeMemberApi,
   setMemberPermissionApi,
   transferSuperAdminApi,
 } from "@/api/common";
 import { Permission, getHighestPermission } from "@/enum/permission";
-import { PopMenu, CustomSelectPerson } from "@/components";
+import { PopMenu, CustomSelectPerson, SvgIcon } from "@/components";
+import AddNotifyUserDialog from "./AddNotifyUserDialog.vue";
 import { ElMessage } from "element-plus";
 import { useDialog } from "@/hooks/useDialog";
 import { getQueryVariable, hasPermission, t } from "@/utils";
@@ -196,10 +222,13 @@ const visible = computed({
   set: (value: boolean) => emit("update:show", value),
 });
 
-const settingOptions = ["spaceMembers"];
+const settingOptions = ["spaceMembers", "notifyUsers"];
 const activeOption = ref(0);
 const option = ref("");
 const permissionList = ref<PermissionItem[]>([]);
+const notifyPermissionList = ref<(PermissionItem & { isNotify?: boolean })[]>(
+  [],
+);
 const contextMenuVisible = ref(false);
 const menuPosition = ref({ x: 0, y: 0 });
 const menuOptions = ref<MenuOption[]>([
@@ -230,7 +259,9 @@ const menuOptions = ref<MenuOption[]>([
 const filterOptions = ref<MenuOption[]>([]);
 const selectedPerson = ref<PermissionItem>({} as PermissionItem);
 const orgVisible = ref(false);
+const notifyDialogVisible = ref(false);
 const selectedItems = ref<PermissionItem[]>([]);
+const notifySelectedItems = ref<PermissionItem[]>([]);
 const isSearching = ref(false);
 const searchValue = ref("");
 const searchInputRef = ref();
@@ -239,8 +270,18 @@ const permissionName = ref("");
 const isChild = ref(false);
 const contactList = ref<OrgTreeCallbackParams[]>([]);
 
+const notifyCandidateList = computed<PermissionItem[]>(() => {
+  return permissionList.value.filter((item) => !!item.userId);
+});
+
+const currentList = computed<PermissionItem[]>(() => {
+  return option.value === "notifyUsers"
+    ? notifyPermissionList.value
+    : permissionList.value;
+});
+
 const filteredPermissionList = computed<PermissionItem[]>(() => {
-  let list = permissionList.value;
+  let list = currentList.value;
   const searchTerm = searchValue.value?.trim();
 
   if (searchTerm) {
@@ -276,7 +317,7 @@ const filteredPermissionList = computed<PermissionItem[]>(() => {
     if (b.permissionType !== a.permissionType) {
       return b.permissionType - a.permissionType;
     }
-    return (a.canEdit ? 1 : 0) - (b.canEdit ? 1 : 0);
+    return 0;
   });
 });
 
@@ -298,14 +339,20 @@ const handleSearchBlur = () => {
 };
 
 watchEffect(() => {
-  option.value = settingOptions[0];
+  if (!settingOptions.includes(option.value)) {
+    option.value = settingOptions[0];
+    activeOption.value = 0;
+  }
   if (searchInputRef.value && isSearching.value) {
     searchInputRef.value.focus();
   }
 });
 
-const isReadOnly = (item: PermissionItem) => {
-  if (!item.canEdit) return true;
+const isReadOnly = (item: PermissionItem & { isNotify?: boolean }) => {
+  if (option.value === "notifyUsers") {
+    return !hasPermission(permissionType.value, Permission.Admin);
+  }
+
   return (
     item.permissionType === Permission.SuperAdmin ||
     item.permissionType === permissionType.value ||
@@ -318,6 +365,7 @@ const resetState = () => {
   isSearching.value = false;
   contextMenuVisible.value = false;
   orgVisible.value = false;
+  notifyDialogVisible.value = false;
   selectedPerson.value = {} as PermissionItem;
   isChild.value = false;
 };
@@ -348,6 +396,7 @@ const handleMenu = (
 
   selectedPerson.value = selected;
   isChild.value = isChildPermission;
+
   filterOptions.value = menuOptions.value;
   if (permissionType.value !== Permission.SuperAdmin) {
     filterOptions.value = menuOptions.value.filter(
@@ -487,6 +536,28 @@ const editPermission = async (nextPermissionType: number) => {
   }
 };
 
+const handleRemoveNotifyUser = (selected: PermissionItem) => {
+  if (isReadOnly(selected)) return;
+
+  useDialog({
+    title: t("remove"),
+    content: t("confirmRemoveNotifyUser"),
+    confirmText: t("Ok"),
+    cancelText: t("cancel"),
+  })
+    .then(async () => {
+      if (!selected.userId) return;
+      const res = await removeFolderNotifyUsersApi(props.contentId, [
+        selected.userId,
+      ]);
+      if (res.code === 1) {
+        ElMessage.success(t("removeSuccess"));
+        await getFolderPermission(props.contentId);
+      }
+    })
+    .catch(() => {});
+};
+
 const removePerson = async () => {
   const res = await removeMemberApi(selectedPerson.value.id, props.contentId);
   if (res.code === 1) {
@@ -500,11 +571,18 @@ const getFolderPermission = async (contentId: number) => {
 
   const res = await getFolderPermissionApi(contentId);
   if (res.code === 1) {
-    permissionList.value = res.data.permissions;
+    permissionList.value = res.data.permissions || [];
+    notifyPermissionList.value = permissionList.value.filter(
+      (item) => item.isNotify,
+    );
     permissionType.value = res.data.permissionType;
     permissionName.value = res.data.name;
     permissionCount.value = res.data.personCount;
     selectedItems.value = permissionList.value.map((item) => ({
+      ...item,
+      value: (item.userId || item.orgId || item.tagId)?.toString(),
+    }));
+    notifySelectedItems.value = notifyPermissionList.value.map((item) => ({
       ...item,
       value: (item.userId || item.orgId || item.tagId)?.toString(),
     }));
@@ -513,7 +591,6 @@ const getFolderPermission = async (contentId: number) => {
 
 const handleConfirm = async (selected: PermissionItem[]) => {
   const ranges = selected
-    .filter((range) => range.canEdit !== false)
     .map((range) => {
       const payload: Record<string, number> = {};
 
@@ -541,6 +618,31 @@ const handleConfirm = async (selected: PermissionItem[]) => {
 const addMember = () => {
   if (!hasPermission(permissionType.value, Permission.Admin)) return;
   orgVisible.value = true;
+};
+
+const addNotifyUser = () => {
+  if (!hasPermission(permissionType.value, Permission.Admin)) return;
+  notifyDialogVisible.value = true;
+};
+
+const handleNotifyConfirm = async (userIds: number[]) => {
+  const existingUserIds = new Set(
+    notifyPermissionList.value.map((item) => item.userId).filter(Boolean),
+  );
+  const nextUserIds = userIds.filter((userId) => !existingUserIds.has(userId));
+
+  if (!nextUserIds.length) {
+    notifyDialogVisible.value = false;
+    return;
+  }
+
+  const res = await addFolderNotifyUsersApi(props.contentId, nextUserIds);
+  if (res.code === 1) {
+    ElMessage.success(t("operationSuccess"));
+    await getFolderPermission(props.contentId);
+    notifyDialogVisible.value = false;
+    isSharedDirChanged.value = !isSharedDirChanged.value;
+  }
 };
 
 const getUserData = async () => {
@@ -602,7 +704,7 @@ watch(
 </script>
 
 <style scoped lang="scss">
-:deep(.el-dialog) {
+:deep(.setting-dialog) {
   width: 640px;
   padding: 0;
   overflow: hidden;
@@ -725,7 +827,6 @@ watch(
   justify-content: flex-end;
   gap: 10px;
   min-height: 36px;
-  margin-bottom: 12px;
 }
 
 .action-button {

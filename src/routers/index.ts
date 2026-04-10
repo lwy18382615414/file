@@ -93,7 +93,7 @@ const router = createRouter({
     {
       path: "/space-setting",
       name: "SpaceInfo",
-      component: () => import("@/views/h5/SpaceInfo/index.vue"),
+      component: () => import("@/views/mobileSpaceInfo.vue"),
     },
     {
       path: "/space-staff",
@@ -104,6 +104,16 @@ const router = createRouter({
       path: "/add-staff",
       name: "AddStaff",
       component: () => import("@/views/h5/SpaceInfo/addStaff.vue"),
+    },
+    {
+      path: "/space-notify",
+      name: "SpaceNotify",
+      component: () => import("@/views/h5/SpaceInfo/notify.vue"),
+    },
+    {
+      path: "/add-notify-user",
+      name: "AddNotifyUser",
+      component: () => import("@/views/h5/SpaceInfo/addNotifyUser.vue"),
     },
     {
       path: "/weeklyFileReport",

@@ -1,6 +1,24 @@
 <template>
   <div class="file-select-page">
-    <template v-if="isPcClient"></template>
+    <template v-if="isPcClient">
+      <div class="file-select-page__pc">
+        <div class="page-header">
+          <div class="page-title">{{ titleText }}</div>
+        </div>
+        <div class="pc-file-select-wrapper">
+          <FolderSelectPc
+            :selected-files="selectedFiles"
+            :share-id="shareId"
+            :save-type="type"
+            @cancelSelect="closePage"
+            @saveSelect="handlePcSaveSelect"
+            @uploadSelect="handlePcUploadSelect"
+            @transferSelect="handlePcTransferSelect"
+            @selectFolder="handlePcSelectFolder"
+          />
+        </div>
+      </div>
+    </template>
 
     <template v-else-if="isMobileApp">
       <div class="page-content">
@@ -26,7 +44,11 @@
         <div
           ref="scrollContainer"
           class="folder-list"
-          :class="{ showBottomBtn: showBottomActions }"
+          :class="{
+            showBottomBtn:
+              showBottomActions &&
+              (canCreateFolderButton || canConfirmTargetFolder),
+          }"
           @scroll.passive="onScroll"
         >
           <template v-if="folderList.length > 0">
@@ -50,12 +72,21 @@
         </div>
       </div>
 
-      <div v-if="showBottomActions" class="page-bottom">
-        <div class="btn btn-secondary" @click="showCreateFolder = true">
+      <div
+        v-if="
+          showBottomActions && (canCreateFolderButton || canConfirmTargetFolder)
+        "
+        class="page-bottom"
+      >
+        <div
+          v-if="canCreateFolderButton"
+          class="btn btn-secondary"
+          @click="showCreateFolder = true"
+        >
           {{ t("createFolder") }}
         </div>
         <van-uploader
-          v-if="type === CloudDriveH5Enum.FromInput"
+          v-if="canConfirmTargetFolder && type === CloudDriveH5Enum.FromInput"
           class="btn btn-primary uploader-btn"
           :after-read="afterRead"
           :before-read="beforeRead"
@@ -64,8 +95,12 @@
         >
           {{ t("upload") }}
         </van-uploader>
-        <div v-else class="btn btn-primary" @click="handleSave">
-          {{ t("save") }}
+        <div
+          v-else-if="canConfirmTargetFolder"
+          class="btn btn-primary"
+          @click="handleSave"
+        >
+          {{ type === CloudDriveH5Enum.TransferSource ? t("Ok") : t("save") }}
         </div>
       </div>
     </template>
@@ -74,11 +109,24 @@
   <CreateFolderComponent
     :visible="showCreateFolder"
     :choose-folder="currentFolder"
+    :can-create="canCreateFolderButton"
     @update:visible="onToggleCreateFolder"
     @confirm="refreshCurrentFolder"
   />
 
+  <RepeatFileDialog
+    v-if="isPcClient"
+    :allFileList="allFileList"
+    :contentId="targetContentId"
+    :duplicateList="duplicateList"
+    :isTransfer="true"
+    :repeatVisible="showRepeatFile"
+    @saveSuccess="saveSuccess"
+    @update:repeatVisible="showRepeatFile = $event"
+  />
+
   <RepeatFilePopup
+    v-else
     :allFileList="allFileList"
     :contentId="targetContentId"
     :duplicateList="duplicateList"
@@ -110,19 +158,17 @@ import { useShareFolderSelect } from "@/hooks/useShareFolderSelect";
 import { CloudDriveH5Enum } from "@/enum/baseEnum";
 import type { ShareContentType } from "@/views/share/types";
 import type { TransFileInfo } from "@/types/type";
-import type { EncryptedFileType } from "@/views/h5/MainView/type";
-import type { Task } from "@/stores/modules/upload";
+import type { Task } from "@/hooks/upload/useUploadFlow";
 import { SvgIcon } from "@/components";
 import FileListSkeleton from "@/views/h5/Components/FileListSkeleton.vue";
 import CreateFolderComponent from "@/views/share/components/mobile/CreateFolderPopup.vue";
+import FolderSelectPc from "@/views/share/components/pc/FolderSelectPc.vue";
 import RepeatFilePopup from "@/views/h5/Layout/components/RepeatFilePopup.vue";
+import RepeatFileDialog from "@/views/pc/Layout/pop/RepeatFileDialog.vue";
+import { hasCreateSharePermissionApi } from "@/api/common";
 import { getTransferFileInfoApi, uploadFileStep2Api } from "@/api/fileService";
 import { shareContentByChatApi } from "@/api/share";
-import {
-  exportKey,
-  generateKey,
-  handleFileEncryption,
-} from "@/utils/upload/encrypt";
+import { exportKey, generateKey } from "@/utils/upload/encrypt";
 import { startUploadTask } from "@/utils/upload/uploadManager";
 import { useEnv } from "./share/hooks/useEnv";
 
@@ -144,8 +190,11 @@ const scrollContainer = ref<HTMLElement | null>(null);
 const showCreateFolder = ref(false);
 const showRepeatFile = ref(false);
 const duplicateList = ref<Record<number, string>[]>([]);
-const allFileList = ref<Task[]>([]);
+const allFileList = ref<TransferUploadFileInfo[]>([]);
 const shareId = ref<number | null>(null);
+const canCreateSharedRootFolder = ref(false);
+const pcSelectedFolderId = ref<number | null>(null);
+const pcSelectedFolderName = ref("");
 let controller = new AbortController();
 
 const type = computed(
@@ -167,7 +216,7 @@ const fileInfo = computed<TransFileInfo[]>(() => {
 const selectedFiles = computed<ShareContentType[]>(() =>
   fileInfo.value.map((item, index) => ({
     contentId: -(index + 1),
-    name: item.fileName,
+    name: item.fileName || item.name,
     isFolder: false,
     size: item.fileSize,
     updateAt: "",
@@ -183,7 +232,8 @@ const {
   currentFolder,
   showBreadcrumb,
   showBottomActions,
-  // selectedFilesCountText,
+  canCreateFolder,
+  canConfirmTargetFolder,
   getItemKey,
   resetRootState,
   getFolderList,
@@ -195,16 +245,46 @@ const {
   shareId,
 });
 
-// const titleText = computed(() => {
-//   const chatTypeMap: Record<number, string> = {
-//     0: t("saveToCloud"),
-//     1: t("uploadToCloud"),
-//     2: t("transferToCloud"),
-//   };
-//   return chatTypeMap[type.value] || t("saveToCloud");
-// });
+const canCreateFolderButton = computed(() => {
+  if (!canCreateFolder.value) return false;
+  if (!selectFolder.value) return false;
+  if (selectFolder.value.contentId !== 0 || selectFolder.value.isPersonal)
+    return true;
+  return canCreateSharedRootFolder.value;
+});
 
-const targetContentId = computed(() => selectFolder.value?.contentId ?? 0);
+const titleText = computed(() => {
+  const chatTypeMap: Record<number, string> = {
+    0: t("saveToCloud"),
+    1: t("uploadToCloud"),
+    2: t("transferToCloud"),
+  };
+  return chatTypeMap[type.value] || t("saveToCloud");
+});
+
+watch(
+  () => selectFolder.value,
+  async (value) => {
+    if (!value || value.contentId !== 0 || value.isPersonal) {
+      canCreateSharedRootFolder.value = false;
+      return;
+    }
+
+    try {
+      const res = await hasCreateSharePermissionApi();
+      canCreateSharedRootFolder.value = res.code === 1 ? !!res.data : false;
+    } catch (error) {
+      console.error("获取共享根目录创建权限失败:", error);
+      canCreateSharedRootFolder.value = false;
+    }
+  },
+  { immediate: true },
+);
+
+const targetContentId = computed(() => {
+  if (isPcClient.value) return pcSelectedFolderId.value ?? 0;
+  return selectFolder.value?.contentId ?? 0;
+});
 
 const isTransferFileMatch = (
   item: unknown,
@@ -219,6 +299,10 @@ const isValidUploaderItem = (
 };
 
 const closePage = () => {
+  if (isPcClient.value) {
+    console.log(JSON.stringify({ type: "6" }));
+    return;
+  }
   closeFileSelectBottomSheet();
 };
 
@@ -234,13 +318,16 @@ const ensureCanOperate = async () => {
 const getTransferFileInfos = (
   transferData: unknown[],
 ): TransferUploadFileInfo[] => {
-  return fileInfo.value.map((item) => {
+  return fileInfo.value.map((item, index) => {
     const transferFile = transferData.find(
       (value) => isTransferFileMatch(value) && value.fileUrl === item.fileUrl,
     );
 
     return {
-      name: item.fileName,
+      taskId:
+        globalThis.crypto?.randomUUID?.() ??
+        `transfer-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 10)}`,
+      name: item.fileName || item.name,
       fileId: isTransferFileMatch(transferFile)
         ? transferFile.fileId || ""
         : "",
@@ -279,8 +366,43 @@ const onToggleCreateFolder = (value: boolean) => {
   showCreateFolder.value = value;
 };
 
+const notifySaveResult = (isSuccess: boolean, msg = t("errorOccurred")) => {
+  if (isPcClient.value) {
+    console.log(
+      JSON.stringify({
+        type: "15",
+        data: {
+          isSuccess,
+          toastStr: isSuccess ? t("fileSaveSuccess") : msg,
+        },
+      }),
+    );
+    return;
+  }
+
+  handleFileSave(isSuccess, isSuccess ? t("fileSaveSuccess") : msg);
+};
+
+const notifyTransferSourceSuccess = (data: unknown) => {
+  if (isPcClient.value) {
+    console.log(JSON.stringify({ type: "26", data }));
+    return;
+  }
+
+  h5CallAppShare(JSON.stringify(data), 1);
+};
+
 const saveSuccess = () => {
-  handleFileSave(true, t("fileSaveSuccess"));
+  notifySaveResult(true, t("fileSaveSuccess"));
+};
+
+const notifyUploadSuccess = (data: unknown) => {
+  if (isPcClient.value) {
+    console.log(JSON.stringify({ type: "25", data }));
+    return;
+  }
+
+  h5CallAppShare(JSON.stringify(data), 1);
 };
 
 const getTransferFiles = async (contentId: number) => {
@@ -295,7 +417,7 @@ const getTransferFiles = async (contentId: number) => {
 
     const res = await getTransferFileInfoApi({ transferStorageFiles });
     if (res.code !== 1) {
-      handleFileSave(false, t("errorOccurred"));
+      notifySaveResult(false, t("errorOccurred"));
       return;
     }
 
@@ -318,10 +440,10 @@ const getTransferFiles = async (contentId: number) => {
           });
 
     if (uploadRes.code === 1) {
-      if (!Array.isArray(uploadRes.data)) {
-        h5CallAppShare(JSON.stringify(uploadRes.data), 1);
+      if (type.value === CloudDriveH5Enum.TransferSource) {
+        notifyTransferSourceSuccess(uploadRes.data);
       } else if (!uploadRes.data.length) {
-        handleFileSave(true, t("fileSaveSuccess"));
+        notifySaveResult(true, t("fileSaveSuccess"));
       } else {
         showRepeatFile.value = true;
         duplicateList.value = uploadRes.data.map((item) => ({
@@ -330,13 +452,13 @@ const getTransferFiles = async (contentId: number) => {
         allFileList.value = transferFileInfos;
       }
     } else if (uploadRes.code === 710) {
-      handleFileSave(false, t("ConcurrentConflict"));
+      notifySaveResult(false, t("ConcurrentConflict"));
     } else {
-      handleFileSave(false, t("errorOccurred"));
+      notifySaveResult(false, t("errorOccurred"));
     }
   } catch (error) {
     console.error("处理文件转存时出错:", error);
-    handleFileSave(false, t("errorOccurred"));
+    notifySaveResult(false, t("errorOccurred"));
   } finally {
     closeToast();
   }
@@ -350,6 +472,103 @@ const handleSave = async () => {
     forbidClick: true,
   });
   await getTransferFiles(targetContentId.value);
+};
+
+const handlePcSelectFolder = (
+  targetFolderId: number,
+  targetFolderName: string,
+) => {
+  pcSelectedFolderId.value = targetFolderId;
+  pcSelectedFolderName.value = targetFolderName;
+};
+
+const handlePcSaveSelect = async (
+  targetFolderName: string,
+  targetFolderId: number | null,
+) => {
+  handlePcSelectFolder(targetFolderId ?? 0, targetFolderName);
+
+  if (!(await ensureCanOperate())) return;
+
+  showLoadingToast({
+    duration: 0,
+    forbidClick: true,
+  });
+  await getTransferFiles(targetFolderId ?? 0);
+};
+
+const handlePcTransferSelect = async (targetFolderId: number | null) => {
+  handlePcSelectFolder(targetFolderId ?? 0, pcSelectedFolderName.value);
+
+  if (!(await ensureCanOperate())) return;
+
+  showLoadingToast({
+    duration: 0,
+    forbidClick: true,
+  });
+  await getTransferFiles(targetFolderId ?? 0);
+};
+
+const handlePcUploadSelect = async (
+  targetFolderId: number | null,
+  file: File,
+) => {
+  handlePcSelectFolder(targetFolderId ?? 0, pcSelectedFolderName.value);
+
+  if (!(await ensureCanOperate())) return;
+  if (checkFileSize(file)) {
+    showToast(t("fileSizeLimit"));
+    return;
+  }
+
+  showLoadingToast({
+    duration: 0,
+    forbidClick: true,
+    message: t("uploading"),
+  });
+
+  try {
+    const tasks = [
+      {
+        taskId:
+          globalThis.crypto?.randomUUID?.() ??
+          `upload-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+        sourceFile: file,
+      },
+    ];
+
+    await startUploadTask({
+      tasks,
+      contentId: targetFolderId ?? 0,
+      isByChat: true,
+      signal: controller.signal,
+      completeAllTasks(data: unknown) {
+        closeToast();
+        setTimeout(() => {
+          showToast({ type: "success", message: t("uploadSuccess") });
+          setTimeout(() => {
+            notifyUploadSuccess(data);
+          }, 800);
+        }, 50);
+      },
+      uploadError() {
+        showToast(t("errorOccurred"));
+      },
+    });
+  } catch (error: unknown) {
+    if (
+      error &&
+      typeof error === "object" &&
+      "message" in error &&
+      error.message === "__ENCRYPT_ABORTED__"
+    ) {
+      return;
+    }
+    console.error("PC 上传文件失败", error);
+    showToast(t("operationFailedRetry"));
+  } finally {
+    closeToast();
+  }
 };
 
 async function beforeRead(
@@ -388,33 +607,32 @@ async function afterRead(
   fileInfos: UploaderFileListItem | UploaderFileListItem[],
 ) {
   try {
-    let encryptedFile: EncryptedFileType[];
+    const files = Array.isArray(fileInfos)
+      ? fileInfos.filter(isValidUploaderItem).map((item) => item.file)
+      : isValidUploaderItem(fileInfos)
+        ? [fileInfos.file]
+        : [];
 
-    if (Array.isArray(fileInfos)) {
-      const files = fileInfos
-        .filter(isValidUploaderItem)
-        .map((item) => item.file);
-      encryptedFile = await handleFileEncryption(files, controller.signal);
-    } else if (isValidUploaderItem(fileInfos)) {
-      encryptedFile = await handleFileEncryption(
-        [fileInfos.file],
-        controller.signal,
-      );
-    } else {
-      encryptedFile = [];
+    const tasks = files.map((file, index) => ({
+      taskId:
+        globalThis.crypto?.randomUUID?.() ??
+        `upload-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 10)}`,
+      sourceFile: file,
+    }));
+
+    if (!tasks.length) {
+      closeToast();
+      return;
     }
 
-    startUploadTask({
-      isByChat: true,
-      files: encryptedFile.map((item) => item.file),
-      encryptKeys: encryptedFile.map((item) => ({
-        name: item.name,
-        aesKey: item.key,
-      })),
+    await startUploadTask({
+      tasks,
       contentId: targetContentId.value,
+      isByChat: true,
+      signal: controller.signal,
       completeAllTasks(data: unknown) {
         closeToast();
-        h5CallAppShare(JSON.stringify(data), 1);
+        notifyUploadSuccess(data);
       },
       uploadError() {
         showToast(t("errorOccurred"));
@@ -429,7 +647,7 @@ async function afterRead(
     ) {
       return;
     }
-    console.error("批量加密失败", error);
+    console.error("上传文件失败", error);
     showToast(t("operationFailedRetry"));
   } finally {
     closeToast();
@@ -466,6 +684,19 @@ onUnmounted(() => {
 
 .page-content {
   flex: 1;
+  overflow: hidden;
+}
+
+.file-select-page__pc {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pc-file-select-wrapper {
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -549,7 +780,8 @@ onUnmounted(() => {
   border-top: 1px solid #e0e4eb;
 
   .btn {
-    width: 50%;
+    flex: 1;
+    width: 0;
     text-align: center;
     font-size: 16px;
     border-radius: 8px;

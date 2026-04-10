@@ -243,7 +243,7 @@ const filteredPermissionList = computed(() => {
     if (b.permissionType !== a.permissionType) {
       return b.permissionType - a.permissionType;
     }
-    return (a.canEdit ? 1 : 0) - (b.canEdit ? 1 : 0);
+    return 0;
   });
 });
 
@@ -274,7 +274,6 @@ watchEffect(() => {
 const settingVisible = computed(() => useSetting().settingVisible);
 
 const isReadOnly = (item: PermissionItem) => {
-  if (!item.canEdit) return true
   return (
     item.permissionType === Permission.SuperAdmin ||
     item.permissionType === permissionType.value ||
@@ -474,10 +473,9 @@ const getFolderPermission = async (contentId: number) => {
 };
 
 const handleConfirm = async (selected: any[]) => {
-  const ranges = selected.filter(range => range.canEdit !== false)
   const res = await addFolderPermissionApi(
     props.contentId,
-    ranges,
+    selected,
     Permission.View,
   );
 

@@ -79,8 +79,12 @@ export function useShareFolderSelect({
 
   const showBreadcrumb = computed(() => breadcrumbList.value.length > 1);
   const isSharedRootFolder = computed(() => isSelectSharedRoot(selectFolder.value));
+  const canCreateFolder = computed(() => !!selectFolder.value);
+  const canConfirmTargetFolder = computed(
+    () => !!selectFolder.value && !isSharedRootFolder.value,
+  );
   const showBottomActions = computed(
-    () => breadcrumbList.value.length > 1 && !isSharedRootFolder.value,
+    () => canCreateFolder.value || canConfirmTargetFolder.value,
   );
   const selectedFilesCountText = computed(() => {
     const count = selectedFiles.value.length;
@@ -254,6 +258,8 @@ export function useShareFolderSelect({
     currentFolder,
     showBreadcrumb,
     showBottomActions,
+    canCreateFolder,
+    canConfirmTargetFolder,
     selectedFilesCountText,
     isSharedRootFolder,
     getItemKey,
