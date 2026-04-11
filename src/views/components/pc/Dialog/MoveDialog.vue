@@ -276,12 +276,12 @@ import { computed, nextTick, ref, watch } from "vue";
 import type { ElInput } from "element-plus";
 import { ElMessage } from "element-plus";
 import { EmptyState, SvgIcon } from "@/components";
-import { createFolderApi } from "@/api/fileService";
-import { _getMySpaceContentApi } from "@/api/mySpace";
-import { _getShareSpace } from "@/api/shareSpace";
+import { createFolderApi } from "@/api/fileService.ts";
+import { _getMySpaceContentApi } from "@/api/mySpace.ts";
+import { _getShareSpace } from "@/api/shareSpace.ts";
 import type { ContentType } from "@/types/type";
-import { ExplorerPageType } from "@/views/fileExplorer";
-import type { MovePayload } from "@/views/hooks/useFileActions";
+import { ExplorerPageType } from "@/views/fileExplorer.ts";
+import type { MovePayload } from "@/views/hooks/useFileActions.ts";
 import {
   checkNameValidity,
   formatFileSize,
@@ -289,7 +289,7 @@ import {
   getFileIcon,
   t,
 } from "@/utils";
-import { getContentId, getIsFolder, getName } from "@/utils/typeUtils";
+import { getContentId, getIsFolder, getName } from "@/utils/typeUtils.ts";
 
 type FolderRow = {
   contentId: number;

@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 import baseConfig from "@/config";
-import { getFromApp } from "@/utils/auth";
+import { getFromApp } from "@/utils/auth.ts";
 import { computed } from "vue";
 import { getQueryVariable, goAppPage } from "@/utils";
 

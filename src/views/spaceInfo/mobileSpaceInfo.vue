@@ -126,7 +126,7 @@ import { Permission } from "@/enum/permission";
 import { usePageUtils } from "@/stores";
 import { getFromApp, getMyUserInfo } from "@/utils/auth";
 import { setRem } from "@/utils/rem";
-import AvatarBox from "@/views/components/h5/spaceInfo/AvatarBox.vue";
+import AvatarBox from "@/views/components/h5/AvatarBox.vue";
 
 const { scaleRatio } = setRem();
 const router = useRouter();

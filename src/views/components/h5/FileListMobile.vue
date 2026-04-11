@@ -111,7 +111,7 @@
     />
 
     <!-- 分享文件操作弹窗 -->
-    <CopyLinkH5
+    <CopyLinkPopup
       :show="shareLinkVisible"
       :items="shareLinkItems"
       @update:show="handleShareLinkVisibleChange"
@@ -121,7 +121,7 @@
 
 <script lang="ts" setup>
 import { SvgIcon, EmptyState } from "@/components";
-import CopyLinkH5 from "./CopyLinkH5.vue";
+import CopyLinkPopup from "./pop/CopyLinkPopup.vue";
 import FileListSkeleton from "@/views/components/h5/FileListSkeleton.vue";
 import { computed, ref, watch } from "vue";
 import type { ContentType, TableColumn } from "@/types/type";

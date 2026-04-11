@@ -54,7 +54,7 @@ import { useI18n } from "vue-i18n";
 import { SvgIcon } from "@/components";
 import type { ContentType } from "@/types/type";
 import { checkNameValidity } from "@/utils";
-import { getIsFolder, getName } from "@/utils/typeUtils";
+import { getIsFolder, getName } from "@/utils/typeUtils.ts";
 
 const props = defineProps<{
   show: boolean;

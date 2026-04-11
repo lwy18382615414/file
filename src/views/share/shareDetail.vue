@@ -95,7 +95,7 @@ import {
 } from "@/utils";
 import dayjs from "dayjs";
 import type { MyShareItem } from "@/types/type";
-import { useFileActions } from "@/views/hooks/useFileActions";
+import { useFileActions } from "@/views/hooks/useFileActions.ts";
 
 const router = useRouter();
 const shareInfo = JSON.parse(history.state.shareInfo) as MyShareItem;

@@ -68,9 +68,13 @@ import { t, getFileIcon, checkFileSize } from "@/utils";
 import { type PropType, watch, ref } from "vue";
 import type { UploaderFileListItem } from "vant";
 import { handleFileEncryption } from "@/utils/upload/encrypt";
-import type { EncryptedFileType } from "@/views/components/h5/types";
 import { useUploadFlow } from "@/hooks/upload/useUploadFlow";
 
+type EncryptedFileType = {
+  file: File;
+  key: string;
+  name: string;
+};
 const props = defineProps({
   uploadVisible: {
     type: Boolean as PropType<boolean>,

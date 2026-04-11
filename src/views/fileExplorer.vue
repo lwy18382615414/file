@@ -15,13 +15,13 @@
         @header-blocking-change="childHeaderBlocked = $event"
       />
 
-      <CreateChooseDialog
+      <CreateChoosePopup
         :create-visible="createVisible"
         @update:create-visible="createVisible = $event"
         @on-action="handleCreateAction"
       />
 
-      <UploadDialog
+      <UploadPopup
         :upload-visible="uploadVisible"
         :content-id="context.currentFolderId"
         @update:upload-visible="uploadVisible = $event"
@@ -75,8 +75,8 @@ import { useExplorerMobileHeader } from "./hooks/useExplorerMobileHeader";
 import { ExplorerPageType } from "./fileExplorer";
 import FileListMobile from "./components/h5/FileListMobile.vue";
 import FileListPc from "./components/pc/FileListPc.vue";
-import CreateChooseDialog from "./components/h5/pop/CreateChooseDialog.vue";
-import UploadDialog from "./components/h5/pop/UploadDialog.vue";
+import CreateChoosePopup from "./components/h5/pop/CreateChoosePopup.vue";
+import UploadPopup from "./components/h5/pop/UploadPopup.vue";
 import RepeatFilePopup from "./components/h5/pop/RepeatFilePopup.vue";
 import NameEditPopup from "./components/h5/pop/NameEditPopup.vue";
 import { useFileData } from "./useFileData";

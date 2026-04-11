@@ -172,8 +172,8 @@
 </template>
 
 <script setup lang="ts">
-import { useFileBelong } from "@/hooks/useFileBelong";
-import { useShareSpace } from "@/hooks/useShareSpace";
+import { useFileBelong } from "@/hooks/useFileBelong.ts";
+import { useShareSpace } from "@/hooks/useShareSpace.ts";
 import type { OrgTreeCallbackParams } from "@/api/type";
 import { computed, ref, watch, watchEffect, nextTick } from "vue";
 import { debounce } from "lodash-es";
@@ -187,16 +187,16 @@ import {
   removeMemberApi,
   setMemberPermissionApi,
   transferSuperAdminApi,
-} from "@/api/common";
-import { Permission, getHighestPermission } from "@/enum/permission";
+} from "@/api/common.ts";
+import { Permission, getHighestPermission } from "@/enum/permission.ts";
 import { PopMenu, CustomSelectPerson, SvgIcon } from "@/components";
 import AddNotifyUserDialog from "./AddNotifyUserDialog.vue";
 import { ElMessage } from "element-plus";
-import { useDialog } from "@/hooks/useDialog";
+import { useDialog } from "@/hooks/useDialog.ts";
 import { getQueryVariable, hasPermission, t } from "@/utils";
 import AvatarBox from "@/components/customSelectPerson/AvatarBox.vue";
 import type { PermissionItem } from "@/types/type";
-import { useAdjustPosition } from "@/hooks/useAdjustPosition";
+import { useAdjustPosition } from "@/hooks/useAdjustPosition.ts";
 import PinyinMatch from "pinyin-match";
 
 interface MenuOption {

@@ -8,21 +8,21 @@
       </div>
       <div v-else class="new-placeholder"></div>
 
-      <NameEditDialogPc
+      <NameEditDialog
         :show="createDialogVisible"
         :item="null"
         mode="create"
         @update:show="handleCreateDialogVisibleChange"
         @confirm="handleConfirmCreate"
       />
-      <NameEditDialogPc
+      <NameEditDialog
         :show="renameDialogVisible"
         :item="renameItem"
         mode="rename"
         @update:show="handleRenameDialogVisibleChange"
         @confirm="handleConfirmRename"
       />
-      <CopyLinkPc
+      <CopyLinkDialog
         :show="shareLinkVisible"
         :items="shareLinkItems"
         @update:show="handleShareLinkVisibleChange"
@@ -150,10 +150,10 @@ import { useSidebarLastVisited } from "@/layout/hooks/useSidebarLastVisited";
 import { useSidebarResize } from "@/layout/hooks/useSidebarResize";
 import type { ContentType, SharedCloudContent } from "@/types/type";
 import { formatFileSize, hasPermission } from "@/utils";
-import CopyLinkPc from "@/views/components/pc/CopyLinkPc.vue";
-import NameEditDialogPc from "@/views/components/pc/NameEditDialogPc.vue";
+import CopyLinkDialog from "@/views/components/pc/Dialog/CopyLinkDialog.vue";
+import NameEditDialog from "@/views/components/pc/Dialog/NameEditDialog.vue";
 import PcFileContextMenu from "@/views/components/pc/PcFileContextMenu.vue";
-import SettingDialog from "@/views/components/pc/SettingDialog.vue";
+import SettingDialog from "@/views/components/pc/Dialog/SettingDialog.vue";
 import { useShareLink } from "@/views/hooks/useShareLink";
 import type {
   PcFileContextAction,

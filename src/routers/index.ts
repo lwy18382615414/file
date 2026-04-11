@@ -73,7 +73,7 @@ const router = createRouter({
     {
       path: "/share-detail",
       name: "ShareDetail",
-      component: () => import("@/views/shareDetail.vue"),
+      component: () => import("@/views/share/shareDetail.vue"),
     },
     {
       path: "/share-page",
@@ -98,27 +98,27 @@ const router = createRouter({
     {
       path: "/space-setting",
       name: "SpaceInfo",
-      component: () => import("@/views/mobileSpaceInfo.vue"),
+      component: () => import("@/views/spaceInfo/mobileSpaceInfo.vue"),
     },
     {
       path: "/space-staff",
       name: "SpaceStaff",
-      component: () => import("@/views/components/h5/spaceInfo/staff.vue"),
+      component: () => import("@/views/spaceInfo/staff.vue"),
     },
     {
       path: "/add-staff",
       name: "AddStaff",
-      component: () => import("@/views/components/h5/spaceInfo/addStaff.vue"),
+      component: () => import("@/views/spaceInfo/addStaff.vue"),
     },
     {
       path: "/space-notify",
       name: "SpaceNotify",
-      component: () => import("@/views/components/h5/spaceInfo/notify.vue"),
+      component: () => import("@/views/spaceInfo/notify.vue"),
     },
     {
       path: "/add-notify-user",
       name: "AddNotifyUser",
-      component: () => import("@/views/components/h5/spaceInfo/addNotifyUser.vue"),
+      component: () => import("@/views/spaceInfo/addNotifyUser.vue"),
     },
     {
       path: "/weeklyFileReport",

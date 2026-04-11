@@ -78,7 +78,7 @@
 import { computed, watch } from "vue";
 import type { ContentType } from "@/types/type";
 import { t } from "@/utils";
-import { useShareLinkSettings } from "../../hooks/useShareLink";
+import { useShareLinkSettings } from "../../../hooks/useShareLink.ts";
 
 const props = defineProps<{
   show: boolean;

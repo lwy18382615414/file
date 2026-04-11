@@ -27,12 +27,12 @@
       @update-date-range="handleDateRangeUpdate"
       @search="handleSearch"
     />
-    <CopyLinkPc
+    <CopyLinkDialog
       :show="shareLinkVisible"
       :items="shareLinkItems"
       @update:show="handleShareLinkVisibleChange"
     />
-    <MoveDialogPc
+    <MoveDialog
       :show="moveVisible"
       :payload="movePayload"
       :submitting="moveSubmitting"
@@ -46,14 +46,14 @@
       @update:repeat-visible="handleMoveRepeatVisibleChange"
       @handle-repeat-file="handleMoveRepeatFile"
     />
-    <NameEditDialogPc
+    <NameEditDialog
       :show="renameVisible"
       :item="renameItem"
       :mode="mode"
       @update:show="handleRenameVisibleChange"
       @confirm="confirmRename"
     />
-    <UploadDialogPc
+    <UploadDialog
       :show="uploadVisible"
       :title="uploadTitle"
       :content-id="uploadContentId"
@@ -168,18 +168,18 @@ import {
 import { useRenameDialog } from "../../hooks/useRenameDialog";
 import { useShareLink } from "../../hooks/useShareLink";
 import { useUploadDialog } from "../../hooks/useUploadDialog";
-import CopyLinkPc from "./CopyLinkPc.vue";
-import MoveDialogPc from "./MoveDialogPc.vue";
-import NameEditDialogPc from "./NameEditDialogPc.vue";
+import CopyLinkDialog from "./Dialog/CopyLinkDialog.vue";
+import MoveDialog from "./Dialog/MoveDialog.vue";
+import NameEditDialog from "./Dialog/NameEditDialog.vue";
 import RecycleRepeatFile from "@/views/pc/Layout/pop/RecycleRepeatFile.vue";
-import UploadDialogPc from "./UploadDialogPc.vue";
+import UploadDialog from "./Dialog/UploadDialog.vue";
 import UploadProgress from "./UploadProgress.vue";
 import PcDragUploadContainer from "./PcDragUploadContainer.vue";
 import PcExplorerGridView from "./PcExplorerGridView.vue";
 import PcExplorerHeader from "./PcExplorerHeader.vue";
 import PcExplorerListView from "./PcExplorerListView.vue";
 import PcFileContextMenu from "./PcFileContextMenu.vue";
-import SettingDialog from "./SettingDialog.vue";
+import SettingDialog from "./Dialog/SettingDialog.vue";
 
 const route = useRoute();
 const router = useRouter();

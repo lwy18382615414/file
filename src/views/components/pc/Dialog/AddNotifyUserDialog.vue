@@ -75,7 +75,7 @@ import { computed, ref, watch } from "vue";
 import { ElCheckbox } from "element-plus";
 import { SvgIcon } from "@/components";
 import AvatarBox from "@/components/customSelectPerson/AvatarBox.vue";
-import { getHighestPermission } from "@/enum/permission";
+import { getHighestPermission } from "@/enum/permission.ts";
 import type { PermissionItem } from "@/types/type";
 import { t } from "@/utils";
 

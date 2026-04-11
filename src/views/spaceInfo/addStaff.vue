@@ -41,7 +41,7 @@
         <div @click="goChoose(contactList[0].id)" class="go-choose-box">
           <img
             class="address-icon"
-            src="@/assets/images/address-book.png"
+            src="../../assets/images/address-book.png"
             alt=""
           />
           <div class="name">企业通讯录</div>
@@ -74,7 +74,7 @@
                 <ChooseStatusBox :is-choose="departIsChoose(item)" />
               </div>
               <div class="img">
-                <img src="@/assets/images/department-icon.svg" alt="" />
+                <img src="../../assets/images/department-icon.svg" alt="" />
               </div>
               <div class="name">{{ item.orgName }}</div>
               <SvgIcon name="ic_right_bold" />
@@ -85,7 +85,7 @@
           <div
             class="empty-box w-full h-full flex flex-col justify-center items-center"
           >
-            <img src="@/assets/images/empty_rectcle.png" />
+            <img src="../../assets/images/empty_rectcle.png" />
             <p class="mt-1.5 text-gray-400 text-sm">暂无数据</p>
           </div>
         </template>
@@ -104,15 +104,15 @@
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { t } from "@/utils";
-import AvatarBox from "@/views/components/h5/spaceInfo/AvatarBox.vue";
-import ChooseStatusBox from "@/views/components/h5/spaceInfo/ChooseStatusBox.vue";
-import ContactsBottom from "@/views/components/h5/spaceInfo/ContactsBottom.vue";
+import AvatarBox from "@/views/components/h5/AvatarBox.vue";
+import ChooseStatusBox from "@/views/components/h5/ChooseStatusBox.vue";
+import ContactsBottom from "@/views/components/h5/ContactsBottom.vue";
 import {
   addFolderPermissionApi,
   getFolderPermissionApi,
   getUserTreeApi,
-} from "@/api/common";
-import { Permission } from "@/enum/permission";
+} from "@/api/common.ts";
+import { Permission } from "@/enum/permission.ts";
 import { usePageUtils } from "@/stores";
 import {
   hideAppButton,
@@ -120,7 +120,7 @@ import {
   setAppTitle,
   showNavLeftCloseBtn,
 } from "@/utils";
-import { getMyUserInfo } from "@/utils/auth";
+import { getMyUserInfo } from "@/utils/auth.ts";
 
 const route = useRoute();
 const router = useRouter();

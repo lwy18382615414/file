@@ -122,7 +122,7 @@ import { computed, ref, watch } from "vue";
 import { ElMessage } from "element-plus";
 import type { ContentType } from "@/types/type";
 import { copyToClipboard, getFileIcon, t } from "@/utils";
-import { getIsFolder, getName } from "@/utils/typeUtils";
+import { getIsFolder, getName } from "@/utils/typeUtils.ts";
 import {
   buildShareCopyText,
   buildShareLink,
@@ -131,7 +131,7 @@ import {
   getValidityOptions,
   handleSharePermissionResult,
   isManualPasswordInvalid,
-} from "../../hooks/useShareLink";
+} from "../../../hooks/useShareLink.ts";
 
 const props = defineProps<{
   show: boolean;

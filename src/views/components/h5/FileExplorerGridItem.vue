@@ -1,5 +1,5 @@
 <template>
-  <template v-if="type === 'folder'">
+  <template v-if="type === FileTypeEnum.Folder">
     <div class="list-cell" :class="{ 'is-checked': canCheck }">
       <div class="cell">
         <span>
@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import SvgIcon from "@/components/SvgIcon.vue";
+import { SvgIcon, CustomCheckBox } from "@/components";
 import {
   countdown,
   formatFileSize,
@@ -73,7 +73,7 @@ import {
 import { computed, type PropType } from "vue";
 import type { ContentType } from "@/types/type";
 import { getName, getSize, getIsFolder, getExpireTime } from "@/utils/typeUtils";
-import { CustomCheckBox } from "@/components";
+import { FileTypeEnum } from "@/enum/baseEnum.ts";
 
 const emit = defineEmits<{
   (e: "menu", item: ContentType): void;
@@ -85,8 +85,8 @@ const props = defineProps({
     default: () => ({}),
   },
   type: {
-    type: String,
-    default: "file",
+    type: Number as PropType<FileTypeEnum>,
+    default: FileTypeEnum.File,
   },
   isLongPress: {
     type: Boolean,

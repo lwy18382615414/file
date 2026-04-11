@@ -59,11 +59,11 @@ import { useRoute, useRouter } from "vue-router";
 import {
   getFolderPermissionApi,
   removeFolderNotifyUsersApi,
-} from "@/api/common";
-import { Permission } from "@/enum/permission";
-import SvgIcon from "@/components/SvgIcon.vue";
+} from "@/api/common.ts";
+import { Permission } from "@/enum/permission.ts";
+import SvgIcon from "../../components/SvgIcon.vue";
 import { hasPermission, setAppTitle, t } from "@/utils";
-import AvatarBox from "@/views/components/h5/spaceInfo/AvatarBox.vue";
+import AvatarBox from "@/views/components/h5/AvatarBox.vue";
 import type { PermissionItem } from "@/types/type";
 import PinyinMatch from "pinyin-match";
 
