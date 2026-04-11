@@ -122,7 +122,7 @@
 <script lang="ts" setup>
 import { SvgIcon, EmptyState } from "@/components";
 import CopyLinkH5 from "./CopyLinkH5.vue";
-import FileListSkeleton from "@/views/h5/Components/FileListSkeleton.vue";
+import FileListSkeleton from "@/views/components/h5/FileListSkeleton.vue";
 import { computed, ref, watch } from "vue";
 import type { ContentType, TableColumn } from "@/types/type";
 import {
@@ -132,7 +132,7 @@ import {
 } from "../../fileExplorer";
 import { getContentId } from "@/utils/typeUtils";
 import { useI18n } from "vue-i18n";
-import FileMenuPopup from "./FileMenuPopup.vue";
+import FileMenuPopup from "./pop/FileMenuPopup.vue";
 import { useRoute, useRouter } from "vue-router";
 import type { MovePayload } from "../../hooks/useFileActions";
 import FileExplorerItem from "./FileExplorerItem.vue";

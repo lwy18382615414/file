@@ -120,7 +120,7 @@ import { t } from "@/utils";
 import { useShareFolderSelect } from "@/hooks/useShareFolderSelect";
 import type { ShareContentType } from "@/views/share/types";
 import SvgIcon from "@/components/SvgIcon.vue";
-import FileListSkeleton from "@/views/h5/Components/FileListSkeleton.vue";
+import FileListSkeleton from "@/views/components/h5/FileListSkeleton.vue";
 import CreateFolderComponent from "@/views/share/components/mobile/CreateFolderPopup.vue";
 
 const props = withDefaults(

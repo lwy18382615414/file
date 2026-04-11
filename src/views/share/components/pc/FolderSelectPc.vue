@@ -122,7 +122,7 @@ import { computed, nextTick, onMounted, ref, toRefs, watch } from "vue";
 import type { UploadRawFile } from "element-plus";
 import { ElMessage, ElMessageBox } from "element-plus";
 import SvgIcon from "@/components/SvgIcon.vue";
-import FileListSkeleton from "@/views/h5/Components/FileListSkeleton.vue";
+import FileListSkeleton from "@/views/components/h5/FileListSkeleton.vue";
 import {
   useShareFolderSelect,
   type SelectFolder,

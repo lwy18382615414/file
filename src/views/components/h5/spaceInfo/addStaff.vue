@@ -104,9 +104,9 @@
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { t } from "@/utils";
-import AvatarBox from "@/views/h5/SpaceInfo/component/AvatarBox.vue";
-import ChooseStatusBox from "@/views/h5/SpaceInfo/component/ChooseStatusBox.vue";
-import ContactsBottom from "./component/ContactsBottom.vue";
+import AvatarBox from "@/views/components/h5/spaceInfo/AvatarBox.vue";
+import ChooseStatusBox from "@/views/components/h5/spaceInfo/ChooseStatusBox.vue";
+import ContactsBottom from "@/views/components/h5/spaceInfo/ContactsBottom.vue";
 import {
   addFolderPermissionApi,
   getFolderPermissionApi,

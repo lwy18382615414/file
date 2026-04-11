@@ -6,7 +6,7 @@ import {
   getIsSetTop,
   getPermissionType,
 } from "@/utils/typeUtils";
-import type { FileMenuAction } from "../components/h5/FileMenuPopup.vue";
+import type { FileMenuAction } from "../components/h5/pop/FileMenuPopup.vue";
 import { useI18n } from "vue-i18n";
 import { ExplorerPageType, getExplorerContext } from "@/views/fileExplorer";
 import { useRoute, useRouter } from "vue-router";

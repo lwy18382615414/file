@@ -75,10 +75,10 @@ import { useExplorerMobileHeader } from "./hooks/useExplorerMobileHeader";
 import { ExplorerPageType } from "./fileExplorer";
 import FileListMobile from "./components/h5/FileListMobile.vue";
 import FileListPc from "./components/pc/FileListPc.vue";
-import CreateChooseDialog from "./h5/MainView/pop/CreateChooseDialog.vue";
-import UploadDialog from "./h5/MainView/pop/UploadDialog.vue";
-import RepeatFilePopup from "./h5/Layout/components/RepeatFilePopup.vue";
-import NameEditPopup from "./components/h5/NameEditPopup.vue";
+import CreateChooseDialog from "./components/h5/pop/CreateChooseDialog.vue";
+import UploadDialog from "./components/h5/pop/UploadDialog.vue";
+import RepeatFilePopup from "./components/h5/pop/RepeatFilePopup.vue";
+import NameEditPopup from "./components/h5/pop/NameEditPopup.vue";
 import { useFileData } from "./useFileData";
 
 const router = useRouter();

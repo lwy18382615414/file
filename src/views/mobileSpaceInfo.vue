@@ -93,10 +93,11 @@
       </van-button>
     </div>
   </div>
-  <Dialog
-    :renameVisible="rename.show"
-    :entryInfo="rename.entryInfo"
-    @update:renameVisible="rename.show = $event"
+  <NameEditPopup
+    :show="rename.show"
+    :item="rename.entryInfo"
+    mode="rename"
+    @update:show="rename.show = $event"
     @confirm="confirmRename"
   />
 </template>
@@ -111,7 +112,7 @@ import {
   getFolderPermissionApi,
   topSpaceApi,
 } from "@/api/common";
-import Dialog from "@/components/Dialog.vue";
+import NameEditPopup from "@/views/components/h5/pop/NameEditPopup.vue";
 import { deleteFileOrDirApi, renameFileApi } from "@/api/fileService";
 import {
   h5SelectPersonResult,
@@ -125,7 +126,7 @@ import { Permission } from "@/enum/permission";
 import { usePageUtils } from "@/stores";
 import { getFromApp, getMyUserInfo } from "@/utils/auth";
 import { setRem } from "@/utils/rem";
-import AvatarBox from "@/views/h5/SpaceInfo/component/AvatarBox.vue";
+import AvatarBox from "@/views/components/h5/spaceInfo/AvatarBox.vue";
 
 const { scaleRatio } = setRem();
 const router = useRouter();
@@ -329,9 +330,9 @@ const renameSpace = () => {
   }
 };
 
-const confirmRename = async (spaceName: string, contentId: number) => {
+const confirmRename = async (spaceName: string) => {
   if (!spaceName) return;
-  const res = await renameFileApi(contentId, spaceName);
+  const res = await renameFileApi(contentId.value, spaceName);
   if (res.code === 1) {
     showToast({
       type: "success",

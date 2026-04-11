@@ -41,34 +41,6 @@
       </div>
 
       <div class="folder-list show-bottom-btn">
-        <div v-if="draftCreateVisible" class="item-select item-select--draft">
-          <SvgIcon name="file-folder" size="24" />
-          <input
-            ref="draftInputRef"
-            v-model.trim="draftFolderName"
-            class="draft-input"
-            :placeholder="t('createFolder')"
-            maxlength="100"
-            @blur="handleDraftBlur"
-          />
-          <div class="draft-actions">
-            <button
-              type="button"
-              class="draft-btn draft-btn--confirm"
-              @mousedown.prevent="commitInlineCreate"
-            >
-              <SvgIcon name="ic_ok" size="18" color="#ffffff" />
-            </button>
-            <button
-              type="button"
-              class="draft-btn draft-btn--cancel"
-              @click="cancelInlineCreate"
-            >
-              <SvgIcon name="ic_cancel" size="18" color="#667085" />
-            </button>
-          </div>
-        </div>
-
         <template v-if="displayFolders.length">
           <button
             v-for="item in displayFolders"
@@ -104,20 +76,28 @@
       <button
         type="button"
         class="btn btn-secondary"
-        :disabled="loading || isSavingInline || submitting"
-        @click="handleStartInlineCreate"
+        :disabled="loading || isCreatingFolder || submitting"
+        @click="handleOpenCreatePopup"
       >
         {{ t("createFolder") }}
       </button>
       <button
         type="button"
         class="btn btn-primary"
-        :disabled="!canConfirmMoveTarget || submitting || isSavingInline"
+        :disabled="!canConfirmMoveTarget || submitting || isCreatingFolder"
         @click="handleConfirmMove"
       >
         {{ submitting ? `${t("moveHere")}...` : t("moveHere") }}
       </button>
     </div>
+
+    <NameEditPopup
+      :show="createPopupVisible"
+      :item="null"
+      mode="create"
+      @update:show="createPopupVisible = $event"
+      @confirm="handleCreateFolder"
+    />
 
     <div
       v-if="showRepeatPopup"
@@ -167,7 +147,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { createFolderApi, moveFileOrDirApi } from "@/api/fileService";
 import { _getMySpaceContentApi } from "@/api/mySpace";
@@ -179,6 +159,7 @@ import { getContentId, getIsFolder, getName } from "@/utils/typeUtils";
 import { ExplorerPageType } from "@/views/fileExplorer";
 import type { MovePayload } from "@/views/hooks/useFileActions";
 import { SvgIcon } from "@/components";
+import NameEditPopup from "@/views/components/h5/pop/NameEditPopup.vue";
 
 type FolderRow = {
   contentId: number;
@@ -197,13 +178,11 @@ type BreadcrumbItem = {
 
 const router = useRouter();
 const { toast } = useUiFeedback();
-const draftInputRef = ref<HTMLInputElement | null>(null);
 const keyword = ref("");
 const loading = ref(false);
 const submitting = ref(false);
-const isSavingInline = ref(false);
-const draftCreateVisible = ref(false);
-const draftFolderName = ref("");
+const isCreatingFolder = ref(false);
+const createPopupVisible = ref(false);
 const allRows = ref<FolderRow[]>([]);
 const breadcrumbList = ref<BreadcrumbItem[]>([]);
 const currentFolderId = ref(0);
@@ -366,7 +345,7 @@ const initializePage = async () => {
 };
 
 const handleFolderClick = async (item: FolderRow) => {
-  if (loading.value || isSavingInline.value) return;
+  if (loading.value || isCreatingFolder.value) return;
   if (isTargetLocked(item.contentId, item.path || "")) return;
 
   await setCurrentLocation(item.contentId, [
@@ -380,7 +359,7 @@ const handleFolderClick = async (item: FolderRow) => {
 };
 
 const handleBreadcrumbClick = async (index: number) => {
-  if (loading.value || isSavingInline.value) return;
+  if (loading.value || isCreatingFolder.value) return;
   if (index === breadcrumbList.value.length - 1) return;
 
   const nextBreadcrumbs = breadcrumbList.value.slice(0, index + 1);
@@ -388,28 +367,12 @@ const handleBreadcrumbClick = async (index: number) => {
   await setCurrentLocation(target.contentId, nextBreadcrumbs);
 };
 
-const handleStartInlineCreate = async () => {
-  if (draftCreateVisible.value || loading.value || submitting.value) return;
-  draftCreateVisible.value = true;
-  draftFolderName.value = "";
-  await nextTick();
-  draftInputRef.value?.focus();
+const handleOpenCreatePopup = () => {
+  if (createPopupVisible.value || loading.value || submitting.value) return;
+  createPopupVisible.value = true;
 };
 
-const cancelInlineCreate = () => {
-  if (isSavingInline.value) return;
-  draftCreateVisible.value = false;
-  draftFolderName.value = "";
-};
-
-const handleDraftBlur = (event: FocusEvent) => {
-  const nextTarget = event.relatedTarget as HTMLElement | null;
-  if (nextTarget?.closest(".draft-actions")) return;
-  cancelInlineCreate();
-};
-
-const commitInlineCreate = async () => {
-  const folderName = draftFolderName.value.trim();
+const handleCreateFolder = async (folderName: string) => {
   if (!folderName) {
     toast(t("folderNameRequired"), "error");
     return;
@@ -430,7 +393,7 @@ const commitInlineCreate = async () => {
     return;
   }
 
-  isSavingInline.value = true;
+  isCreatingFolder.value = true;
   try {
     const res = await createFolderApi({
       currentContentId: currentFolderId.value,
@@ -445,14 +408,13 @@ const commitInlineCreate = async () => {
       return;
     }
 
-    draftCreateVisible.value = false;
-    draftFolderName.value = "";
+    createPopupVisible.value = false;
     await reloadCurrentLocation();
     toast(t("createSuccess"), "success");
   } catch {
     toast(t("createFailed"), "error");
   } finally {
-    isSavingInline.value = false;
+    isCreatingFolder.value = false;
   }
 };
 
@@ -538,8 +500,7 @@ onMounted(async () => {
   gap: 8px;
 }
 
-.search-input,
-.draft-input {
+.search-input {
   flex: 1;
   min-width: 0;
   border: none;
@@ -642,29 +603,6 @@ onMounted(async () => {
 
 .folder-entry.locked {
   opacity: 0.45;
-}
-
-.item-select--draft {
-  gap: 10px;
-}
-
-.draft-actions {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.draft-btn {
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: 8px;
-  padding: 0;
-  background: #f2f4f7;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
 }
 
 .status-block {

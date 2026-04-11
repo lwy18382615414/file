@@ -35,7 +35,6 @@ declare module 'vue' {
     ElTree: typeof import('element-plus/es')['ElTree']
     ElUpload: typeof import('element-plus/es')['ElUpload']
     EmptyState: typeof import('./src/components/EmptyState.vue')['default']
-    GenerateLinkDialog: typeof import('./src/components/share/generateLinkDialog.vue')['default']
     IconWrapper: typeof import('./src/components/IconWrapper.vue')['default']
     InfiniteList: typeof import('./src/components/InfiniteList.vue')['default']
     PopMenu: typeof import('./src/components/PopMenu.vue')['default']

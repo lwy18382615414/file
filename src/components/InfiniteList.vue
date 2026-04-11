@@ -79,11 +79,11 @@
 <script lang="ts" setup>
 import { computed } from "vue";
 import type { ContentType } from "@/types/type";
-import SwipeCellItem from "@/views/h5/Components/ListItem/index.vue";
-import GridCell from "@/views/h5/Components/GridCell.vue";
+import SwipeCellItem from "@/views/components/h5/FileExplorerItem.vue";
+import GridCell from "@/views/components/h5/FileExplorerGridItem.vue";
 import { useShareFileStore, useViewMode } from "@/stores";
 import { useRoute } from "vue-router";
-import FileListSkeleton from "@/views/h5/Components/FileListSkeleton.vue";
+import FileListSkeleton from "@/views/components/h5/FileListSkeleton.vue";
 import { storeToRefs } from "pinia";
 import { getFromApp } from "@/utils/auth";
 import { getAssetUrl, hasPermission, t } from "@/utils";

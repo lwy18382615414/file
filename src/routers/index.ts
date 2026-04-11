@@ -103,22 +103,22 @@ const router = createRouter({
     {
       path: "/space-staff",
       name: "SpaceStaff",
-      component: () => import("@/views/h5/SpaceInfo/staff.vue"),
+      component: () => import("@/views/components/h5/spaceInfo/staff.vue"),
     },
     {
       path: "/add-staff",
       name: "AddStaff",
-      component: () => import("@/views/h5/SpaceInfo/addStaff.vue"),
+      component: () => import("@/views/components/h5/spaceInfo/addStaff.vue"),
     },
     {
       path: "/space-notify",
       name: "SpaceNotify",
-      component: () => import("@/views/h5/SpaceInfo/notify.vue"),
+      component: () => import("@/views/components/h5/spaceInfo/notify.vue"),
     },
     {
       path: "/add-notify-user",
       name: "AddNotifyUser",
-      component: () => import("@/views/h5/SpaceInfo/addNotifyUser.vue"),
+      component: () => import("@/views/components/h5/spaceInfo/addNotifyUser.vue"),
     },
     {
       path: "/weeklyFileReport",

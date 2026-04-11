@@ -21,7 +21,7 @@
 
 <script lang="ts" setup>
 import { t } from "@/utils";
-import AvatarBox from "@/views/h5/SpaceInfo/component/AvatarBox.vue";
+import AvatarBox from "@/views/components/h5/spaceInfo/AvatarBox.vue";
 import { computed, ref, watchEffect } from "vue";
 import { Permission } from "@/enum/permission.ts";
 import { getMyUserInfo } from "@/utils/auth.ts";

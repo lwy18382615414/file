@@ -94,7 +94,7 @@ import SvgIcon from "@/components/SvgIcon.vue";
 import { hasPermission } from "@/utils";
 import { usePageUtils } from "@/stores";
 import { t, setAppTitle } from "@/utils";
-import AvatarBox from "@/views/h5/SpaceInfo/component/AvatarBox.vue";
+import AvatarBox from "@/views/components/h5/spaceInfo/AvatarBox.vue";
 import type { PermissionItem } from "@/types/type";
 import PinyinMatch from "pinyin-match";
 
