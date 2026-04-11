@@ -5,6 +5,7 @@
       { 'is-grid': currentViewMode === LayoutMode.GRID },
     ]"
   >
+    <!-- 列表 -->
     <van-list
       ref="listRef"
       :loading="loading"
@@ -76,6 +77,8 @@
 
       <EmptyState v-else />
     </van-list>
+
+    <!-- 长按出现的操作项 -->
     <div v-if="isLongPressing" class="multiple-actions-toolbar">
       <template v-if="isMySharePage">
         <button class="toolbar-text-button" @click="handleMyShareAction">
@@ -83,7 +86,11 @@
         </button>
       </template>
       <template v-else>
-        <div v-for="item in actions" :key="item.icon" class="icon-wrapper">
+        <div
+          v-for="(item, index) in actions"
+          :key="`${item.icon}-${index}`"
+          class="icon-wrapper"
+        >
           <SvgIcon
             :name="'action-' + item.icon"
             :color="item.color"
@@ -92,6 +99,8 @@
         </div>
       </template>
     </div>
+
+    <!-- 底部文件操作项 -->
     <FileMenuPopup
       v-model:show="menuVisible"
       :item="activeItem"
@@ -99,6 +108,8 @@
       @select="handlePopupSelect"
       @close="handleMenuClose"
     />
+
+    <!-- 重命名弹窗 -->
     <NameEditPopup
       :show="renameVisible"
       :item="renameItem"
@@ -106,6 +117,8 @@
       @update:show="handleRenameVisibleChange"
       @confirm="confirmRename"
     />
+
+    <!-- 分享文件操作弹窗 -->
     <CopyLinkH5
       :show="shareLinkVisible"
       :items="shareLinkItems"
@@ -121,11 +134,16 @@ import CopyLinkH5 from "./CopyLinkH5.vue";
 import FileListSkeleton from "@/views/h5/Components/FileListSkeleton.vue";
 import { computed, ref, watch } from "vue";
 import type { ContentType, TableColumn } from "@/types/type";
-import { ExplorerPageType, type ExplorerQueryState } from "../../fileExplorer";
+import {
+  ExplorerPageType,
+  getExplorerContext,
+  type ExplorerQueryState,
+} from "../../fileExplorer";
 import { getContentId } from "@/utils/typeUtils";
 import { useI18n } from "vue-i18n";
 import FileMenuPopup from "./FileMenuPopup.vue";
 import { useRoute, useRouter } from "vue-router";
+import type { MovePayload } from "../../hooks/useFileActions";
 import FileExplorerItem from "./FileExplorerItem.vue";
 import FileExplorerGridItem from "./FileExplorerGridItem.vue";
 import { useLongPress } from "@/hooks/useLongPress";
@@ -155,6 +173,13 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+const moveEnabled = computed(() => {
+  const context = getExplorerContext(route);
+  return (
+    context.pageType === ExplorerPageType.MY ||
+    (context.pageType === ExplorerPageType.SHARED && !context.isRoot)
+  );
+});
 const { currentViewMode } = useLayoutMode();
 const { isLongPressing, clearLongPressState } = useLongPress();
 const {
@@ -169,6 +194,18 @@ const { toast } = useUiFeedback();
 const route = useRoute();
 const router = useRouter();
 const listRef = ref();
+
+const buildMovePayload = (items: ContentType[]): MovePayload => {
+  const context = getExplorerContext(route);
+
+  return {
+    items,
+    pageType: context.pageType,
+    currentFolderId: context.currentFolderId,
+    folderPath: [...context.folderPath],
+    folderNames: [...context.folderNames],
+  };
+};
 const isMySharePage = computed(
   () => props.pageType === ExplorerPageType.MY_SHARES,
 );
@@ -227,64 +264,77 @@ const openMovePage = async (items: ContentType[]) => {
   await router.push({
     path: "/move-file",
     state: {
-      movePayload: JSON.stringify({ items }),
+      movePayload: JSON.stringify(buildMovePayload(items)),
     },
   });
 };
 
-const actions = [
-  {
-    icon: "download",
-    color: "#252F43",
-    action: async () => {
-      const downloaded = await downloadMany(getSelectedItems());
-      if (!downloaded) return;
-      clear();
-      clearLongPressState();
+const actions = computed(() => {
+  const baseActions = [
+    {
+      icon: "download",
+      color: "#252F43",
+      action: async () => {
+        const downloaded = await downloadMany(getSelectedItems());
+        if (!downloaded) return;
+        clear();
+        clearLongPressState();
+      },
     },
-  },
-  {
-    icon: "delete",
-    color: "#f44336",
-    action: async () => {
-      const removed = await removeMany(getSelectedItems());
-      if (!removed) return;
-      clear();
-      clearLongPressState();
+    {
+      icon: "delete",
+      color: "#f44336",
+      action: async () => {
+        const removed = await removeMany(getSelectedItems());
+        if (!removed) return;
+        clear();
+        clearLongPressState();
+      },
     },
-  },
-  {
-    icon: "copy",
-    color: "#252f43",
-    action: async () => {
-      const selectedItems = getSelectedItems();
-      await openMovePage(selectedItems);
-      clear();
-      clearLongPressState();
+    {
+      icon: "copy",
+      color: "#252f43",
+      action: async () => {
+        if (!getSelectedItems().length) {
+          toast(t("selectFile"));
+          return;
+        }
+        openShareLink(getSelectedItems());
+      },
     },
-  },
-  {
-    icon: "copy",
-    color: "#252f43",
-    action: async () => {
-      if (!getSelectedItems().length) {
-        toast(t("selectFile"));
-        return;
-      }
-      openShareLink(getSelectedItems());
+    {
+      icon: "share",
+      color: "#252f43",
+      action: async () => {
+        const shared = await shareToFriendMany(getSelectedItems());
+        if (!shared) return;
+        clear();
+        clearLongPressState();
+      },
     },
-  },
-  {
-    icon: "share",
-    color: "#252f43",
-    action: async () => {
-      const shared = await shareToFriendMany(getSelectedItems());
-      if (!shared) return;
-      clear();
-      clearLongPressState();
+  ];
+
+  if (!moveEnabled.value) {
+    return baseActions;
+  }
+
+  return [
+    baseActions[0],
+    baseActions[1],
+    {
+      icon: "copy",
+      color: "#252f43",
+      action: async () => {
+        const selectedItems = getSelectedItems();
+        await openMovePage(selectedItems);
+        clear();
+        clearLongPressState();
+      },
     },
-  },
-];
+    baseActions[2],
+    baseActions[3],
+  ];
+});
 
 const handleMyShareAction = async () => {
   if (!selectedCount.value) {
@@ -345,7 +395,8 @@ const handlePopupSelect = async (key: string) => {
     return;
   }
   await handleMenuAction(key, item);
-};</script>
+};
+</script>
 
 <style lang="scss" scoped>
 .file-list-mobile {

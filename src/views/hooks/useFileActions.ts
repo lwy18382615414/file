@@ -42,7 +42,7 @@ export type MovePayload = {
   items: ContentType[];
   pageType: ExplorerPageType;
   currentFolderId: number;
-  folderPath: number[];
+  folderPath: string[];
   folderNames: string[];
 };
 

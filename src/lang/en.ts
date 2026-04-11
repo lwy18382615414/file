@@ -297,6 +297,7 @@ export default {
   move: "Move",
   moveTo: "Move to",
   moveHere: "Move here",
+  currentSelection: "Current selection: {name}",
   searchFolders: "Search folders",
   movePlaceholder: "Move dialog content will be added later",
   movePagePlaceholder: "Move page content will be added later",

@@ -1,9 +1,14 @@
 import { type Ref } from "vue";
 import type { ContentType } from "@/types/type";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useShareFileStore, useRouteStackStore } from "@/stores";
 import { getFromApp } from "@/utils/auth";
 import { checkIsShared, downloadFile, downloadInAppFile, t } from "@/utils";
+import {
+  ExplorerPageType,
+  getExplorerContext,
+} from "@/views/fileExplorer";
+import type { MovePayload } from "@/views/hooks/useFileActions";
 import { deleteFileOrDirApi, downloadFileApi } from "@/api/fileService";
 import { cancelTopSpaceApi, topSpaceApi } from "@/api/common";
 import { deleteFileApi, restoreFile } from "@/api/recycleBin";
@@ -21,8 +26,52 @@ export function useFileActions(options: {
   const { onRefresh, onRenameDialog, onDuplicateFile } = options;
 
   const router = useRouter();
+  const route = useRoute();
 
   const routeStackStore = useRouteStackStore()
+
+  const buildMovePayload = (items: ContentType[]): MovePayload => {
+    const context = getExplorerContext(route);
+
+    return {
+      items,
+      pageType: context.pageType,
+      currentFolderId: context.currentFolderId,
+      folderPath: [...context.folderPath],
+      folderNames: [...context.folderNames],
+    };
+  };
+
+  const resolveMovePayload = (items: ContentType[]): MovePayload => {
+    const payload = buildMovePayload(items);
+
+    if (
+      payload.pageType === ExplorerPageType.RECENT ||
+      payload.pageType === ExplorerPageType.SEARCH ||
+      payload.pageType === ExplorerPageType.MY_SHARES ||
+      payload.pageType === ExplorerPageType.RECYCLE
+    ) {
+      const stackNames = routeStackStore.stack.slice(1).map((item) => item.name);
+      const stackPath = routeStackStore.stack
+        .slice(1)
+        .map((item) => String(item.id))
+        .filter(Boolean);
+
+      return {
+        ...payload,
+        pageType: route.path.includes("/share")
+          ? ExplorerPageType.SHARED
+          : ExplorerPageType.MY,
+        currentFolderId: stackPath.length
+          ? Number(stackPath[stackPath.length - 1]) || 0
+          : 0,
+        folderPath: stackPath,
+        folderNames: stackNames,
+      };
+    }
+
+    return payload;
+  };
 
   const { setShareList, shareToNative, setShowLinkDialog } =
     useShareFileStore();
@@ -86,7 +135,7 @@ export function useFileActions(options: {
     await router.push({
       path: "/move-file",
       state: {
-        movePayload: JSON.stringify({ items: [item] }),
+        movePayload: JSON.stringify(resolveMovePayload([item])),
       },
     });
   };

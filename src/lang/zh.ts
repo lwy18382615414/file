@@ -286,6 +286,7 @@ export default {
   move: "移动",
   moveTo: "移动到",
   moveHere: "移动至此",
+  currentSelection: "当前选择：{name}",
   searchFolders: "搜索文件夹",
   movePlaceholder: "移动弹窗内容待实现",
   movePagePlaceholder: "移动页面内容待实现",
