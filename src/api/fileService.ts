@@ -93,6 +93,15 @@ export function renameFileApi(
   });
 }
 
+// 移动文件或目录
+export function moveFileOrDirApi(data: {
+  contentIds: number[];
+  targetContentId: number;
+  repeatFileOperateType: number;
+}): Promise<IResponse<Record<number, string>[]>> {
+  return request.post("/rest/api/clouddrivecontent/move", data);
+}
+
 // 分片上传文件 - 第一步 请求文件上传
 export function requestUploadFileApi(
   data: UploadFileChunkParams,

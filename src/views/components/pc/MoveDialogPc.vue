@@ -158,27 +158,28 @@
           </div>
 
           <div ref="scrollContainer" class="content-list">
-            <template v-if="filteredRows.length > 0">
+            <template v-if="displayRows.length > 0">
               <button
-                v-for="item in filteredRows"
-                :key="item.contentId"
+                v-for="item in displayRows"
+                :key="getRowKey(item)"
                 type="button"
                 class="content-row"
                 :class="{
-                  disabled:
-                    !item.isFolder ||
-                    isTargetLocked(item.contentId, item.path || ''),
+                  disabled: isRowDisabled(item),
                   selected: item.contentId === currentFolderId,
-                  locked: isTargetLocked(item.contentId, item.path || ''),
+                  locked:
+                    !isDraftCreateRow(item) &&
+                    isTargetLocked(item.contentId, item.path || ''),
+                  'content-row--draft': isDraftCreateRow(item),
                 }"
-                :disabled="
-                  !item.isFolder ||
-                  isTargetLocked(item.contentId, item.path || '')
-                "
+                :disabled="isRowDisabled(item)"
                 @click="handleContentRowClick(item)"
               >
                 <span
-                  v-if="isTargetLocked(item.contentId, item.path || '')"
+                  v-if="
+                    !isDraftCreateRow(item) &&
+                    isTargetLocked(item.contentId, item.path || '')
+                  "
                   class="lock-mask"
                 ></span>
                 <div class="col-name cell-name">
@@ -187,7 +188,36 @@
                     :size="20"
                     :color="item.isFolder ? '#327edc' : '#98a2b3'"
                   />
-                  <span>{{ item.contentName }}</span>
+                  <template v-if="isDraftCreateRow(item)">
+                    <div class="draft-name-wrapper">
+                      <el-input
+                        :ref="bindInlineCreateInputRef"
+                        v-model.trim="item.contentName"
+                        class="draft-name-input"
+                        maxlength="100"
+                        show-word-limit
+                        :placeholder="t('inputFolderName')"
+                        @click.stop
+                        @blur="handleDraftBlur"
+                        @keydown.esc.prevent="cancelInlineCreate"
+                      />
+                      <button
+                        type="button"
+                        class="draft-action-btn"
+                        @mousedown.prevent="commitInlineCreate"
+                      >
+                        <SvgIcon name="ic_ok" :size="24" color="#327EDC" />
+                      </button>
+                      <button
+                        type="button"
+                        class="draft-action-btn"
+                        @mousedown.prevent="cancelInlineCreate"
+                      >
+                        <SvgIcon name="ic_cancel" :size="24" color="#327EDC" />
+                      </button>
+                    </div>
+                  </template>
+                  <span v-else>{{ item.contentName }}</span>
                 </div>
                 <span class="col-time">{{ formatTime(item.operateTime) }}</span>
                 <span class="col-size">
@@ -211,7 +241,12 @@
 
       <template #footer>
         <div class="dialog-footer">
-          <button type="button" class="create-folder-btn">
+          <button
+            type="button"
+            class="create-folder-btn"
+            :disabled="isSavingInline"
+            @click="handleStartInlineCreate"
+          >
             <SvgIcon name="share-add" :size="16" color="#327edc" />
             <span>{{ t("createFolder") }}</span>
           </button>
@@ -223,8 +258,9 @@
             <el-button
               class="confirm-btn"
               type="primary"
-              :disabled="!canConfirmMoveTarget"
-              @click="handleClose"
+              :disabled="!canConfirmMoveTarget || props.submitting"
+              :loading="props.submitting"
+              @click="handleConfirmMove"
             >
               {{ t("moveHere") }}
             </el-button>
@@ -237,13 +273,22 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from "vue";
+import type { ElInput } from "element-plus";
+import { ElMessage } from "element-plus";
 import { EmptyState, SvgIcon } from "@/components";
+import { createFolderApi } from "@/api/fileService";
 import { _getMySpaceContentApi } from "@/api/mySpace";
 import { _getShareSpace } from "@/api/shareSpace";
 import type { ContentType } from "@/types/type";
 import { ExplorerPageType } from "@/views/fileExplorer";
 import type { MovePayload } from "@/views/hooks/useFileActions";
-import { formatFileSize, formatTime, getFileIcon, t } from "@/utils";
+import {
+  checkNameValidity,
+  formatFileSize,
+  formatTime,
+  getFileIcon,
+  t,
+} from "@/utils";
 import { getContentId, getIsFolder, getName } from "@/utils/typeUtils";
 
 type FolderRow = {
@@ -254,6 +299,13 @@ type FolderRow = {
   contentSize: number;
   path?: string;
 };
+
+type DraftFolderRow = FolderRow & {
+  __isDraftCreate: true;
+  __tempRowId: string;
+};
+
+type MoveDialogRow = FolderRow | DraftFolderRow;
 
 type BreadcrumbItem = {
   contentId: number;
@@ -270,10 +322,13 @@ type ForwardEntry = {
 const props = defineProps<{
   show: boolean;
   payload: MovePayload | null;
+  submitting?: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: "update:show", value: boolean): void;
+  (e: "refresh"): void;
+  (e: "confirm", payload: { targetContentId: number }): void;
 }>();
 
 const loading = ref(false);
@@ -290,11 +345,13 @@ const defaultBreadcrumbs = ref<BreadcrumbItem[]>([]);
 const defaultFolderId = ref(0);
 const defaultTreeId = ref(0);
 const initializedPageType = ref<ExplorerPageType | null>(null);
+const draftCreateRow = ref<DraftFolderRow | null>(null);
+const isSavingInline = ref(false);
+const inlineCreateInputRef = ref<InstanceType<typeof ElInput> | null>(null);
 
 const items = computed<ContentType[]>(() => props.payload?.items ?? []);
 const firstItem = computed(() => items.value[0] ?? null);
 const pageType = computed(() => props.payload?.pageType ?? ExplorerPageType.MY);
-const sourceFolderId = computed(() => props.payload?.currentFolderId ?? 0);
 const rootPath = "";
 const sourceFolderPaths = computed(() =>
   items.value
@@ -309,8 +366,6 @@ const spaceLabel = computed(() =>
   pageType.value === ExplorerPageType.SHARED ? t("shared") : t("myFiles"),
 );
 const isTargetLocked = (folderId: number, folderPath: string) => {
-  if (folderId === sourceFolderId.value) return true;
-
   return sourceFolderPaths.value.some((item) => {
     if (folderId === item.contentId) return true;
     return folderPath.startsWith(`${item.path}/`);
@@ -341,12 +396,23 @@ const titlePrimary = computed(() => {
   return item ? (getName(item) ?? "") : t("selectFile");
 });
 
-const filteredRows = computed(() => {
+const isDraftCreateRow = (item: MoveDialogRow): item is DraftFolderRow => {
+  return "__isDraftCreate" in item && item.__isDraftCreate === true;
+};
+
+const filteredRows = computed<FolderRow[]>(() => {
   if (!keyword.value) return allRows.value;
   return allRows.value.filter((item) =>
     item.contentName.includes(keyword.value),
   );
 });
+
+const displayRows = computed<MoveDialogRow[]>(() => {
+  return draftCreateRow.value
+    ? [draftCreateRow.value, ...filteredRows.value]
+    : filteredRows.value;
+});
+
 const hiddenBreadcrumbs = computed(() => {
   if (breadcrumbList.value.length <= 2) return [];
   return breadcrumbList.value.slice(1, -1);
@@ -356,6 +422,17 @@ const treeFolders = computed(() =>
 );
 const canGoBack = computed(() => breadcrumbList.value.length > 1);
 const canGoForward = computed(() => forwardStack.value.length > 0);
+
+const getRowKey = (item: MoveDialogRow) => {
+  return isDraftCreateRow(item) ? item.__tempRowId : item.contentId;
+};
+
+const isRowDisabled = (item: MoveDialogRow) => {
+  if (isDraftCreateRow(item)) return false;
+  return !item.isFolder || isTargetLocked(item.contentId, item.path || "");
+};
+
+const hasActiveDraft = () => !!draftCreateRow.value || isSavingInline.value;
 
 const requestFolders = async (folderId: number) => {
   const requestApi =
@@ -377,6 +454,41 @@ const requestFolders = async (folderId: number) => {
 
 const getRowFileIcon = (item: FolderRow) => getFileIcon(item.contentName);
 
+const bindInlineCreateInputRef = (
+  input: InstanceType<typeof ElInput> | null,
+) => {
+  inlineCreateInputRef.value = input;
+};
+
+const focusInlineCreateInput = async () => {
+  await nextTick();
+  inlineCreateInputRef.value?.focus?.();
+  inlineCreateInputRef.value?.select?.();
+};
+
+const clearInlineCreateState = () => {
+  draftCreateRow.value = null;
+  inlineCreateInputRef.value = null;
+  isSavingInline.value = false;
+};
+
+const buildDraftCreateRow = (): DraftFolderRow => ({
+  __isDraftCreate: true,
+  __tempRowId: `draft-create-${Date.now()}`,
+  contentId: 0,
+  contentName: "",
+  isFolder: true,
+  operateTime: new Date().toLocaleString(),
+  contentSize: 0,
+  path: breadcrumbList.value[breadcrumbList.value.length - 1]?.path ?? rootPath,
+});
+
+const hasDuplicateFolderName = (folderName: string) => {
+  return allRows.value.some(
+    (item) => item.contentName.trim() === folderName && item.isFolder,
+  );
+};
+
 const setCurrentLocation = async (
   folderId: number,
   breadcrumbs: BreadcrumbItem[],
@@ -387,16 +499,24 @@ const setCurrentLocation = async (
   activeTreeId.value = treeRootId;
 
   try {
-    allRows.value =
-      folderId === 0
-        ? rootFolders.value.map((item) => ({ ...item }))
-        : await requestFolders(folderId);
+    allRows.value = await requestFolders(folderId);
+    if (folderId === 0) {
+      rootFolders.value = allRows.value.filter((item) => item.isFolder);
+    }
     breadcrumbList.value = breadcrumbs;
     await nextTick();
     scrollContainer.value?.scrollTo({ top: 0 });
   } finally {
     loading.value = false;
   }
+};
+
+const reloadCurrentLocation = async () => {
+  await setCurrentLocation(
+    currentFolderId.value,
+    breadcrumbList.value.map((item) => ({ ...item })),
+    activeTreeId.value,
+  );
 };
 
 const resetForwardStack = () => {
@@ -420,6 +540,7 @@ const openLocation = async (
 
 const restoreDefaultState = async () => {
   keyword.value = "";
+  clearInlineCreateState();
   allRows.value = defaultRows.value.map((item) => ({ ...item }));
   breadcrumbList.value = defaultBreadcrumbs.value.map((item) => ({ ...item }));
   currentFolderId.value = defaultFolderId.value;
@@ -431,6 +552,7 @@ const restoreDefaultState = async () => {
 
 const initializeDialog = async () => {
   if (!props.payload) {
+    clearInlineCreateState();
     allRows.value = [];
     rootFolders.value = [];
     breadcrumbList.value = [];
@@ -513,6 +635,8 @@ const ensureDialogReady = async () => {
 };
 
 const resetDialogState = async () => {
+  clearInlineCreateState();
+
   if (!props.payload || initializedPageType.value !== pageType.value) {
     keyword.value = "";
     resetForwardStack();
@@ -520,6 +644,85 @@ const resetDialogState = async () => {
   }
 
   await restoreDefaultState();
+};
+
+const handleStartInlineCreate = async () => {
+  if (loading.value || isSavingInline.value) return;
+
+  if (draftCreateRow.value) {
+    await focusInlineCreateInput();
+    return;
+  }
+
+  keyword.value = "";
+  draftCreateRow.value = buildDraftCreateRow();
+  await focusInlineCreateInput();
+};
+
+const cancelInlineCreate = () => {
+  clearInlineCreateState();
+};
+
+const commitInlineCreate = async () => {
+  const row = draftCreateRow.value;
+  if (!row || isSavingInline.value) return;
+
+  const folderName = row.contentName.trim();
+  if (!folderName) {
+    ElMessage.error(t("folderNameRequired"));
+    await focusInlineCreateInput();
+    return;
+  }
+
+  const { isValid, message } = checkNameValidity(folderName);
+  if (!isValid) {
+    ElMessage.error(message);
+    await focusInlineCreateInput();
+    return;
+  }
+
+  if (hasDuplicateFolderName(folderName)) {
+    ElMessage.error(t("duplicateFolderName"));
+    await focusInlineCreateInput();
+    return;
+  }
+
+  isSavingInline.value = true;
+
+  try {
+    const res = await createFolderApi({
+      currentContentId: currentFolderId.value,
+      viewRanges: [],
+      editRanges: [],
+      folderName,
+      isPersonal: pageType.value !== ExplorerPageType.SHARED,
+    });
+
+    if (res.code !== 1) {
+      ElMessage.error(t("createFailed"));
+      await focusInlineCreateInput();
+      return;
+    }
+
+    clearInlineCreateState();
+    await reloadCurrentLocation();
+    emit("refresh");
+    ElMessage.success(t("createSuccess"));
+  } catch {
+    ElMessage.error(t("createFailed"));
+    isSavingInline.value = false;
+    await focusInlineCreateInput();
+  }
+};
+
+const handleDraftBlur = () => {
+  if (!draftCreateRow.value || isSavingInline.value) return;
+  cancelInlineCreate();
+};
+
+const handleConfirmMove = () => {
+  if (!canConfirmMoveTarget.value || props.submitting) return;
+  emit("confirm", { targetContentId: currentFolderId.value });
 };
 
 const handleClose = async () => {
@@ -537,6 +740,7 @@ watch(
 );
 
 const handleTreeSelect = async (item: FolderRow) => {
+  if (hasActiveDraft()) return;
   if (isTargetLocked(item.contentId, item.path || "")) return;
 
   await openLocation(
@@ -549,7 +753,8 @@ const handleTreeSelect = async (item: FolderRow) => {
   );
 };
 
-const handleContentRowClick = async (item: FolderRow) => {
+const handleContentRowClick = async (item: MoveDialogRow) => {
+  if (hasActiveDraft() || isDraftCreateRow(item)) return;
   if (!item.isFolder || isTargetLocked(item.contentId, item.path || "")) return;
 
   await openLocation(
@@ -563,6 +768,7 @@ const handleContentRowClick = async (item: FolderRow) => {
 };
 
 const handleBreadcrumbClick = async (index: number) => {
+  if (hasActiveDraft()) return;
   if (index === breadcrumbList.value.length - 1) return;
 
   const nextBreadcrumbs = breadcrumbList.value.slice(0, index + 1);
@@ -573,6 +779,7 @@ const handleBreadcrumbClick = async (index: number) => {
 };
 
 const handleBack = async () => {
+  if (hasActiveDraft()) return;
   if (!canGoBack.value) return;
 
   forwardStack.value.push(buildCurrentEntry());
@@ -584,6 +791,7 @@ const handleBack = async () => {
 };
 
 const handleForward = async () => {
+  if (hasActiveDraft()) return;
   const nextEntry = forwardStack.value.pop();
   if (!nextEntry) return;
 
@@ -883,10 +1091,6 @@ const handleForward = async () => {
   font-weight: 500;
 }
 
-.tree-list {
-  padding: 8px 0;
-}
-
 .tree-item {
   position: relative;
   width: 100%;
@@ -1023,6 +1227,44 @@ const handleForward = async () => {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 14px;
+}
+
+.content-row--draft {
+  cursor: default;
+}
+
+.draft-name-wrapper {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 16px;
+}
+
+.draft-name-input {
+  flex: 1;
+  min-width: 0;
+}
+
+:deep(.draft-name-input .el-input__wrapper) {
+  border-radius: 8px;
+}
+
+.draft-action-btn {
+  border: none;
+  background: transparent;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.create-folder-btn:disabled,
+.draft-action-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .skeleton-wrapper,

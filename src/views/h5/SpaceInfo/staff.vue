@@ -96,8 +96,7 @@ import { usePageUtils } from "@/stores";
 import { t, setAppTitle } from "@/utils";
 import AvatarBox from "@/views/h5/SpaceInfo/component/AvatarBox.vue";
 import type { PermissionItem } from "@/types/type";
-import PinyinMatch from 'pinyin-match';
-
+import PinyinMatch from "pinyin-match";
 
 const route = useRoute();
 
@@ -153,7 +152,6 @@ const contentId = computed(() => {
 const filteredPermissionList = computed(() => {
   let list = personList.value;
 
-
   return list.slice().sort((a, b) => {
     if (b.permissionType !== a.permissionType) {
       return b.permissionType - a.permissionType;
@@ -168,7 +166,7 @@ const isReadOnly = (item: PermissionItem) => {
     item.permissionType === userPermission.value ||
     !hasPermission(userPermission.value, Permission.Admin)
   );
-}
+};
 
 const handleSearch = (value: string) => {
   queryText.value = value;
@@ -350,11 +348,7 @@ watchEffect(() => {
   max-height: 100vh;
   overflow-y: auto;
 }
-:deep(.van-cell) {
-  &::after {
-    left: 68px;
-  }
-}
+
 .avatar-name {
   display: flex;
   align-items: center;

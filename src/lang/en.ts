@@ -274,6 +274,7 @@ export default {
   spaceUsage: "{ spaceSize } used",
   addMember: "Add members",
   addNotifyUsers: "Add notify users",
+  addableUsers: "Addable users ({count})",
   permission: "Permission",
   renameFolder: "Rename folder",
   invalidFolderName: "The folder name is not valid",

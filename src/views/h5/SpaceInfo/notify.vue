@@ -63,7 +63,6 @@ import {
 import { Permission } from "@/enum/permission";
 import SvgIcon from "@/components/SvgIcon.vue";
 import { hasPermission, setAppTitle, t } from "@/utils";
-import { usePageUtils } from "@/stores";
 import AvatarBox from "@/views/h5/SpaceInfo/component/AvatarBox.vue";
 import type { PermissionItem } from "@/types/type";
 import PinyinMatch from "pinyin-match";
@@ -154,7 +153,6 @@ const handleRemoveNotifyUser = async (item: PermissionItem) => {
           message: t("removeSuccess"),
           type: "success",
         });
-        usePageUtils().setAddMember(true);
         await getNotifyList();
       }
     })
@@ -166,10 +164,6 @@ const handleRemoveNotifyUser = async (item: PermissionItem) => {
 watchEffect(() => {
   getNotifyList();
   setAppTitle(t("notifyUsers"));
-
-  if (usePageUtils().isAddMember) {
-    usePageUtils().setAddMember(false);
-  }
 });
 </script>
 
@@ -195,12 +189,6 @@ watchEffect(() => {
 .notify-list-page {
   max-height: 100vh;
   overflow-y: auto;
-}
-
-:deep(.van-cell) {
-  &::after {
-    left: 68px;
-  }
 }
 
 .avatar-name {

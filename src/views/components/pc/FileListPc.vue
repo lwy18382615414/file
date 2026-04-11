@@ -35,7 +35,16 @@
     <MoveDialogPc
       :show="moveVisible"
       :payload="movePayload"
+      :submitting="moveSubmitting"
       @update:show="handleMoveVisibleChange"
+      @refresh="emit('refresh')"
+      @confirm="handleMoveConfirm"
+    />
+    <RecycleRepeatFile
+      :repeat-visible="moveRepeatVisible"
+      :repeat-list="moveRepeatList"
+      @update:repeat-visible="handleMoveRepeatVisibleChange"
+      @handle-repeat-file="handleMoveRepeatFile"
     />
     <NameEditDialogPc
       :show="renameVisible"
@@ -151,10 +160,7 @@ import {
 } from "@/utils/typeUtils";
 import { ExplorerPageType, type ExplorerQueryState } from "../../fileExplorer";
 import { parseQueryDate } from "@/utils";
-import {
-  useFileActions,
-  type MovePayload,
-} from "../../hooks/useFileActions";
+import { useFileActions, type MovePayload } from "../../hooks/useFileActions";
 import {
   usePcFileContextMenu,
   type PcFileContextActionKey,
@@ -165,6 +171,7 @@ import { useUploadDialog } from "../../hooks/useUploadDialog";
 import CopyLinkPc from "./CopyLinkPc.vue";
 import MoveDialogPc from "./MoveDialogPc.vue";
 import NameEditDialogPc from "./NameEditDialogPc.vue";
+import RecycleRepeatFile from "@/views/pc/Layout/pop/RecycleRepeatFile.vue";
 import UploadDialogPc from "./UploadDialogPc.vue";
 import UploadProgress from "./UploadProgress.vue";
 import PcDragUploadContainer from "./PcDragUploadContainer.vue";
@@ -265,16 +272,114 @@ const { shareLinkVisible, shareLinkItems, openShareLink, closeShareLink } =
 
 const moveVisible = ref(false);
 const movePayload = ref<MovePayload | null>(null);
+const moveSubmitting = ref(false);
+const moveRepeatVisible = ref(false);
+const moveRepeatList = ref<Record<string, string>[]>([]);
+const pendingMoveTargetId = ref<number | null>(null);
 
 const openMoveDialog = (payload: MovePayload) => {
   movePayload.value = payload;
   moveVisible.value = true;
 };
 
+const resetMoveRepeatState = () => {
+  moveRepeatVisible.value = false;
+  moveRepeatList.value = [];
+  pendingMoveTargetId.value = null;
+};
+
 const closeMoveDialog = () => {
   moveVisible.value = false;
   movePayload.value = null;
+  moveSubmitting.value = false;
+  resetMoveRepeatState();
 };
+
+const buildRepeatList = (data: Record<number, string>[]) => {
+  return data.map((item) => {
+    const [key, value] = Object.entries(item)[0] ?? ["", ""];
+    return {
+      id: key,
+      name: value,
+    };
+  });
+};
+
+const handleMoveRepeatVisibleChange = (value: boolean) => {
+  moveRepeatVisible.value = value;
+  if (!value) {
+    closeMoveDialog();
+  }
+};
+
+const hideMoveDialogKeepPayload = () => {
+  moveSubmitting.value = false;
+};
+
+const finalizeMoveSuccess = () => {
+  closeMoveDialog();
+  clear();
+};
+
+const handleMoveConfirm = async (payload: { targetContentId: number }) => {
+  const items = movePayload.value?.items ?? [];
+  if (!items.length || moveSubmitting.value) return;
+
+  pendingMoveTargetId.value = payload.targetContentId;
+  moveSubmitting.value = true;
+
+  try {
+    const moved = await confirmMoveMany(items, payload.targetContentId, 0);
+    if (!moved) return;
+    finalizeMoveSuccess();
+  } finally {
+    moveSubmitting.value = false;
+  }
+};
+
+const handleMoveRepeatFile = async (repeatFileOperateType: number) => {
+  const items = movePayload.value?.items ?? [];
+  const targetContentId = pendingMoveTargetId.value;
+
+  if (!items.length || targetContentId == null || moveSubmitting.value) return;
+
+  moveSubmitting.value = true;
+
+  try {
+    const moved = await confirmMoveMany(
+      items,
+      targetContentId,
+      repeatFileOperateType,
+    );
+    if (!moved) return;
+    finalizeMoveSuccess();
+  } finally {
+    moveSubmitting.value = false;
+  }
+};
+
+const handleMoveDuplicateFiles = (data: Record<number, string>[]) => {
+  moveRepeatList.value = buildRepeatList(data);
+  moveRepeatVisible.value = true;
+  hideMoveDialogKeepPayload();
+};
+
+watch(moveVisible, (value) => {
+  if (!value && !moveRepeatVisible.value) {
+    moveSubmitting.value = false;
+  }
+});
+
+watch(moveRepeatVisible, (value) => {
+  if (!value && !moveVisible.value) {
+    moveSubmitting.value = false;
+  }
+});
+
+watch(movePayload, (value) => {
+  if (value) return;
+  resetMoveRepeatState();
+});
 
 const {
   mode,
@@ -315,6 +420,7 @@ const {
   downloadMany,
   shareToFriendMany,
   moveMany,
+  confirmMoveMany,
   removeMany,
   deletePermanentlyMany,
   restoreMany,
@@ -325,6 +431,7 @@ const {
   onRenameDialog: openRename,
   onCopyLinkDialog: openShareLink,
   onMoveDialog: openMoveDialog,
+  onMoveDuplicateFiles: handleMoveDuplicateFiles,
   onAfterAction: clear,
   onDuplicateFiles: (data) => {
     toast(t("duplicateFilesWarning", { count: data.length }), "warning");
@@ -605,9 +712,7 @@ const handleShare = async () => {
 
 const handleMove = async () => {
   if (!canMove.value) return;
-  const moved = await moveMany(selectedItems.value);
-  if (!moved) return;
-  clear();
+  await moveMany(selectedItems.value);
 };
 
 const handleDelete = async () => {
@@ -657,6 +762,7 @@ const handleMoveVisibleChange = (value: boolean) => {
     return;
   }
 
+  if (moveSubmitting.value) return;
   closeMoveDialog();
 };
 

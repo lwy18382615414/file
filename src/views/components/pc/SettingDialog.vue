@@ -626,17 +626,12 @@ const addNotifyUser = () => {
 };
 
 const handleNotifyConfirm = async (userIds: number[]) => {
-  const existingUserIds = new Set(
-    notifyPermissionList.value.map((item) => item.userId).filter(Boolean),
-  );
-  const nextUserIds = userIds.filter((userId) => !existingUserIds.has(userId));
-
-  if (!nextUserIds.length) {
+  if (!userIds.length) {
     notifyDialogVisible.value = false;
     return;
   }
 
-  const res = await addFolderNotifyUsersApi(props.contentId, nextUserIds);
+  const res = await addFolderNotifyUsersApi(props.contentId, userIds);
   if (res.code === 1) {
     ElMessage.success(t("operationSuccess"));
     await getFolderPermission(props.contentId);

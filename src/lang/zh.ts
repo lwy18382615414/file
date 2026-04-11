@@ -263,6 +263,7 @@ export default {
   spaceUsage: "{ spaceSize }已用",
   addMember: "添加成员",
   addNotifyUsers: "新增推送人员",
+  addableUsers: "可添加人员（{count}）",
   permission: "人员权限",
   renameFolder: "重命名文件夹",
   invalidFolderName: "文件夹名不合法",

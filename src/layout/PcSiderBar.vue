@@ -2,11 +2,7 @@
   <div class="siderbar-container" :style="{ width: `${sidebarWidth}px` }">
     <main>
       <SearchBox />
-      <div
-        v-if="canCreateFolder === true"
-        class="new"
-        @click="handleCreateFolder"
-      >
+      <div v-if="canCreateFolder" class="new" @click="handleCreateFolder">
         <SvgIcon name="action-create" size="20" />
         <span> {{ t("createFolder") }}</span>
       </div>

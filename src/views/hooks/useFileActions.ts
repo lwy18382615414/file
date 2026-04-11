@@ -10,6 +10,7 @@ import {
   deleteFileOrDirApi,
   downloadFileApi,
   getDownloadFileIdApi,
+  moveFileOrDirApi,
 } from "@/api/fileService";
 import { deleteFileApi, restoreFile } from "@/api/recycleBin";
 import { cancelShareApi, generateShareLinkApi } from "@/api/share";
@@ -51,6 +52,7 @@ export function useFileActions(options?: {
   onCopyLinkDialog?: (items: ContentType[]) => void;
   onMoveDialog?: (payload: MovePayload) => void;
   onDuplicateFiles?: (data: Record<number, string>[]) => void;
+  onMoveDuplicateFiles?: (data: Record<number, string>[]) => void;
   onAfterAction?: () => void;
 }) {
   const route = useRoute();
@@ -63,6 +65,7 @@ export function useFileActions(options?: {
   const onCopyLinkDialog = options?.onCopyLinkDialog;
   const onMoveDialog = options?.onMoveDialog;
   const onDuplicateFiles = options?.onDuplicateFiles;
+  const onMoveDuplicateFiles = options?.onMoveDuplicateFiles;
   const onAfterAction = options?.onAfterAction;
 
   // 打开文件夹
@@ -242,6 +245,43 @@ export function useFileActions(options?: {
 
   const move = async (item: ContentType) => {
     await moveMany([item]);
+  };
+
+  const confirmMoveMany = async (
+    items: ContentType[],
+    targetContentId: number,
+    repeatFileOperateType = 0,
+  ) => {
+    if (!items.length) {
+      toast(t("selectFile"));
+      return false;
+    }
+
+    const contentIds = items
+      .map((item) => getContentId(item) ?? 0)
+      .filter((contentId) => contentId > 0);
+
+    if (!contentIds.length) return false;
+
+    const res = await moveFileOrDirApi({
+      contentIds,
+      targetContentId,
+      repeatFileOperateType,
+    });
+
+    if (res.code !== 1) {
+      toast(t("errorOccurred"), "error");
+      return false;
+    }
+
+    if (res.data?.length) {
+      onMoveDuplicateFiles?.(res.data);
+      return false;
+    }
+
+    toast(t("operationSuccess"), "success");
+    await onRefresh?.();
+    return true;
   };
 
   // 分享文件
@@ -586,6 +626,7 @@ export function useFileActions(options?: {
     rename,
     move,
     moveMany,
+    confirmMoveMany,
     shareToFriend,
     shareToFriendMany,
     cancelShareMany,
