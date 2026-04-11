@@ -14,8 +14,7 @@ import { mergeList } from "@/utils/apiCache";
 import { getIsFolder } from "@/utils/typeUtils";
 import { mapSortMethodToSortBy } from "@/hooks/sort/config";
 import { syncExplorerQuerySort } from "@/hooks/sort/state";
-import { hasPermission, setAppTitle } from "@/utils";
-import { useI18n } from "vue-i18n";
+import { hasPermission } from "@/utils";
 import { useExplorerSort } from "@/hooks/sort/useExplorerSort";
 import { getFolderPermissionApi } from "@/api/common";
 
@@ -31,7 +30,6 @@ const queryDefaults: ExplorerQueryState = {
 
 export function useFileData() {
   const route = useRoute();
-  const { t } = useI18n();
   const { isMobileApp } = useClientEnv();
 
   const { currentSort } = useExplorerSort();
@@ -258,7 +256,6 @@ export function useFileData() {
       currentFolderPermissionType.value = null;
 
       if (route.meta.type === ExplorerPageType.SEARCH) {
-        setAppTitle(t("searchResult"));
         query.keyword = String(route.query.key || "");
         query.page = 1;
         query.pageSize = Number(route.query.total) || query.pageSize;

@@ -95,7 +95,8 @@
             :name="'action-' + item.icon"
             :color="item.color"
             @click="item.action"
-          ></SvgIcon>
+          />
+          <span>{{ t(item.icon) }}</span>
         </div>
       </template>
     </div>
@@ -109,15 +110,6 @@
       @close="handleMenuClose"
     />
 
-    <!-- 重命名弹窗 -->
-    <NameEditPopup
-      :show="renameVisible"
-      :item="renameItem"
-      :mode="mode"
-      @update:show="handleRenameVisibleChange"
-      @confirm="confirmRename"
-    />
-
     <!-- 分享文件操作弹窗 -->
     <CopyLinkH5
       :show="shareLinkVisible"
@@ -129,7 +121,6 @@
 
 <script lang="ts" setup>
 import { SvgIcon, EmptyState } from "@/components";
-import NameEditPopup from "./NameEditPopup.vue";
 import CopyLinkH5 from "./CopyLinkH5.vue";
 import FileListSkeleton from "@/views/h5/Components/FileListSkeleton.vue";
 import { computed, ref, watch } from "vue";
@@ -152,7 +143,6 @@ import { useFileSelection } from "@/hooks/useFileSelection";
 import { useMobileFileSections } from "../../hooks/useMobileFileSections";
 import { useFileMenu } from "../../hooks/useFileMenu";
 import { useFileActions } from "../../hooks/useFileActions";
-import { useRenameDialog } from "../../hooks/useRenameDialog";
 import { useShareLink } from "../../hooks/useShareLink";
 import { LayoutMode } from "@/enum/baseEnum";
 import { useUiFeedback } from "@/hooks/useUiFeedback";
@@ -170,7 +160,16 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: "loadMore"): void;
   (e: "refresh"): void;
+  (e: "rename", item: ContentType): void;
+  (e: "headerBlockingChange", value: boolean): void;
 }>();
+
+const syncHeaderBlocking = () => {
+  emit(
+    "headerBlockingChange",
+    isLongPressing.value || menuVisible.value || shareLinkVisible.value,
+  );
+};
 
 const { t } = useI18n();
 const moveEnabled = computed(() => {
@@ -225,17 +224,6 @@ const { shareLinkVisible, shareLinkItems, openShareLink, closeShareLink } =
   useShareLink();
 
 const {
-  mode,
-  renameVisible,
-  renameItem,
-  openRename,
-  confirmRename,
-  closeRename,
-} = useRenameDialog({
-  onRefresh: () => emit("refresh"),
-});
-
-const {
   open,
   downloadMany,
   shareToFriendMany,
@@ -244,7 +232,7 @@ const {
   handleMenuAction,
 } = useFileActions({
   onRefresh: () => emit("refresh"),
-  onRenameDialog: openRename,
+  onRenameDialog: (item) => emit("rename", item),
   onCopyLinkDialog: openShareLink,
 });
 
@@ -322,7 +310,7 @@ const actions = computed(() => {
     baseActions[0],
     baseActions[1],
     {
-      icon: "copy",
+      icon: "move",
       color: "#252f43",
       action: async () => {
         const selectedItems = getSelectedItems();
@@ -349,15 +337,6 @@ const handleMyShareAction = async () => {
   clearLongPressState();
 };
 
-const handleRenameVisibleChange = (value: boolean) => {
-  if (value) {
-    renameVisible.value = true;
-    return;
-  }
-
-  closeRename();
-};
-
 watch(
   () => props.list,
   (list) => {
@@ -370,17 +349,26 @@ watch(
   () => route.fullPath,
   () => {
     menuVisible.value = false;
-    closeRename();
     closeShareLink();
     clear();
     clearLongPressState();
     const listEl = listRef.value?.$el;
     listEl?.scrollTo({ top: 0 });
+    syncHeaderBlocking();
   },
+);
+
+watch(
+  () => [isLongPressing.value, menuVisible.value, shareLinkVisible.value],
+  () => {
+    syncHeaderBlocking();
+  },
+  { immediate: true },
 );
 
 const handleSelectionChange = (item: ContentType) => {
   toggle(item);
+  syncHeaderBlocking();
 };
 
 const handleOpen = async (item: ContentType) => {
@@ -454,16 +442,23 @@ const handlePopupSelect = async (key: string) => {
   background-color: #ffffff;
   display: flex;
   align-items: center;
-  justify-content: space-around;
+  justify-content: space-between;
 
   .icon-wrapper {
     width: 50px;
     height: 50px;
-    background-color: #f3f4f6;
-    border-radius: 12px;
     display: flex;
+    flex-direction: column;
+    gap: 6px;
     align-items: center;
     justify-content: center;
+
+    color: #707681;
+    font-family: Inter;
+    font-size: 11px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 15px;
   }
 
   .toolbar-text-button {

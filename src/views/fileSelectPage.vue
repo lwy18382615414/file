@@ -311,7 +311,9 @@ const ensureCanOperate = async () => {
   if (canSelect) return true;
 
   showToast({ type: "fail", message: t("fileStopped") });
-  closePage();
+  setTimeout(() => {
+    closePage();
+  }, 1000);
   return false;
 };
 
@@ -654,7 +656,10 @@ async function afterRead(
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  const canOperate = await ensureCanOperate();
+  if (!canOperate) return;
+
   resetRootState();
 });
 

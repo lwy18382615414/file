@@ -31,7 +31,7 @@ export function useFileMenu() {
       { key: "rename", label: t("rename"), icon: "co_rename" },
       ...(context.pageType === ExplorerPageType.MY ||
       (context.pageType === ExplorerPageType.SHARED && !context.isRoot)
-        ? [{ key: "move", label: t("move"), icon: "co_open" }]
+        ? [{ key: "move", label: t("move"), icon: "co_move" }]
         : []),
       {
         key: isSetTop ? "unTop" : "top",

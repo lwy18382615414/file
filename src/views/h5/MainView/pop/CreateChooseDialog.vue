@@ -1,9 +1,5 @@
 <template>
-  <van-action-sheet
-    v-model:show="addShow"
-    :cancel-text="t('cancel')"
-    close-on-click-action
-  >
+  <van-action-sheet v-model:show="addShow" close-on-click-action>
     <div class="add-content">
       <div
         v-for="action in actions"
@@ -16,6 +12,9 @@
         </span>
         <div class="name">{{ action.name }}</div>
       </div>
+    </div>
+    <div class="cancel-btn-wrapper">
+      <div class="text">{{ t("cancel") }}</div>
     </div>
   </van-action-sheet>
 </template>
@@ -37,8 +36,12 @@ const emits = defineEmits(["update:createVisible", "onAction"]);
 const addShow = ref(props.createVisible);
 
 const actions = ref([
-  { name: t("createFolder"), icon: "ic_create-folder", action: "createFolder" },
-  { name: t("uploadFile"), icon: "ic_add-file", action: "createFile" },
+  {
+    name: t("createFolder"),
+    icon: "action-create_folder",
+    action: "createFolder",
+  },
+  { name: t("uploadFile"), icon: "action-upload_file", action: "createFile" },
 ]);
 
 watch(
@@ -72,15 +75,27 @@ function handleAction(actionType: string) {
     align-items: center;
     .icon-wrapper {
       display: inline-block;
-      padding: 14px;
-      background: #ebeff6ff;
-      border-radius: 5px;
-      margin-bottom: 10px;
+      padding: 11px;
+      border-radius: 12px;
+      background: #5665bb;
+      margin-bottom: 8px;
     }
 
     .name {
       color: #2d2d2d;
     }
+  }
+}
+
+.cancel-btn-wrapper {
+  width: 100%;
+  padding: 16px;
+
+  .text {
+    padding: 12px 16px;
+    text-align: center;
+    border-radius: 12px;
+    border: 1px solid #d1d5db;
   }
 }
 </style>

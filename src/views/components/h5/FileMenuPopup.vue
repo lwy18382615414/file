@@ -113,7 +113,7 @@ const selectAction = (key: string) => {
   align-items: center;
   gap: 8px;
   padding: 16px;
-  border-bottom: 1px solid #f7f8fa;
+  border-bottom: 1px solid #e5e7eb;
 
   .close-btn {
     position: absolute;
@@ -150,28 +150,28 @@ const selectAction = (key: string) => {
 }
 
 .actions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  row-gap: 16px;
   padding: 16px;
-  gap: 12px;
   font-size: calc(var(--base--font--size--14) * var(--scale-factor));
 
   .action-item {
+    width: 68px;
+    min-height: 68px;
+    justify-self: center;
     font-size: 12px;
-    width: 76px;
-    height: 72px;
-    position: relative;
-    background-color: #ebeff6ff;
     border-radius: 12px;
-    white-space: nowrap;
+    border: 1px solid #eaedf2;
+    background: #f3f4f6;
 
     .item {
-      width: 90%;
-      white-space: wrap;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 68px;
+      padding: 8px 6px;
 
       .icon {
         display: flex;
@@ -182,8 +182,11 @@ const selectAction = (key: string) => {
     }
 
     .action {
-      text-align: center;
       color: #2d2d2d;
+      line-height: 16px;
+      text-align: center;
+      white-space: normal;
+      word-break: break-word;
     }
   }
 }
