@@ -9,13 +9,10 @@
 import { computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { getParentFolderContentIdApi } from "@/api/common";
-import { useFileBelong } from "@/hooks/useFileBelong";
 import { buildFolderRoute, ExplorerPageType } from "@/views/fileExplorer";
 
 const route = useRoute();
 const router = useRouter();
-
-const { fileBelong } = useFileBelong();
 
 const contentId = computed(() => {
   return route.query.contentId;

@@ -8,9 +8,11 @@ import { useClientEnv } from "./hooks/useClientEnv";
 import config from "./hooks/config";
 import i18n from "@/lang";
 import { getLanguageCode } from "./utils/auth";
+import useMyUserInfo from "./hooks/useMyUserInfo";
 const { isMobileApp } = useClientEnv();
 
 const { ensureConfigReady } = config();
+const { getMyInfoByApi } = useMyUserInfo();
 
 const curCode = ref("zh-hans");
 
@@ -27,6 +29,7 @@ window.setLanguageCode = (code: "zh" | "en") => {
 
 onMounted(() => {
   ensureConfigReady();
+  getMyInfoByApi();
 });
 </script>
 

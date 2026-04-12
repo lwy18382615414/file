@@ -1,4 +1,4 @@
-import { getParentFolderContentIdApi } from "@/api/common";
+import { getParentFolderContentIdApi } from "@/api/common.ts";
 import { ref } from "vue";
 import { t } from "@/utils";
 

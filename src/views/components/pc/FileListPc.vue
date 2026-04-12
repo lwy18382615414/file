@@ -85,6 +85,7 @@
       :show="settingVisible"
       :content-id="getExplorerContext(route).currentFolderId"
       @update:show="settingVisible = $event"
+      @update:permission-count="handlePermissionCountUpdate"
     />
     <PcDragUploadContainer
       class="file-list-wrapper"
@@ -161,17 +162,14 @@ import {
 import { ExplorerPageType, type ExplorerQueryState } from "../../fileExplorer";
 import { parseQueryDate } from "@/utils";
 import { useFileActions, type MovePayload } from "../../hooks/useFileActions";
-import {
-  usePcFileContextMenu,
-  type PcFileContextActionKey,
-} from "../../hooks/usePcFileContextMenu";
+import { usePcFileContextMenu } from "../../hooks/usePcFileContextMenu";
 import { useRenameDialog } from "../../hooks/useRenameDialog";
 import { useShareLink } from "../../hooks/useShareLink";
 import { useUploadDialog } from "../../hooks/useUploadDialog";
 import CopyLinkDialog from "./Dialog/CopyLinkDialog.vue";
 import MoveDialog from "./Dialog/MoveDialog.vue";
 import NameEditDialog from "./Dialog/NameEditDialog.vue";
-import RecycleRepeatFile from "@/views/pc/Layout/pop/RecycleRepeatFile.vue";
+import RecycleRepeatFile from "./Dialog/RecycleRepeatFile.vue";
 import UploadDialog from "./Dialog/UploadDialog.vue";
 import UploadProgress from "./UploadProgress.vue";
 import PcDragUploadContainer from "./PcDragUploadContainer.vue";
@@ -195,6 +193,7 @@ const emit = defineEmits<{
     e: "search",
     payload: Pick<ExplorerQueryState, "keyword" | "startDate" | "endDate">,
   ): void;
+  (e: "update:permissionCount", value: number): void;
 }>();
 
 const props = defineProps<{
@@ -813,7 +812,7 @@ const handleRowDbClick = async (payload: { row: ContentType }) => {
   clear();
 };
 
-const handleContextMenuSelect = async (key: PcFileContextActionKey) => {
+const handleContextMenuSelect = async (key: string) => {
   const items = [...contextItems.value];
   const row = anchorRow.value;
   closeContextMenu();
@@ -847,6 +846,10 @@ function handleSortChange(payload: {
 
 function handleOpenSharedSpaceSetting() {
   settingVisible.value = true;
+}
+
+function handlePermissionCountUpdate(value: number) {
+  emit("update:permissionCount", value);
 }
 
 function handleLoadMore() {

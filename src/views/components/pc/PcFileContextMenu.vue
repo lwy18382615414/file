@@ -20,7 +20,8 @@
           :class="{ 'is-danger': action.danger }"
           @click="emit('select', action.key)"
         >
-          {{ action.label }}
+          <span class="pc-context-menu__title">{{ action.label }}</span>
+          <span v-if="action.desc" class="pc-context-menu__desc">{{ action.desc }}</span>
         </button>
       </div>
     </div>
@@ -28,10 +29,12 @@
 </template>
 
 <script setup lang="ts">
-import type {
-  PcFileContextAction,
-  PcFileContextActionKey,
-} from "../../hooks/usePcFileContextMenu";
+export interface PcFileContextActionLike {
+  key: string;
+  label: string;
+  desc?: string;
+  danger?: boolean;
+}
 
 defineProps<{
   show: boolean;
@@ -39,12 +42,12 @@ defineProps<{
     x: number;
     y: number;
   };
-  actions: PcFileContextAction[];
+  actions: PcFileContextActionLike[];
 }>();
 
 const emit = defineEmits<{
   (e: "close"): void;
-  (e: "select", key: PcFileContextActionKey): void;
+  (e: "select", key: string): void;
 }>();
 </script>
 
@@ -72,16 +75,17 @@ const emit = defineEmits<{
 }
 
 .pc-context-menu__item {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   width: 100%;
-  height: 36px;
-  padding: 0 16px;
+  padding: 8px 16px;
   border: 0;
   background: transparent;
   text-align: left;
-  font-size: 14px;
   color: #303133;
   cursor: pointer;
+  gap: 2px;
 
   &:hover {
     background: #f5f7fa;
@@ -90,5 +94,20 @@ const emit = defineEmits<{
   &.is-danger {
     color: #f56c6c;
   }
+}
+
+.pc-context-menu__title {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.pc-context-menu__desc {
+  font-size: 12px;
+  line-height: 18px;
+  color: #909399;
+}
+
+.pc-context-menu__item.is-danger .pc-context-menu__desc {
+  color: #f89898;
 }
 </style>

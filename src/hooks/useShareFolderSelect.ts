@@ -4,7 +4,7 @@ import { _getMySpaceContentApi } from "@/api/mySpace";
 import { saveToCloudDriveApi } from "@/api/share";
 import { _getShareSpace } from "@/api/shareSpace";
 import { Permission } from "@/enum/permission";
-import { usePermissionGuard } from "@/hooks/composable/usePermissionGuard";
+import { usePermissionGuard } from "@/hooks/usePermissionGuard.ts";
 import { hasPermission, t } from "@/utils";
 import type { ShareContentType } from "@/views/share/types";
 

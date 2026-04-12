@@ -1,5 +1,5 @@
 <template>
-  <div v-if="currentSource === 'PC'" class="container-pc">
+  <div v-if="isPcClient" class="container-pc">
     <div class="pc-content">
       <div class="header">{{ $t("weeklyReport.fileReportTitle") }}</div>
       <div class="summary-box">
@@ -21,11 +21,9 @@
 
       <div class="table-area">
         <common-table
-          ref="commonTableRef"
           height="calc(100vh - 200px)"
           :tableColumns="tableColumns"
           :tableData="tableData"
-          @scroll="handleScroll"
         >
           <template #operateTime="{ row }">
             <span>{{ formatTime(row.operateTime) }}</span>
@@ -36,9 +34,24 @@
           <template #contentName="{ row }">
             <div class="file-wrapper">
               <div class="file-icon">
-                <SvgIcon :name="row.isFolder ? 'icon_folder' : getFileIcon(row.contentName)" size="28"/>
+                <SvgIcon
+                  :name="
+                    row.isFolder ? 'file-folder' : getFileIcon(row.contentName)
+                  "
+                  size="28"
+                />
               </div>
               <div class="file-title">{{ row.contentName }}</div>
+            </div>
+          </template>
+          <template #append>
+            <div ref="sentinelRef" class="scroll-sentinel">
+              <span v-if="loading">正在加载中...</span>
+              <span
+                v-else-if="!noMore"
+                class="scroll-sentinel__placeholder"
+              ></span>
+              <span v-else class="no-more">没有更多文件了</span>
             </div>
           </template>
         </common-table>
@@ -49,7 +62,7 @@
       {{ $t("weeklyReport.footer") }}
     </div>
   </div>
-  <div v-else-if="currentSource === 'APP'" class="container-mobile">
+  <div v-else-if="isMobileApp" class="container-mobile">
     <div class="mobile-header-date">{{ startTime }} - {{ endTime }}</div>
 
     <div class="stats-wrapper">
@@ -71,20 +84,20 @@
       </div>
     </div>
 
-
     <div
       class="mobile-list"
       v-infinite-scroll="loadMore"
       :infinite-scroll-disabled="disabled"
       :infinite-scroll-distance="20"
     >
-      <div
-        v-for="(item, index) in tableData"
-        :key="index"
-        class="list-card"
-      >
+      <div v-for="(item, index) in tableData" :key="index" class="list-card">
         <div class="card-icon">
-          <SvgIcon :name="item.isFolder ? 'icon_folder' : getFileIcon(item.contentName)" :size="40"></SvgIcon>
+          <SvgIcon
+            :name="
+              item.isFolder ? 'icon_folder' : getFileIcon(item.contentName)
+            "
+            :size="40"
+          ></SvgIcon>
         </div>
 
         <div class="card-content">
@@ -111,45 +124,47 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, ref } from "vue";
-import { getFromApp, getFromPc } from "@/utils/auth";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { CommonTable } from "@/components";
-import { getAssetUrl, getFileIcon, parseQueryDate, setAppTitle, t } from "@/utils";
+import {
+  getAssetUrl,
+  getFileIcon,
+  parseQueryDate,
+  setAppTitle,
+  t,
+} from "@/utils";
 import { OperationTypeKeyMap } from "@/utils/contance";
-import { useTableDimensions } from "@/hooks/useTableDimensions";
 import { useRoute } from "vue-router";
 import type { WeeklyReportType } from "@/api/type";
 import { getWeeklyReportApi } from "@/api/common";
 import dayjs from "dayjs";
+import { useClientEnv } from "@/hooks/useClientEnv";
 
-const route = useRoute()
+const route = useRoute();
 
 const startTime = parseQueryDate(route.query.startDate);
 const endTime = parseQueryDate(route.query.endDate);
-const createCount = route.query.createCount
-const uploadCount = route.query.uploadCount
-const deleteCount = route.query.deleteCount
+const createCount = route.query.createCount;
+const uploadCount = route.query.uploadCount;
+const deleteCount = route.query.deleteCount;
 
 const isError = ref(false);
 const loading = ref(false);
 const total = ref(0);
 const currentPage = ref(1);
 const tableData = ref<WeeklyReportType[]>([]);
-const commonTableRef = ref();
+const sentinelRef = ref<HTMLElement | null>(null);
 const noMore = ref(false);
+let observer: IntersectionObserver | null = null;
 
-const currentSource = computed(() => {
-  if (getFromPc() === "1") return "PC";
-  if (getFromApp() === "1") return "APP";
-  return null;
-});
+const { isMobileApp, isPcClient } = useClientEnv();
 
 const tableColumns = computed(() => [
   {
     label: t("weeklyReport.time"),
     prop: "operateTime",
     width: "180",
-    slots: "operateTime"
+    slots: "operateTime",
   },
   {
     label: t("weeklyReport.operator"),
@@ -160,7 +175,7 @@ const tableColumns = computed(() => [
     label: t("weeklyReport.type"),
     prop: "operationType",
     width: "120",
-    slots: "operationType"
+    slots: "operationType",
   },
   {
     label: t("weeklyReport.fileName"),
@@ -168,7 +183,7 @@ const tableColumns = computed(() => [
     minWidth: "250",
     slots: "contentName",
     showOverflowTooltip: true,
-  }
+  },
 ]);
 
 const disabled = computed(() => loading.value || noMore.value || isError.value);
@@ -179,69 +194,99 @@ const fetchData = async (page: number) => {
       PageIndex: page,
       PageSize: 100,
       StartTime: startTime,
-      EndTime: endTime
-    })
+      EndTime: endTime,
+    });
 
     if (res.code !== 1) {
       isError.value = true;
       return {
         list: [],
-        total: 0
-      }
+        total: 0,
+      };
     }
 
     return {
       list: res.data.data,
-      total: res.data.count
-    }
+      total: res.data.count,
+    };
   } catch (e) {
-    isError.value = true
+    isError.value = true;
     return {
       list: [],
-      total: 0
-    }
+      total: 0,
+    };
   }
 };
-
-const handleScroll = ({ scrollTop }: { scrollTop: number }) => {
-  const { tableHeight, tableWrapperHeight } = useTableDimensions(
-    commonTableRef.value,
-  );
-  if (scrollTop + tableWrapperHeight.value === tableHeight.value) {
-    if (!noMore.value) {
-      currentPage.value += 1;
-      loadMore()
-    }
-  }
-}
 
 const loadMore = async () => {
   if (loading.value || noMore.value) return;
 
   loading.value = true;
   isError.value = false;
-  try {
-    const res = await fetchData(currentPage.value);
 
-    if (currentPage.value === 1) {
+  try {
+    const page = currentPage.value;
+    const res = await fetchData(page);
+
+    if (page === 1) {
       tableData.value = res.list;
     } else {
       tableData.value.push(...res.list);
     }
 
     total.value = res.total;
-    noMore.value = currentPage.value * 100 > total.value
+    noMore.value =
+      tableData.value.length >= total.value || res.list.length < 100;
 
-    if (tableData.value.length < total.value) {
-      currentPage.value++;
+    if (!noMore.value) {
+      currentPage.value = page + 1;
     }
   } catch (error) {
-    console.error('加载失败', error);
-    isError.value = true
+    console.error("加载失败", error);
+    isError.value = true;
   } finally {
     loading.value = false;
   }
 };
+
+const setupObserver = () => {
+  observer = new IntersectionObserver(
+    (entries) => {
+      const target = entries[0];
+      if (target?.isIntersecting && !loading.value && !noMore.value) {
+        loadMore();
+      }
+    },
+    {
+      rootMargin: "0px 0px 50px 0px",
+      threshold: 0.01,
+    },
+  );
+
+  if (sentinelRef.value) {
+    observer.observe(sentinelRef.value);
+  }
+};
+
+const cleanupObserver = () => {
+  if (observer) {
+    observer.disconnect();
+    observer = null;
+  }
+};
+
+onBeforeUnmount(() => {
+  cleanupObserver();
+});
+
+onMounted(() => {
+  if (isPcClient.value) {
+    loadMore();
+    setupObserver();
+  } else if (isMobileApp.value) {
+    setAppTitle(t("weeklyReport.fileReportTitle"));
+  }
+});
 
 const getOperationLabel = (type: number) => {
   const key = OperationTypeKeyMap[type];
@@ -249,18 +294,10 @@ const getOperationLabel = (type: number) => {
 };
 
 const formatTime = (time: string) => {
-  return dayjs(time).format("YYYY-MM-DD hh:mm:ss")
-}
+  return dayjs(time).format("YYYY-MM-DD hh:mm:ss");
+};
 
 const emptyPng = getAssetUrl("empty_rectcle@3x.png");
-
-onMounted(() => {
-  setAppTitle(t("weeklyReport.fileReportTitle"));
-
-  if (currentSource.value === 'PC') {
-    loadMore();
-  }
-});
 </script>
 
 <style lang="scss" scoped>
@@ -283,12 +320,12 @@ onMounted(() => {
   }
 
   .summary-box {
-    background-color: #F2F4F8;
+    background-color: #f2f4f8;
     padding: 20px;
     border-radius: 4px;
     text-align: center;
     margin-bottom: 20px;
-    color: #2D2D2D;
+    color: #2d2d2d;
 
     .date-range {
       margin-bottom: 8px;
@@ -300,7 +337,7 @@ onMounted(() => {
         margin: 0 2px;
 
         &.red {
-          color: #F56C6C;
+          color: #f56c6c;
         }
       }
     }
@@ -310,14 +347,13 @@ onMounted(() => {
     height: calc(100% - 150px);
 
     :deep(.el-table__inner-wrapper) {
-
       &::before {
         display: none;
       }
     }
 
     :deep(.el-table th.el-table__cell) {
-      background-color: #F2F4F8;
+      background-color: #f2f4f8;
       color: #747683;
       font-weight: 500;
     }
@@ -332,17 +368,16 @@ onMounted(() => {
       }
 
       .file-title {
-        color: #2D2D2D;
+        color: #2d2d2d;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
     }
-
   }
 
   .footer-tip {
-    border-top: 1px solid #E3E6EC;
+    border-top: 1px solid #e3e6ec;
     height: 40px;
     line-height: 40px;
     text-align: center;
@@ -350,7 +385,6 @@ onMounted(() => {
     margin-top: 10px;
   }
 }
-
 
 .container-mobile {
   background-color: #f9f9fa;
@@ -360,7 +394,7 @@ onMounted(() => {
 
 .mobile-header-date {
   font-size: 14px;
-  color: #2D2D2D;
+  color: #2d2d2d;
   font-weight: 500;
   padding: 16px;
   background: #fff;
@@ -377,7 +411,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border: 1px solid #F2F4F7;
+  border: 1px solid #f2f4f7;
 
   .stat-item {
     flex: 1;
@@ -392,7 +426,7 @@ onMounted(() => {
       margin-bottom: 4px;
 
       &.red {
-        color: #F56C6C;
+        color: #f56c6c;
       }
     }
 
@@ -406,7 +440,7 @@ onMounted(() => {
   .divider {
     width: 1px;
     height: 30px;
-    background-color: #EBEEF5;
+    background-color: #ebeef5;
   }
 }
 
@@ -472,6 +506,25 @@ onMounted(() => {
   }
 }
 
+.scroll-sentinel {
+  visibility: hidden;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #909399;
+  font-size: 13px;
+
+  .scroll-sentinel__placeholder {
+    display: block;
+    width: 100%;
+    height: 1px;
+  }
+
+  .no-more {
+    color: #c0c4cc;
+  }
+}
 
 .loading-state {
   display: flex;
@@ -484,7 +537,7 @@ onMounted(() => {
 
   .loading {
     border: 2px solid hsla(213, 71%, 53%, 0.2);
-    border-top-color: #327EDC;
+    border-top-color: #327edc;
     border-radius: 50%;
     width: 32px;
     height: 32px;

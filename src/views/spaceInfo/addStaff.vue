@@ -113,7 +113,6 @@ import {
   getUserTreeApi,
 } from "@/api/common.ts";
 import { Permission } from "@/enum/permission.ts";
-import { usePageUtils } from "@/stores";
 import {
   hideAppButton,
   isJsonStr,
@@ -401,7 +400,10 @@ const handleConfirm = async (selectedList: Array<Record<string, any>>) => {
   );
   if (res.code === 1) {
     showToast({ message: t("addSuccess"), type: "success" });
-    usePageUtils().setAddMember(true);
+    sessionStorage.setItem(
+      `space-members-refresh:${contentId.value}`,
+      "1"
+    );
     router.go(-1);
   }
 };

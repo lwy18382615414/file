@@ -1,10 +1,15 @@
 import { ref } from "vue";
-import type { SortModeType } from "@/stores/type";
 import type {
   ExplorerPageType,
   ExplorerQueryState,
 } from "@/views/fileExplorer";
 import { getDefaultSortMethod, mapSortMethodToSortBy } from "./config";
+
+export type SortModeType = {
+  sortOrder: string; // 'asc' | 'desc'
+  sortMethod: number; // 0 - 时间 | 1 - 文档大小 | 2 - 文件名
+  currentPage: string;
+};
 
 const explorerSortMode = ref<Record<string, SortModeType>>({});
 

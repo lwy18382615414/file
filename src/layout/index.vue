@@ -31,7 +31,7 @@
 import { useClientEnv } from "@/hooks/useClientEnv";
 import { useLayoutMode } from "@/hooks/useLayoutMode";
 import { useExplorerSort } from "@/hooks/sort/useExplorerSort";
-import SortPopup from "@/components/SortPopup.vue";
+import SortPopup from "@/views/components/h5/pop/SortPopup.vue";
 import PcSiderBar from "./PcSiderBar.vue";
 import TopBar from "./TopBar.vue";
 import { useRouter } from "vue-router";

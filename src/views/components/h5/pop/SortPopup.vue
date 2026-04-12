@@ -48,8 +48,8 @@
 </template>
 
 <script setup lang="ts">
-import SvgIcon from "@/components/SvgIcon.vue";
-import type { ExplorerSortOption } from "@/hooks/sort/config";
+import SvgIcon from "../../../../components/SvgIcon.vue";
+import type { ExplorerSortOption } from "@/hooks/sort/config.ts";
 
 defineProps<{
   show: boolean;

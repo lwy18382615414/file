@@ -41,7 +41,7 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SearchBox: typeof import('./src/components/SearchBox.vue')['default']
-    SortPopup: typeof import('./src/components/SortPopup.vue')['default']
+    SortPopup: typeof import('./src/views/components/h5/pop/SortPopup.vue')['default']
     StackIcon: typeof import('./src/components/StackIcon.vue')['default']
     SvgIcon: typeof import('./src/components/SvgIcon.vue')['default']
     VanActionSheet: typeof import('vant/es')['ActionSheet']

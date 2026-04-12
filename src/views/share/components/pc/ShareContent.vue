@@ -252,10 +252,10 @@ import schemeConfig from "@/config";
 import { useEnv } from "../../hooks/useEnv";
 import type { ShareContentType } from "../../types";
 import type { TableColumn } from "@/types/type";
-import { useHandleSaveFolder } from "@/hooks/composable/useHandleSaveFolder";
-import { usePermissionGuard } from "@/hooks/composable/usePermissionGuard";
+import { useHandleSaveFolder } from "@/hooks/useHandleSaveFolder.ts";
+import { usePermissionGuard } from "@/hooks/usePermissionGuard.ts";
 import { saveToCloudDriveApi } from "@/api/share";
-import { useDialog } from "@/hooks/useDialog";
+import { ElMessageBox } from "element-plus";
 
 const { t } = useI18n();
 const { isBrowser, isPcClient } = useEnv();
@@ -405,13 +405,19 @@ const handleSaveToCloud = async () => {
         ...(shareId.value ? { shareId: shareId.value } : {}),
       }),
     showConfirm: (count) => {
-      return useDialog({
-        title: t("saveToCloudDrive"),
-        content: t("savePermissionWarning", {
+      return ElMessageBox.confirm(
+        t("savePermissionWarning", {
           count,
         }),
-        confirmText: t("Ok"),
-      });
+        t("saveToCloudDrive"),
+        {
+          confirmButtonText: t("Ok"),
+          cancelButtonText: t("cancel"),
+          showClose: false,
+          closeOnClickModal: false,
+          closeOnPressEscape: false,
+        },
+      );
     },
     notifySuccess: () => {
       isSaveSuccess.value = true;

@@ -103,7 +103,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
   addFolderPermissionApi,
@@ -123,7 +123,6 @@ import {
   t,
 } from "@/utils";
 import { Permission } from "@/enum/permission";
-import { usePageUtils } from "@/stores";
 import { getFromApp, getMyUserInfo } from "@/utils/auth";
 import { setRem } from "@/utils/rem";
 import AvatarBox from "@/views/components/h5/AvatarBox.vue";
@@ -380,24 +379,31 @@ const countStaffNum = () => {
   }
 };
 
-watch(
-  () => usePageUtils().isAddMember,
-  async (newVal: boolean) => {
-    if (newVal) {
-      await getSpaceInfo();
-      usePageUtils().setAddMember(false);
-    } else {
-      return;
-    }
-  },
-  { immediate: true },
+const refreshStorageKey = computed(
+  () => `space-members-refresh:${contentId.value}`,
 );
 
-onMounted(() => {
-  getSpaceInfo();
+const consumeRefreshMembers = async () => {
+  if (sessionStorage.getItem(refreshStorageKey.value) !== "1") return;
+
+  sessionStorage.removeItem(refreshStorageKey.value);
+};
+
+const handlePageShow = async () => {
+  await consumeRefreshMembers();
+};
+
+onMounted(async () => {
+  await getSpaceInfo();
+  await consumeRefreshMembers();
+  window.addEventListener("pageshow", handlePageShow);
   setAppTitle(t("folderSettings"));
   hideAppButton2();
   hideAppButton();
+});
+
+onUnmounted(() => {
+  window.removeEventListener("pageshow", handlePageShow);
 });
 </script>
 

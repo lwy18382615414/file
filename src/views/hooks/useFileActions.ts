@@ -568,15 +568,12 @@ export function useFileActions(options?: {
   };
 
   const handleContextMenuSelect = async (
-    key: PcFileContextActionKey,
+    key: string,
     items: ContentType[],
     row: ContentType | null,
   ) => {
     const rowActionMap: Partial<
-      Record<
-        PcFileContextActionKey,
-        (item: ContentType) => void | Promise<void>
-      >
+      Record<string, (item: ContentType) => void | Promise<void>>
     > = {
       open,
       top,
@@ -585,7 +582,7 @@ export function useFileActions(options?: {
     };
 
     const itemsActionMap: Partial<
-      Record<PcFileContextActionKey, (list: ContentType[]) => Promise<unknown>>
+      Record<string, (list: ContentType[]) => Promise<unknown>>
     > = {
       copyLink,
       download: downloadMany,

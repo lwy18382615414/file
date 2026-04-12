@@ -100,7 +100,7 @@ import type { UploadProps } from "element-plus";
 import { SvgIcon } from "@/components";
 import { getFileIcon } from "@/utils";
 import { useI18n } from "vue-i18n";
-import RepeatFileDialog from "@/views/pc/Layout/pop/RepeatFileDialog.vue";
+import RepeatFileDialog from "./RepeatFileDialog.vue";
 
 const props = defineProps<{
   show: boolean;

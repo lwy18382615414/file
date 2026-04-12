@@ -164,7 +164,7 @@ import FileListSkeleton from "@/views/components/h5/FileListSkeleton.vue";
 import CreateFolderComponent from "@/views/share/components/mobile/CreateFolderPopup.vue";
 import FolderSelectPc from "@/views/share/components/pc/FolderSelectPc.vue";
 import RepeatFilePopup from "@/views/components/h5/pop/RepeatFilePopup.vue";
-import RepeatFileDialog from "@/views/pc/Layout/pop/RepeatFileDialog.vue";
+import RepeatFileDialog from "@/views/components/pc/Dialog/RepeatFileDialog.vue";
 import { hasCreateSharePermissionApi } from "@/api/common";
 import { getTransferFileInfoApi, uploadFileStep2Api } from "@/api/fileService";
 import { shareContentByChatApi } from "@/api/share";

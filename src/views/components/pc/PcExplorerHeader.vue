@@ -49,7 +49,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import SortPopup from "@/components/SortPopup.vue";
+import SortPopup from "@/views/components/h5/pop/SortPopup.vue";
 import { useLayoutMode } from "@/hooks/useLayoutMode";
 import { useExplorerSort } from "@/hooks/sort/useExplorerSort";
 import {

@@ -26,7 +26,7 @@ import { getFileFromEntry } from "@/utils";
 import { createFolderApi } from "@/api/fileService";
 import config from "@/hooks/config";
 import { useUploadFlow } from "@/hooks/upload/useUploadFlow";
-import RepeatFileDialog from "@/views/pc/Layout/pop/RepeatFileDialog.vue";
+import RepeatFileDialog from "./Dialog/RepeatFileDialog.vue";
 import type { CollectedFileItem } from "@/types/type";
 
 type UploadingFolderEventPayload = {

@@ -15,7 +15,6 @@
     "
     width="460"
   >
-    <!-- 头部 -->
     <template #header>
       <div class="dialog-header">
         <span>{{ t("fileDuplicate") }}</span>
@@ -24,26 +23,29 @@
     </template>
 
     <div class="dialog-content">
-      <p class="mb-3 text-[#2d2d2d] font-bold">
-        {{
-          t("duplicateFilesWarning", {
-            count: duplicateTasks.length,
-          })
-        }}
+      <p class="mb-3">
+        {{ t("duplicateFilesWarning", { count: repeatList.length }) }}
       </p>
       <div class="repeat-file-operate-list">
         <div
           v-for="(item, index) in operateList"
-          :key="item.value"
+          :key="item.name"
           class="operate-item"
           :class="{ active: index === activeIndex }"
-          @click="uploadStep2(item.value, index)"
+          @click="item.fn"
         >
-          {{ item.text }}
+          {{ item.name }}
+        </div>
+      </div>
+      <div v-if="false" class="file-list">
+        <div v-for="file in repeatList" :key="file.name" class="file-item py-2">
+          <div class="flex items-center gap-[12px]">
+            <SvgIcon :name="getFileIcon(file.name)" size="24" />
+            <div class="file-name">{{ file.name }}</div>
+          </div>
         </div>
       </div>
     </div>
-    <!-- 按钮 -->
     <template #footer>
       <div class="dialog-footer">
         <el-button class="cancel-btn" @click="handleClose">{{
@@ -56,80 +58,48 @@
 
 <script setup lang="ts">
 import { computed, type PropType, ref } from "vue";
-import { useUploadStatus } from "@/stores";
-import type { Task } from "@/hooks/upload/useUploadFlow";
-import { useUploadFlow } from "@/hooks/upload/useUploadFlow";
-import { t } from "@/utils";
-import { replayGroupedUploadStep2 } from "@/utils/upload/uploadManager";
+import { getFileIcon, t } from "@/utils";
+import SvgIcon from "@/components/SvgIcon.vue";
 
 const props = defineProps({
-  isTransfer: {
-    type: Boolean,
-    default: undefined,
-  },
   repeatVisible: {
     type: Boolean,
     default: false,
   },
-  contentId: {
-    type: Number as PropType<number>,
-    default: () => 0,
-  },
-  duplicateList: {
-    type: Array as PropType<Record<number, string>[]>,
-    default: undefined,
-  },
-  allFileList: {
-    type: Array as PropType<Task[]>,
-    default: undefined,
+  repeatList: {
+    type: Array as PropType<Record<string, string>[]>,
+    default: () => [],
   },
 });
 
-const emit = defineEmits(["update:repeatVisible", "saveSuccess"]);
-
-const { duplicateTasks: flowDuplicateTasks, allTasks: flowAllTasks, clearUploadState } = useUploadFlow();
-const uploadStatus = useUploadStatus();
-const visible = computed(() => props.repeatVisible);
-const operateList = [
-  { text: t("skipFiles"), value: 3 },
-  { text: t("overwriteFiles"), value: 1 },
-  { text: t("keep"), value: 2 },
-];
+const emit = defineEmits(["update:repeatVisible", "handleRepeatFile"]);
 const activeIndex = ref(0);
-
-const duplicateTasks = computed(
-  () => props.duplicateList ?? flowDuplicateTasks.value,
-);
-const allTasks = computed(() => props.allFileList ?? flowAllTasks.value);
+const visible = computed(() => props.repeatVisible);
 
 const handleClose = () => {
-  uploadStatus.updateUploadStatus(true);
-  clearUploadState();
   emit("update:repeatVisible", false);
 };
 
-const uploadStep2 = async (repeatType: number, index: number) => {
-  activeIndex.value = index;
-  const result = await replayGroupedUploadStep2({
-    tasks: allTasks.value,
-    defaultContentId: props.contentId,
-    repeatFileOperateType: repeatType,
-  });
-
-  if (result.failedTasks.length || result.duplicateTasks.length) {
-    return;
-  }
-
-  if (props.isTransfer) {
-    emit("saveSuccess");
-    emit("update:repeatVisible", false);
-  } else {
-    ElMessage.success(t("operationSuccess"));
-    handleClose();
-    uploadStatus.updateUploadStatus(true);
-    clearUploadState();
-  }
+const skipUpload = () => {
+  activeIndex.value = 0;
+  emit("handleRepeatFile", 3);
 };
+
+const coverUpload = () => {
+  activeIndex.value = 1;
+  emit("handleRepeatFile", 1);
+};
+
+const reserveUpload = () => {
+  activeIndex.value = 2;
+  emit("handleRepeatFile", 2);
+};
+
+const operateList = [
+  { name: t("skipFiles"), fn: skipUpload },
+  { name: t("overwriteFiles"), fn: coverUpload },
+  { name: t("keepAll"), fn: reserveUpload },
+];
 </script>
 
 <style scoped lang="scss">
@@ -151,8 +121,6 @@ const uploadStep2 = async (repeatType: number, index: number) => {
 .dialog-content {
   padding: 8px 30px 24px;
   border-bottom: 1px solid #e3e6ec80;
-  color: #2d2d2d;
-  font-size: calc(var(--base--font--size--16) * var(--scale-factor));
 
   .file-list {
     max-height: 140px;
@@ -184,6 +152,10 @@ const uploadStep2 = async (repeatType: number, index: number) => {
     border: 1px solid #327edc;
     background: #f2f4f8;
     color: #327edc;
+  }
+  .confirm-btn {
+    background: #327edc;
+    color: #fff;
   }
 }
 </style>

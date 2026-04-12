@@ -143,11 +143,11 @@
     </el-dialog>
   </div>
 
-  <PopMenu
-    v-model="contextMenuVisible"
-    :width="250"
+  <PcFileContextMenu
+    :show="contextMenuVisible"
     :position="menuPosition"
-    :options="filterOptions"
+    :actions="mapMenuActions(filterOptions)"
+    @close="contextMenuVisible = false"
     @select="handleMenuSelect"
   />
 
@@ -172,7 +172,6 @@
 </template>
 
 <script setup lang="ts">
-import { useFileBelong } from "@/hooks/useFileBelong.ts";
 import { useShareSpace } from "@/hooks/useShareSpace.ts";
 import type { OrgTreeCallbackParams } from "@/api/type";
 import { computed, ref, watch, watchEffect, nextTick } from "vue";
@@ -189,21 +188,46 @@ import {
   transferSuperAdminApi,
 } from "@/api/common.ts";
 import { Permission, getHighestPermission } from "@/enum/permission.ts";
-import { PopMenu, CustomSelectPerson, SvgIcon } from "@/components";
+import { CustomSelectPerson, SvgIcon } from "@/components";
+import PcFileContextMenu from "../PcFileContextMenu.vue";
 import AddNotifyUserDialog from "./AddNotifyUserDialog.vue";
-import { ElMessage } from "element-plus";
-import { useDialog } from "@/hooks/useDialog.ts";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { getQueryVariable, hasPermission, t } from "@/utils";
 import AvatarBox from "@/components/customSelectPerson/AvatarBox.vue";
 import type { PermissionItem } from "@/types/type";
 import { useAdjustPosition } from "@/hooks/useAdjustPosition.ts";
 import PinyinMatch from "pinyin-match";
 
+type MenuOptionKey =
+  | "admin"
+  | "edit"
+  | "upload"
+  | "share"
+  | "view"
+  | "remove"
+  | "transfer";
+
 interface MenuOption {
+  key: MenuOptionKey;
   label: string;
   desc: string;
-  key: string;
 }
+
+interface SettingContextMenuAction {
+  key: string;
+  label: string;
+  desc?: string;
+  danger?: boolean;
+}
+
+const mapMenuActions = (options: MenuOption[]): SettingContextMenuAction[] => {
+  return options.map((item) => ({
+    key: item.key,
+    label: t(item.label),
+    desc: item.desc ? t(item.desc) : undefined,
+    danger: item.key === "remove",
+  }));
+};
 
 const props = defineProps<{
   show: boolean;
@@ -212,10 +236,8 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: "update:show", value: boolean): void;
+  (e: "update:permissionCount", value: number): void;
 }>();
-
-const { isSharedDirChanged } = useShareSpace();
-const { permissionCount } = useFileBelong();
 
 const visible = computed({
   get: () => props.show,
@@ -267,6 +289,7 @@ const searchValue = ref("");
 const searchInputRef = ref();
 const permissionType = ref(0);
 const permissionName = ref("");
+const permissionCount = ref(0);
 const isChild = ref(false);
 const contactList = ref<OrgTreeCallbackParams[]>([]);
 
@@ -451,16 +474,22 @@ const transferSuperAdmin = async () => {
     return;
   }
 
-  useDialog({
-    title: t("transferSuperAdmin"),
-    content: t("confirmTransferSuperAdmin", {
-      name: selectedPerson.value.label,
-    }),
-    extraContentType: "text",
-    extraContent: t("confirmTransferSuperAdminExtra"),
-    confirmText: t("Ok"),
-    cancelText: t("cancel"),
-  })
+  ElMessageBox.confirm(
+    [
+      t("confirmTransferSuperAdmin", {
+        name: selectedPerson.value.label,
+      }),
+      t("confirmTransferSuperAdminExtra"),
+    ].join("\n\n"),
+    t("transferSuperAdmin"),
+    {
+      confirmButtonText: t("Ok"),
+      cancelButtonText: t("cancel"),
+      showClose: false,
+      closeOnClickModal: false,
+      closeOnPressEscape: false,
+    },
+  )
     .then(async () => {
       const res = await transferSuperAdminApi(
         selectedPerson.value.userId as number,
@@ -470,7 +499,6 @@ const transferSuperAdmin = async () => {
         ElMessage.success(t("transferSuccess"));
         await getFolderPermission(props.contentId);
         contextMenuVisible.value = false;
-        isSharedDirChanged.value = !isSharedDirChanged.value;
       }
     })
     .catch(() => {});
@@ -478,13 +506,18 @@ const transferSuperAdmin = async () => {
 
 const editPermission = async (nextPermissionType: number) => {
   if (nextPermissionType === Permission.Admin) {
-    useDialog({
-      title: t("addAdmin"),
-      content: t("confirmSetAdmin", { name: selectedPerson.value.label }),
-      extraContentType: "text",
-      extraContent: t("confirmSetAdminExtra"),
-      width: 305,
-    })
+    ElMessageBox.confirm(
+      [
+        t("confirmSetAdmin", { name: selectedPerson.value.label }),
+        t("confirmSetAdminExtra"),
+      ].join("\n\n"),
+      t("addAdmin"),
+      {
+        showClose: false,
+        closeOnClickModal: false,
+        closeOnPressEscape: false,
+      },
+    )
       .then(async () => {
         if (isChild.value) {
           const res = await setMemberPermissionApi(
@@ -539,11 +572,12 @@ const editPermission = async (nextPermissionType: number) => {
 const handleRemoveNotifyUser = (selected: PermissionItem) => {
   if (isReadOnly(selected)) return;
 
-  useDialog({
-    title: t("remove"),
-    content: t("confirmRemoveNotifyUser"),
-    confirmText: t("Ok"),
-    cancelText: t("cancel"),
+  ElMessageBox.confirm(t("confirmRemoveNotifyUser"), t("remove"), {
+    confirmButtonText: t("Ok"),
+    cancelButtonText: t("cancel"),
+    showClose: false,
+    closeOnClickModal: false,
+    closeOnPressEscape: false,
   })
     .then(async () => {
       if (!selected.userId) return;
@@ -586,6 +620,7 @@ const getFolderPermission = async (contentId: number) => {
       ...item,
       value: (item.userId || item.orgId || item.tagId)?.toString(),
     }));
+    emit("update:permissionCount", res.data.personCount);
   }
 };
 
@@ -611,7 +646,6 @@ const handleConfirm = async (selected: PermissionItem[]) => {
     ElMessage.success(t("operationSuccess"));
     await getFolderPermission(props.contentId);
     orgVisible.value = false;
-    isSharedDirChanged.value = !isSharedDirChanged.value;
   }
 };
 
@@ -636,7 +670,6 @@ const handleNotifyConfirm = async (userIds: number[]) => {
     ElMessage.success(t("operationSuccess"));
     await getFolderPermission(props.contentId);
     notifyDialogVisible.value = false;
-    isSharedDirChanged.value = !isSharedDirChanged.value;
   }
 };
 

@@ -44,7 +44,6 @@
 <script lang="ts" setup>
 import { ref, computed } from "vue";
 import { replayGroupedUploadStep2 } from "@/utils/upload/uploadManager";
-import { useUploadStatus } from "@/stores";
 import type { Task } from "@/hooks/upload/useUploadFlow";
 import { useUploadFlow } from "@/hooks/upload/useUploadFlow";
 import { t } from "@/utils";
@@ -94,7 +93,6 @@ const uploadStep2 = async (repeatType: number, index: number) => {
     emit("saveSuccess");
   } else {
     showToast({ message: t("operationSuccess"), type: "success" });
-    useUploadStatus().updateAddFolder(true);
     clearUploadState();
   }
   showPopup.value = false;

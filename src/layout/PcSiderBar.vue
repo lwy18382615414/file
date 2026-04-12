@@ -38,6 +38,7 @@
         :show="settingVisible"
         :content-id="selectedSharedItem?.contentId ?? 0"
         @update:show="settingVisible = $event"
+        @update:permission-count="handlePermissionCountUpdate"
       />
 
       <div class="menu-container">
@@ -365,6 +366,10 @@ const handleShareLinkVisibleChange = (value: boolean) => {
   closeShareLink();
 };
 
+const handlePermissionCountUpdate = async () => {
+  await getShareSpace();
+};
+
 const syncCreateFolderPermission = async () => {
   try {
     const res = await hasCreateSharePermissionApi();
@@ -507,7 +512,7 @@ const handleConfirmRename = async (name: string) => {
   }
 };
 
-const handleContextMenuSelect = async (key: PcFileContextActionKey) => {
+const handleContextMenuSelect = async (key: string) => {
   const item = selectedSharedItem.value;
   closeContextMenu();
 

@@ -59,6 +59,7 @@
       @load-more="loadMore"
       @refresh="refreshList"
       @search="searchList"
+      @update:permission-count="currentFolderPermissionCount = $event"
     />
   </div>
 </template>
