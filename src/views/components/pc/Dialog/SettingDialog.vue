@@ -748,7 +748,7 @@ watch(
   align-items: center;
   justify-content: space-between;
   padding: 16px 12px 16px 16px;
-  border-bottom: 1px solid #edf1f5;
+  border-bottom: 1px solid var(--card-border-color);
 }
 
 .title-group {
@@ -791,7 +791,7 @@ watch(
     color 0.2s ease;
 
   &:hover {
-    background: #f1f5f9;
+    background: var(--content-bg-color);
     color: #334155;
   }
 }
@@ -804,8 +804,8 @@ watch(
 .setting-nav {
   width: 220px;
   padding: 18px 12px;
-  border-right: 1px solid #edf1f5;
-  background: #f8fafc;
+  border-right: 1px solid var(--card-border-color);
+  background: var(--card-bg-color);
 }
 
 .nav-item {
@@ -824,13 +824,13 @@ watch(
     color 0.2s ease;
 
   &:hover {
-    background: #eef2ff;
-    color: #5665bb;
+    background: var(--theme-color-light);
+    color: var(--theme-color);
   }
 
   &.active {
-    background: #e8efff;
-    color: #5665bb;
+    background: var(--theme-color-light);
+    color: var(--theme-color);
     font-weight: 600;
   }
 }
@@ -872,7 +872,7 @@ watch(
     color 0.2s ease;
 
   &:hover {
-    background: #f1f5f9;
+    background: var(--content-bg-color);
     color: #3156d3;
   }
 
@@ -903,7 +903,7 @@ watch(
   transition: background-color 0.2s ease;
 
   &:hover {
-    background: #f8fafc;
+    background: var(--card-bg-color);
   }
 }
 
@@ -946,7 +946,7 @@ watch(
     color 0.2s ease;
 
   &:hover {
-    background: #f1f5f9;
+    background: var(--content-bg-color);
     color: #1e293b;
   }
 

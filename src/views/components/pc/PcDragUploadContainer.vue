@@ -314,7 +314,7 @@ const handleDrop = async (event: DragEvent) => {
   align-items: center;
   justify-content: center;
   background: rgba(50, 126, 220, 0.08);
-  border: 2px dashed #5665bb;
+  border: 2px dashed var(--theme-color);
   border-radius: 12px;
   box-sizing: border-box;
   pointer-events: none;

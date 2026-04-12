@@ -259,7 +259,7 @@ onUnmounted(() => {
   left: 0;
   width: 282px;
   height: 265px;
-  background: #fff;
+  background: var(--btn-default-bg);
   border-radius: 8px;
   box-shadow: 0 3px 6px 0 rgba(95, 95, 95, 0.4);
   z-index: 999999;
@@ -319,7 +319,7 @@ onUnmounted(() => {
 .no-more {
   text-align: center;
   padding: 12px 0;
-  color: #999;
+  color: var(--text-weak-color);
   font-size: calc(var(--base--font--size--14) * var(--scale-factor));
 }
 
@@ -328,7 +328,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: #999;
+  color: var(--text-weak-color);
   font-size: calc(var(--base--font--size--14) * var(--scale-factor));
 }
 
@@ -361,12 +361,12 @@ onUnmounted(() => {
 }
 
 :deep(.el-input__wrapper) {
-  background-color: #f1f5f9;
+  background-color: var(--content-bg-color);
   box-shadow: none;
 
   &.is-focus {
-    background-color: #fff;
-    box-shadow: 0 0 0 1px #327edc inset;
+    background-color: var(--btn-default-bg);
+    box-shadow: 0 0 0 1px var(--theme-color) inset;
   }
 
   .el-input__prefix-inner > :last-child {
@@ -377,7 +377,7 @@ onUnmounted(() => {
 .view-all-btn {
   text-align: center;
   padding: 10px 0;
-  color: #327edc;
+  color: var(--theme-color);
   font-size: calc(var(--base--font--size--12) * var(--scale-factor));
   border-top: 1px solid #eee;
   cursor: pointer;

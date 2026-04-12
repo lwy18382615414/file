@@ -67,7 +67,9 @@
           </button>
         </template>
 
-        <div v-else-if="loading" class="status-block">{{ t("loading") }}...</div>
+        <div v-else-if="loading" class="status-block">
+          {{ t("loading") }}...
+        </div>
         <div v-else class="status-block">{{ t("noFolder") }}</div>
       </div>
     </div>
@@ -488,7 +490,7 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   padding: 16px;
-  border-bottom: 1px solid #f2f4f7;
+  border-bottom: 1px solid var(--card-border-color);
 }
 
 .selected-summary {
@@ -507,7 +509,7 @@ onMounted(async () => {
   background: transparent;
   outline: none;
   font-size: 14px;
-  color: #2d2d2d;
+  color: var(--text-primary-color);
 }
 
 .search-icon {
@@ -539,8 +541,8 @@ onMounted(async () => {
   min-height: 50px;
   overflow-x: auto;
   overflow-y: hidden;
-  border-bottom: 1px solid #f2f4f7;
-  color: #747683;
+  border-bottom: 1px solid var(--card-border-color);
+  color: var(--text-secondary-color);
   font-size: 14px;
 }
 
@@ -554,13 +556,13 @@ onMounted(async () => {
   border: none;
   background: transparent;
   padding: 0;
-  color: #747683;
+  color: var(--text-secondary-color);
   white-space: nowrap;
   font-size: 14px;
 }
 
 .breadcrumb-item__name.active {
-  color: #2d2d2d;
+  color: var(--text-primary-color);
 }
 
 .breadcrumb-separator {
@@ -585,7 +587,7 @@ onMounted(async () => {
 }
 
 .item-select__title {
-  color: #2d2d2d;
+  color: var(--text-primary-color);
   line-height: 1.2;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -610,7 +612,7 @@ onMounted(async () => {
   justify-content: center;
   align-items: center;
   min-height: 180px;
-  color: #747683;
+  color: var(--text-secondary-color);
   font-size: 14px;
 }
 
@@ -639,13 +641,13 @@ onMounted(async () => {
 }
 
 .btn-secondary {
-  background: #ebeff6;
-  color: #2d2d2d;
+  background: var(--subtle-fill-color);
+  color: var(--text-primary-color);
 }
 
 .btn-primary {
   background: #ebf0ff;
-  color: #327edc;
+  color: var(--theme-color);
 }
 
 .repeat-mask {
@@ -668,9 +670,9 @@ onMounted(async () => {
 
 .repeat-header {
   padding: 16px 20px;
-  background: #ebeff6;
+  background: var(--subtle-fill-color);
   font-size: 16px;
-  color: #2d2d2d;
+  color: var(--text-primary-color);
 }
 
 .repeat-content {
@@ -679,7 +681,7 @@ onMounted(async () => {
 
 .repeat-text {
   margin: 0 0 12px;
-  color: #747683;
+  color: var(--text-secondary-color);
   font-size: 14px;
 }
 
@@ -695,12 +697,12 @@ onMounted(async () => {
 
 .repeat-option {
   background: #ebf0ff;
-  color: #327edc;
+  color: var(--theme-color);
 }
 
 .repeat-cancel {
-  background: #ebeff6;
-  color: #2d2d2d;
+  background: var(--subtle-fill-color);
+  color: var(--text-primary-color);
 }
 
 @supports (padding-bottom: env(safe-area-inset-bottom)) {

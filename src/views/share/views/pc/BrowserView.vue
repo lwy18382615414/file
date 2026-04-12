@@ -66,7 +66,7 @@ const appDownload = () => {
       font-size: 20px;
       font-weight: bold;
       text-align: center;
-      color: #ffffff;
+      color: var(--btn-primary-text-color);
     }
   }
 }
@@ -75,7 +75,7 @@ const appDownload = () => {
   font-family: Microsoft YaHei UI;
   font-size: calc(var(--base--font--size--24) * var(--scale-factor));
   text-align: center;
-  color: #2d2d2d;
+  color: var(--text-primary-color);
   margin: 80px 0;
 }
 

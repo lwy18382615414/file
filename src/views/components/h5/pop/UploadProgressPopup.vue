@@ -12,10 +12,10 @@
         >
         <div class="header-actions">
           <button class="icon-btn" type="button" @click="toggleMinimize">
-            <SvgIcon name="ic_retract" size="18" color="#2d2d2d" />
+            <SvgIcon name="ic_retract" size="18" color="var(--text-primary-color)" />
           </button>
           <button class="close-btn" type="button" @click="handleClose">
-            <SvgIcon name="ic_close" size="18" color="#ffffff" />
+            <SvgIcon name="ic_close" size="18" color="var(--btn-primary-text-color)" />
           </button>
         </div>
       </div>
@@ -205,7 +205,7 @@ const handleClose = () => {
   width: 100%;
   max-height: min(70vh, 560px);
   padding: 0 16px calc(24px + env(safe-area-inset-bottom));
-  background: #ffffff;
+  background: var(--btn-default-bg);
   border-radius: 20px 20px 0 0;
   box-sizing: border-box;
 }
@@ -221,7 +221,7 @@ const handleClose = () => {
   font-size: 18px;
   font-weight: 600;
   line-height: 25px;
-  color: #2d2d2d;
+  color: var(--text-primary-color);
 }
 
 .header-actions {
@@ -243,7 +243,7 @@ const handleClose = () => {
 }
 
 .icon-btn {
-  color: #2d2d2d;
+  color: var(--text-primary-color);
   line-height: 1;
 }
 
@@ -261,7 +261,7 @@ const handleClose = () => {
   gap: 12px;
   padding: 14px 12px;
   border-radius: 12px;
-  background: #f3f4f6;
+  background: var(--content-bg-color);
 }
 
 .file-icon {
@@ -295,7 +295,7 @@ const handleClose = () => {
 }
 
 .file-name {
-  color: #2d2d2d;
+  color: var(--text-primary-color);
   font-size: 14px;
   line-height: 20px;
   font-weight: 500;
@@ -323,7 +323,7 @@ const handleClose = () => {
 }
 
 .bg-primary {
-  background: #5665bb;
+  background: var(--btn-primary-color);
 }
 
 .bg-success {
@@ -359,7 +359,7 @@ const handleClose = () => {
 
 .retry-text {
   margin-left: 6px;
-  color: #5665bb;
+  color: var(--theme-color);
 }
 
 .upload-bubble {
@@ -374,8 +374,12 @@ const handleClose = () => {
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  background: linear-gradient(135deg, #5665bb 0%, #7b89db 100%);
-  box-shadow: 0 8px 20px rgba(86, 101, 187, 0.28);
+  background: linear-gradient(
+    135deg,
+    var(--btn-primary-color) 0%,
+    var(--theme-color-hover) 100%
+  );
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--theme-color) 28%, transparent);
 }
 
 .bubble-badge {
@@ -386,8 +390,8 @@ const handleClose = () => {
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  background: #ffffff;
-  color: #5665bb;
+  background: var(--btn-default-bg);
+  color: var(--theme-color);
   font-size: 11px;
   font-weight: 700;
   line-height: 1;

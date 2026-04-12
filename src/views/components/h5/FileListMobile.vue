@@ -439,7 +439,7 @@ const handlePopupSelect = async (key: string) => {
   width: 100%;
   bottom: 0;
   padding: 16px;
-  background-color: #ffffff;
+  background-color: var(--btn-default-bg);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -466,8 +466,8 @@ const handlePopupSelect = async (key: string) => {
     height: 44px;
     border: none;
     border-radius: 8px;
-    background: #ebeff6;
-    color: #2d2d2d;
+    background: var(--subtle-fill-color);
+    color: var(--text-primary-color);
     font-size: 14px;
   }
 }

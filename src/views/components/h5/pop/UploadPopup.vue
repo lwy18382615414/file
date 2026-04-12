@@ -4,14 +4,19 @@
       <div class="sheet-header">
         <span class="sheet-title">{{ t("uploadFile") }}</span>
         <button class="close-btn" type="button" @click="showUpload = false">
-          <SvgIcon name="ic_close" size="18" color="#ffffff" />
+          <SvgIcon name="ic_close" size="18" color="var(--btn-primary-text-color)" />
         </button>
       </div>
 
       <div class="sheet-body">
         <div class="file-info">
           <div class="form-label">{{ t("chooseFile") }}</div>
-          <van-loading v-if="fileLoading" color="#5665bb" size="24px" vertical>
+          <van-loading
+            v-if="fileLoading"
+            color="var(--theme-color)"
+            size="24px"
+            vertical
+          >
             {{ t("fileLoading") }}...
           </van-loading>
           <template v-else>
@@ -192,7 +197,7 @@ watch(showUpload, (val) => {
 .upload-sheet {
   width: 100%;
   padding: 0 16px calc(24px + env(safe-area-inset-bottom));
-  background: #ffffff;
+  background: var(--btn-default-bg);
   border-radius: 20px 20px 0 0;
   box-sizing: border-box;
 }
@@ -208,7 +213,7 @@ watch(showUpload, (val) => {
   font-size: 18px;
   font-weight: 600;
   line-height: 25px;
-  color: #2d2d2d;
+  color: var(--text-primary-color);
 }
 
 .close-btn {
@@ -245,7 +250,7 @@ watch(showUpload, (val) => {
   font-size: 14px;
   line-height: 20px;
   font-weight: 500;
-  color: #2d2d2d;
+  color: var(--text-primary-color);
 }
 
 .select-file {
@@ -253,7 +258,7 @@ watch(showUpload, (val) => {
   min-height: 148px;
   border-radius: 12px;
   border: 1px dashed #b8c2e5;
-  background: #f3f4f6;
+  background: var(--content-bg-color);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -265,7 +270,7 @@ watch(showUpload, (val) => {
   .text {
     font-size: 14px;
     line-height: 20px;
-    color: #2d2d2d;
+    color: var(--text-primary-color);
   }
 }
 
@@ -274,7 +279,7 @@ watch(showUpload, (val) => {
   max-height: 188px;
   overflow-y: auto;
   border-radius: 12px;
-  background: #f3f4f6;
+  background: var(--content-bg-color);
   padding: 0 12px;
   box-sizing: border-box;
 }
@@ -300,7 +305,7 @@ watch(showUpload, (val) => {
 }
 
 .file-name {
-  color: #2d2d2d;
+  color: var(--text-primary-color);
   font-size: 16px;
   font-weight: 500;
   min-width: 0;
@@ -311,7 +316,7 @@ watch(showUpload, (val) => {
 
 :deep(.van-loading) {
   margin: 20px 0;
-  color: #5665bb;
+  color: var(--theme-color);
 }
 
 :deep(.van-checkbox) {
@@ -333,13 +338,13 @@ watch(showUpload, (val) => {
 }
 
 .cancel-btn {
-  color: #2d2d2d;
-  background: #f3f4f6;
+  color: var(--text-primary-color);
+  background: var(--content-bg-color);
 }
 
 .confirm-btn {
-  color: #ffffff;
-  background: #5665bb;
+  color: var(--btn-primary-text-color);
+  background: var(--btn-primary-color);
 }
 
 .confirm-btn:disabled {

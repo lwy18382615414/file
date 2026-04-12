@@ -18,14 +18,9 @@ html {
   font-family: "Microsoft YaHei", sans-serif;
   font-size: calc(var(--base--font--size--16) * var(--scale-factor));
 }
-:root {
-  --el-color-primary: #5665bb;
-}
-
 :root:root {
-  --el-color-primary: #5665bb;
-  --van-action-sheet-cancel-text-color: #2d2d2d;
-  --van-base-font: PingFang SC;
+  --van-action-sheet-cancel-text-color: var(--text-primary-color);
+  --van-base-font: Inter;
   --van-dialog-radius: 8px;
   --van-dialog-width: 268px;
 }
@@ -34,12 +29,12 @@ html {
   .operate-item {
     cursor: context-menu;
     padding: 12px 18px;
-    color: #747683;
+    color: var(--text-secondary-color);
     border-radius: 6px;
 
     &.active {
       background: #fff;
-      color: #2d2d2d;
+      color: var(--text-primary-color);
     }
 
     &:not(:last-child) {

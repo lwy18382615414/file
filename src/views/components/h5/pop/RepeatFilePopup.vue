@@ -58,7 +58,11 @@ const props = defineProps<{
 
 const emit = defineEmits(["update:show", "saveSuccess"]);
 
-const { duplicateTasks: flowDuplicateTasks, allTasks: flowAllTasks, clearUploadState } = useUploadFlow();
+const {
+  duplicateTasks: flowDuplicateTasks,
+  allTasks: flowAllTasks,
+  clearUploadState,
+} = useUploadFlow();
 
 const showPopup = computed({
   get: () => props.show,
@@ -110,12 +114,12 @@ const closePopup = () => {
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  background: #ebeff6;
+  background: var(--subtle-fill-color);
 
   .title {
     color: #000;
     font-size: calc(var(--base--font--size--16) * var(--scale-factor));
-    font-family: PingFang SC;
+    font-family: Inter;
   }
 }
 
@@ -137,11 +141,11 @@ const closePopup = () => {
       padding: 13px 0;
 
       &:not(:last-child) {
-        border-bottom: 1px solid #e3e6ec80;
+        border-bottom: 1px solid var(--dialog-divider-color);
       }
 
       .file-name {
-        color: #2d2d2d;
+        color: var(--text-primary-color);
         font-size: 16px;
         font-weight: bold;
         max-width: calc(100vw - 155px);
@@ -160,9 +164,9 @@ const closePopup = () => {
 
   .repeat-btn {
     text-align: center;
-    color: #327edc;
+    color: var(--theme-color);
     border-radius: 8px;
-    border: 1px solid #327edc;
+    border: 1px solid var(--theme-color);
     padding: 10px 0;
     margin-top: 24px;
   }

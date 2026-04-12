@@ -140,7 +140,7 @@ const itemCheckClass = (item: ShareContentType) => {
 }
 
 .checkbox-wrapper {
-  color: #747683;
+  color: var(--text-secondary-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -194,7 +194,7 @@ const itemCheckClass = (item: ShareContentType) => {
 
   &.is-current {
     :deep(.el-breadcrumb__inner) {
-      color: #5665bb;
+      color: var(--theme-color);
       font-weight: 500;
     }
   }
@@ -209,7 +209,7 @@ const itemCheckClass = (item: ShareContentType) => {
     align-items: center;
     justify-content: space-between;
     padding: 0 16px;
-    border-bottom: 1px solid #f2f4f7;
+    border-bottom: 1px solid var(--card-border-color);
 
     .item-left {
       display: flex;
@@ -231,7 +231,7 @@ const itemCheckClass = (item: ShareContentType) => {
 
         .item-time-size {
           font-size: 12px;
-          color: #747683;
+          color: var(--text-secondary-color);
           display: flex;
           align-items: center;
           gap: 5px;
@@ -252,6 +252,6 @@ const itemCheckClass = (item: ShareContentType) => {
   align-items: center;
   justify-content: center;
   font-size: 14px;
-  color: #747683;
+  color: var(--text-secondary-color);
 }
 </style>

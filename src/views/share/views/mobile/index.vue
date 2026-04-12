@@ -51,7 +51,11 @@
 
       <div v-if="isInputPsw" class="bottom-actions-wrapper">
         <span class="download-btn" @click="onDownload">
-          <SvgIcon name="action-share_download" size="26" color="#5665bb" />
+          <SvgIcon
+            name="action-share_download"
+            size="26"
+            color="var(--theme-color)"
+          />
         </span>
         <div
           v-if="isClient && isHaveFileApp"
@@ -146,7 +150,7 @@ const schemeUrl = computed(() => {
 .divider {
   width: 100%;
   height: 12px;
-  background: #f3f4f6;
+  background: var(--content-bg-color);
   margin-top: 36px;
 }
 
@@ -161,14 +165,14 @@ const schemeUrl = computed(() => {
 
   :deep(.van-field) {
     margin-top: 40px;
-    background: #f2f4f7;
+    background: var(--input-bg-color);
     border-radius: 4px;
     padding: 8px 16px;
   }
 
   .password-toggle-text {
     font-size: 14px;
-    color: #5665bb;
+    color: var(--theme-color);
     cursor: pointer;
   }
 
@@ -178,7 +182,7 @@ const schemeUrl = computed(() => {
     height: 42px;
     line-height: 42px;
     text-align: center;
-    background: #5665bb;
+    background: var(--btn-primary-color);
     color: #fff;
     border-radius: 8px;
   }
@@ -201,18 +205,18 @@ const schemeUrl = computed(() => {
     justify-content: center;
     padding: 8px;
     border-radius: 8px;
-    background: #f3f4f6;
+    background: var(--content-bg-color);
   }
   .goto-app-btn {
     width: calc(100vw - 32px - 46px);
     height: 42px;
     text-align: center;
     line-height: 42px;
-    background: #f3f4f6;
+    background: var(--content-bg-color);
     border-radius: 8px;
     margin-top: 0;
     border: none;
-    color: #5665bb;
+    color: var(--theme-color);
   }
 }
 </style>

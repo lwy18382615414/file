@@ -470,7 +470,7 @@ onUnmounted(() => {
     }
 
     > span {
-      color: #747683;
+      color: var(--text-secondary-color);
       font-weight: 16px;
     }
   }
@@ -520,7 +520,7 @@ onUnmounted(() => {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        border-bottom: 1px solid #f2f4f7;
+        border-bottom: 1px solid var(--input-bg-color);
       }
     }
   }
@@ -532,7 +532,7 @@ onUnmounted(() => {
 
   :deep(.el-input__wrapper) {
     box-shadow: none;
-    border-bottom: 1px solid #f2f4f7;
+    border-bottom: 1px solid var(--input-bg-color);
     padding: 0;
   }
 
@@ -548,7 +548,7 @@ onUnmounted(() => {
 
     .sms-code-box {
       height: 48px;
-      color: #747683;
+      color: var(--text-secondary-color);
       font-size: calc(var(--base--font--size--14) * var(--scale-factor));
       margin-top: 4px;
     }
@@ -600,14 +600,14 @@ onUnmounted(() => {
         width: 180px;
         padding: 0;
         margin-left: 8px;
-        border-bottom: 1px solid #f2f4f7;
+        border-bottom: 1px solid var(--input-bg-color);
       }
     }
 
     .sms-form {
       .van-field {
         padding: 0;
-        border-bottom: 1px solid #f2f4f7;
+        border-bottom: 1px solid var(--input-bg-color);
       }
 
       :deep(.van-field__button) {
@@ -617,9 +617,9 @@ onUnmounted(() => {
       .time-btn {
         height: 22px;
         line-height: 22px;
-        border-color: #c0c6d2;
+        border-color: var(--text-weak-color);
         background: #fff;
-        color: #c0c6d2;
+        color: var(--text-weak-color);
         font-size: calc(var(--base--font--size--12) * var(--scale-factor));
         padding: 0 12px;
       }
@@ -630,7 +630,7 @@ onUnmounted(() => {
         padding: 0 12px;
         font-size: calc(var(--base--font--size--12) * var(--scale-factor));
         border-color: transparent;
-        color: #327edc;
+        color: var(--theme-color);
         background: #eaf0ff;
       }
     }
@@ -639,7 +639,7 @@ onUnmounted(() => {
   .next-btn {
     width: calc(100% - 40px);
     height: 42px;
-    background: #327edc;
+    background: var(--btn-primary-color);
     color: #fff;
     text-align: center;
     line-height: 42px;
@@ -659,7 +659,7 @@ onUnmounted(() => {
       font-size: calc(var(--base--font--size--12) * var(--scale-factor));
 
       span {
-        color: #327edc;
+        color: var(--theme-color);
       }
 
       :deep(.van-checkbox__icon) {
@@ -667,12 +667,12 @@ onUnmounted(() => {
       }
 
       :deep(.van-checkbox__label) {
-        color: #c0c6d2;
+        color: var(--text-weak-color);
       }
 
       :deep(.van-checkbox__icon--checked .van-icon) {
-        background-color: #327edc;
-        border-color: #327edc;
+        background-color: var(--btn-primary-color);
+        border-color: var(--theme-color);
       }
     }
   }
@@ -682,7 +682,7 @@ onUnmounted(() => {
     margin: 20px 0;
 
     span {
-      color: #327edc;
+      color: var(--theme-color);
     }
   }
 }

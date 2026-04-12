@@ -64,7 +64,11 @@
 
             <template v-if="hiddenBreadcrumbs.length">
               <span class="breadcrumb-separator">
-                <SvgIcon name="ic_right" :size="14" color="#98a2b3" />
+                <SvgIcon
+                  name="ic_right"
+                  :size="14"
+                  color="var(--text-weak-color)"
+                />
               </span>
               <el-popover
                 placement="bottom"
@@ -96,7 +100,11 @@
 
             <template v-if="breadcrumbList.length > 1">
               <span class="breadcrumb-separator">
-                <SvgIcon name="ic_right" :size="14" color="#98a2b3" />
+                <SvgIcon
+                  name="ic_right"
+                  :size="14"
+                  color="var(--text-weak-color)"
+                />
               </span>
               <button
                 type="button"
@@ -111,7 +119,11 @@
 
         <div class="toolbar-actions">
           <div class="search-box">
-            <SvgIcon name="ic_search" :size="16" color="#98a2b3" />
+            <SvgIcon
+              name="ic_search"
+              :size="16"
+              color="var(--text-weak-color)"
+            />
             <input
               v-model.trim="keyword"
               class="search-input"
@@ -124,7 +136,7 @@
       <div class="dialog-main">
         <div class="tree-panel">
           <div class="tree-root">
-            <SvgIcon name="file-folder" :size="18" color="#327edc" />
+            <SvgIcon name="file-folder" :size="18" color="var(--theme-color)" />
             <span>{{ spaceLabel }}</span>
           </div>
           <div class="tree-list">
@@ -145,7 +157,11 @@
               ></span>
               <span class="tree-item__indicator"></span>
               <span class="tree-item__name">{{ item.contentName }}</span>
-              <SvgIcon name="ic_right" :size="14" color="#98a2b3" />
+              <SvgIcon
+                name="ic_right"
+                :size="14"
+                color="var(--text-weak-color)"
+              />
             </button>
           </div>
         </div>
@@ -186,7 +202,11 @@
                   <SvgIcon
                     :name="item.isFolder ? 'file-folder' : getRowFileIcon(item)"
                     :size="20"
-                    :color="item.isFolder ? '#327edc' : '#98a2b3'"
+                    :color="
+                      item.isFolder
+                        ? 'var(--theme-color)'
+                        : 'var(--text-weak-color)'
+                    "
                   />
                   <template v-if="isDraftCreateRow(item)">
                     <div class="draft-name-wrapper">
@@ -206,14 +226,22 @@
                         class="draft-action-btn"
                         @mousedown.prevent="commitInlineCreate"
                       >
-                        <SvgIcon name="ic_ok" :size="24" color="#327EDC" />
+                        <SvgIcon
+                          name="ic_ok"
+                          :size="24"
+                          color="var(--theme-color)"
+                        />
                       </button>
                       <button
                         type="button"
                         class="draft-action-btn"
                         @mousedown.prevent="cancelInlineCreate"
                       >
-                        <SvgIcon name="ic_cancel" :size="24" color="#327EDC" />
+                        <SvgIcon
+                          name="ic_cancel"
+                          :size="24"
+                          color="var(--theme-color)"
+                        />
                       </button>
                     </div>
                   </template>
@@ -247,7 +275,7 @@
             :disabled="isSavingInline"
             @click="handleStartInlineCreate"
           >
-            <SvgIcon name="share-add" :size="16" color="#327edc" />
+            <SvgIcon name="share-add" :size="16" color="var(--theme-color)" />
             <span>{{ t("createFolder") }}</span>
           </button>
 
@@ -808,14 +836,14 @@ const handleForward = async () => {
   padding: 0;
   overflow: hidden;
   border-radius: 10px;
-  background: #ffffff;
+  background: var(--btn-default-bg);
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
 }
 
 :deep(.el-dialog__header) {
   margin: 0;
   padding: 0;
-  border-bottom: 1px solid #eaecf0;
+  border-bottom: 1px solid var(--card-border-color);
 }
 
 :deep(.el-dialog__body) {
@@ -824,7 +852,7 @@ const handleForward = async () => {
 
 :deep(.el-dialog__footer) {
   padding: 0;
-  border-top: 1px solid #eaecf0;
+  border-top: 1px solid var(--card-border-color);
 }
 
 .dialog-header {
@@ -843,7 +871,7 @@ const handleForward = async () => {
 }
 
 .dialog-title {
-  color: #101828;
+  color: var(--text-primary-color);
   font-size: 16px;
   font-weight: 600;
 }
@@ -853,7 +881,7 @@ const handleForward = async () => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: #101828;
+  color: var(--text-primary-color);
   font-size: 16px;
 }
 
@@ -871,7 +899,7 @@ const handleForward = async () => {
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  color: #667085;
+  color: var(--text-secondary-color);
   font-size: 14px;
 }
 
@@ -889,7 +917,7 @@ const handleForward = async () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #eaecf0;
+  border-bottom: 1px solid var(--card-border-color);
 }
 
 .breadcrumb-wrapper {
@@ -908,7 +936,7 @@ const handleForward = async () => {
 .nav-button {
   width: 28px;
   height: 28px;
-  border: 1px solid #d0d5dd;
+  border: 1px solid var(--btn-secondary-border-color);
   border-radius: 6px;
   background: #fff;
   display: inline-flex;
@@ -933,7 +961,7 @@ const handleForward = async () => {
 .breadcrumb-item {
   border: none;
   background: transparent;
-  color: #667085;
+  color: var(--text-secondary-color);
   font-size: 14px;
   padding: 0;
   // max-width: 180px;
@@ -952,7 +980,7 @@ const handleForward = async () => {
 }
 
 .breadcrumb-item.active {
-  color: #101828;
+  color: var(--text-primary-color);
   font-weight: 500;
 }
 
@@ -977,13 +1005,13 @@ const handleForward = async () => {
   border: none;
   border-radius: 6px;
   background: transparent;
-  color: #344054;
+  color: var(--text-primary-color);
   text-align: left;
   cursor: pointer;
 }
 
 .breadcrumb-popover-item:hover {
-  background: #f8fafc;
+  background: var(--card-bg-color);
 }
 
 :deep(.move-dialog-breadcrumb-popover) {
@@ -1020,14 +1048,14 @@ const handleForward = async () => {
   justify-content: center;
   min-width: 24px;
   padding: 0;
-  color: #667085;
+  color: var(--text-secondary-color);
   line-height: 1;
   user-select: none;
 }
 
 :deep(.breadcrumb .el-popper-trigger:hover .breadcrumb-item--ellipsis),
 :deep(.breadcrumb .el-popper-trigger .breadcrumb-item--ellipsis:focus) {
-  color: #101828;
+  color: var(--text-primary-color);
 }
 
 :deep(.breadcrumb .el-popper-trigger button:focus-visible),
@@ -1054,7 +1082,7 @@ const handleForward = async () => {
   display: flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid #d0d5dd;
+  border: 1px solid var(--btn-secondary-border-color);
   border-radius: 8px;
   background: #fff;
 }
@@ -1064,7 +1092,7 @@ const handleForward = async () => {
   min-width: 0;
   border: none;
   outline: none;
-  color: #101828;
+  color: var(--text-primary-color);
   font-size: 14px;
 }
 
@@ -1075,8 +1103,8 @@ const handleForward = async () => {
 
 .tree-panel {
   width: 280px;
-  border-right: 1px solid #eaecf0;
-  background: #fcfcfd;
+  border-right: 1px solid var(--card-border-color);
+  background: var(--card-bg-color);
 }
 
 .tree-root {
@@ -1085,8 +1113,8 @@ const handleForward = async () => {
   display: flex;
   align-items: center;
   gap: 8px;
-  border-bottom: 1px solid #eaecf0;
-  color: #101828;
+  border-bottom: 1px solid var(--card-border-color);
+  color: var(--text-primary-color);
   font-size: 14px;
   font-weight: 500;
 }
@@ -1100,7 +1128,7 @@ const handleForward = async () => {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  color: #344054;
+  color: var(--text-primary-color);
   text-align: left;
   overflow: hidden;
 }
@@ -1123,7 +1151,7 @@ const handleForward = async () => {
 
 .tree-item.locked.active {
   background: transparent;
-  color: #344054;
+  color: var(--text-primary-color);
 }
 
 .tree-item__indicator {
@@ -1137,12 +1165,12 @@ const handleForward = async () => {
 }
 
 .tree-item.active {
-  background: #eff6ff;
-  color: #175cd3;
+  background: var(--theme-color-light);
+  color: var(--theme-color);
 }
 
 .tree-item.active .tree-item__indicator {
-  background: #327edc;
+  background: var(--theme-color);
 }
 
 .tree-item__name {
@@ -1168,8 +1196,8 @@ const handleForward = async () => {
 .content-header {
   height: 48px;
   padding: 0 20px;
-  border-bottom: 1px solid #eaecf0;
-  color: #98a2b3;
+  border-bottom: 1px solid var(--card-border-color);
+  color: var(--text-weak-color);
   font-size: 13px;
 }
 
@@ -1186,7 +1214,7 @@ const handleForward = async () => {
   border: none;
   background: transparent;
   text-align: left;
-  color: #101828;
+  color: var(--text-primary-color);
 }
 
 .lock-mask {
@@ -1197,11 +1225,11 @@ const handleForward = async () => {
 }
 
 .content-row:hover:not(.disabled) {
-  background: #f8fafc;
+  background: var(--card-bg-color);
 }
 
 .content-row.selected {
-  background: #eff6ff;
+  background: var(--theme-color-light);
 }
 
 .content-row.disabled {
@@ -1210,7 +1238,7 @@ const handleForward = async () => {
 }
 
 .content-row.locked {
-  background: #f8fafc;
+  background: var(--card-bg-color);
 }
 
 .cell-name {
@@ -1286,7 +1314,7 @@ const handleForward = async () => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #327edc;
+  color: var(--theme-color);
   font-size: 14px;
   padding: 0;
 }
@@ -1305,8 +1333,8 @@ const handleForward = async () => {
 }
 
 .cancel-btn {
-  border: 1px solid #d0d5dd;
+  border: 1px solid var(--btn-secondary-border-color);
   background: #fff;
-  color: #344054;
+  color: var(--text-primary-color);
 }
 </style>

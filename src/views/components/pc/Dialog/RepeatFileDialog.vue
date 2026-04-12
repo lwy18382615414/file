@@ -23,7 +23,7 @@
     </template>
 
     <div class="dialog-content">
-      <p class="mb-3 text-[#2d2d2d] font-bold">
+      <p class="mb-3 text-[var(--text-primary-color)] font-bold">
         {{
           t("duplicateFilesWarning", {
             count: duplicateTasks.length,
@@ -133,9 +133,9 @@ const uploadStep2 = async (repeatType: number, index: number) => {
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  color: #2d2d2d;
+  color: var(--text-primary-color);
   font-size: calc(var(--base--font--size--16) * var(--scale-factor));
-  border-bottom: 1px solid #e3e6ec80;
+  border-bottom: 1px solid var(--dialog-divider-color);
   font-weight: bold;
   overflow: hidden;
   font-family:
@@ -145,8 +145,8 @@ const uploadStep2 = async (repeatType: number, index: number) => {
 
 .dialog-content {
   padding: 8px 30px 24px;
-  border-bottom: 1px solid #e3e6ec80;
-  color: #2d2d2d;
+  border-bottom: 1px solid var(--dialog-divider-color);
+  color: var(--text-primary-color);
   font-size: calc(var(--base--font--size--16) * var(--scale-factor));
 
   .file-list {
@@ -176,9 +176,9 @@ const uploadStep2 = async (repeatType: number, index: number) => {
   }
 
   .cancel-btn {
-    border: 1px solid #327edc;
+    border: 1px solid var(--theme-color);
     background: #f2f4f8;
-    color: #327edc;
+    color: var(--theme-color);
   }
 }
 </style>

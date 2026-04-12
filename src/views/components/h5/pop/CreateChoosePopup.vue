@@ -77,12 +77,12 @@ function handleAction(actionType: string) {
       display: inline-block;
       padding: 11px;
       border-radius: 12px;
-      background: #5665bb;
+      background: var(--btn-primary-color);
       margin-bottom: 8px;
     }
 
     .name {
-      color: #2d2d2d;
+      color: var(--text-primary-color);
     }
   }
 }

@@ -145,7 +145,7 @@ const selectAction = (key: string) => {
   .file-actions {
     display: flex;
     font-size: calc(var(--base--font--size--12) * var(--scale-factor));
-    color: #999;
+    color: var(--text-weak-color);
   }
 }
 
@@ -163,7 +163,7 @@ const selectAction = (key: string) => {
     font-size: 12px;
     border-radius: 12px;
     border: 1px solid #eaedf2;
-    background: #f3f4f6;
+    background: var(--content-bg-color);
 
     .item {
       display: flex;
@@ -182,7 +182,7 @@ const selectAction = (key: string) => {
     }
 
     .action {
-      color: #2d2d2d;
+      color: var(--text-primary-color);
       line-height: 16px;
       text-align: center;
       white-space: normal;
@@ -199,7 +199,7 @@ const selectAction = (key: string) => {
 }
 
 .cancel {
-  color: #2d2d2d;
+  color: var(--text-primary-color);
   text-align: center;
   padding: 14px 0;
 }

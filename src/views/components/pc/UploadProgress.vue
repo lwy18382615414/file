@@ -153,17 +153,17 @@ const handleClose = () => {
 
 <style scoped lang="scss">
 $panel-width-pc: 360px;
-$primary-color: #327edc;
+$primary-color: var(--theme-color);
 $success-color: #67c23a;
 $error-color: #f56c6c;
 $text-main: #303133;
-$text-secondary: #909399;
+$text-secondary: var(--text-weak-color);
 $border-color: #ebeef5;
 
 .upload-panel {
   position: fixed;
   z-index: 2000;
-  background: #fff;
+  background: var(--btn-default-bg);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;

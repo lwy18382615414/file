@@ -71,13 +71,13 @@ const avatarImageUrl = computed(() => {
   .person-name {
     margin: 20px 0 10px;
     font-size: 20px;
-    color: #2d2d2d;
+    color: var(--text-primary-color);
   }
 
   .expired-time,
   .share-time {
     font-size: 12px;
-    color: #747683;
+    color: var(--text-secondary-color);
   }
 
   .share-time {

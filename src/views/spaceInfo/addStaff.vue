@@ -429,7 +429,7 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 .contacts-list {
-  background-color: #ffffff;
+  background-color: var(--btn-default-bg);
   position: fixed;
   top: 0;
   right: 0;
@@ -447,7 +447,7 @@ onUnmounted(() => {
 
   .contact-input {
     :deep(.el-input__wrapper) {
-      background-color: #f2f4f7;
+      background-color: var(--input-bg-color);
       box-shadow: none;
 
       &.is-focus {
@@ -466,9 +466,9 @@ onUnmounted(() => {
 
 :deep(.el-input.el-input--prefix .el-input__inner) {
   text-align: left;
-  background-color: #f2f4f7;
+  background-color: var(--input-bg-color);
   height: 38px;
-  color: #747683;
+  color: var(--text-secondary-color);
 }
 
 .contacts-box {
@@ -519,7 +519,7 @@ onUnmounted(() => {
   position: absolute;
   bottom: 0;
   right: 0;
-  background-color: #f2f4f7;
+  background-color: var(--input-bg-color);
 }
 
 .address-title {
@@ -538,7 +538,7 @@ onUnmounted(() => {
   }
 
   .name {
-    color: #747683;
+    color: var(--text-secondary-color);
     font-size: calc(var(--base--font--size--12) * var(--scale-factor));
   }
 }
@@ -558,7 +558,7 @@ onUnmounted(() => {
       width: 16px;
       height: 16px;
       border-radius: 50%;
-      border: 1px solid #327edc;
+      border: 1px solid var(--theme-color);
     }
 
     .already-choose {
@@ -576,7 +576,7 @@ onUnmounted(() => {
         border-radius: 50%;
         top: 50%;
         left: 50%;
-        background-color: #ffffff;
+        background-color: var(--btn-default-bg);
         transform: translate(-50%, -50%);
         z-index: 2;
         display: none;
@@ -623,7 +623,7 @@ onUnmounted(() => {
     height: 16px;
     line-height: 16px;
     font-size: calc(var(--base--font--size--12) * var(--scale-factor));
-    color: #6d7176;
+    color: var(--text-secondary-color);
     text-align: left;
   }
 }
@@ -633,7 +633,7 @@ onUnmounted(() => {
   position: absolute;
   width: calc(100vw - 32px - 24px);
   height: 1px;
-  background-color: #f2f4f7;
+  background-color: var(--input-bg-color);
   bottom: 0;
   right: 16px;
 }

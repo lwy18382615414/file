@@ -7,7 +7,10 @@
   >
     <div class="van-popup__container">
       <div class="van-popup__header">
-        <div class="van-popup__header-left" @click="emit('update:visible', false)">
+        <div
+          class="van-popup__header-left"
+          @click="emit('update:visible', false)"
+        >
           {{ t("cancel") }}
         </div>
         <div class="van-popup__header-title">{{ t("createFolder") }}</div>
@@ -68,7 +71,9 @@ const emit = defineEmits<{
 const showBottom = ref(false);
 const folderName = ref("");
 const vanFieldRef = ref();
-const canConfirmCreate = computed(() => !!props.canCreate && !!folderName.value);
+const canConfirmCreate = computed(
+  () => !!props.canCreate && !!folderName.value,
+);
 
 const handleConfirm = async () => {
   if (!canConfirmCreate.value) return;
@@ -99,7 +104,7 @@ const handleConfirm = async () => {
     showDialog({
       title: t("hint"),
       message: t("folderAlreadyExists"),
-      confirmButtonColor: "#327edc",
+      confirmButtonColor: "var(--theme-color)",
       confirmButtonText: t("Ok"),
       cancelButtonText: t("cancel"),
     }).then(() => {});
@@ -110,7 +115,7 @@ const handleConfirm = async () => {
     showDialog({
       title: t("hint"),
       message: t("noEditPermission"),
-      confirmButtonColor: "#327edc",
+      confirmButtonColor: "var(--theme-color)",
       confirmButtonText: t("Ok"),
       cancelButtonText: t("cancel"),
     }).then(() => {});
@@ -143,7 +148,7 @@ watch(showBottom, (value) => {
 
 <style scoped lang="scss">
 .van-popup__container {
-  font-family: PingFang SC;
+  font-family: Inter;
 }
 
 .van-popup__header {
@@ -151,26 +156,26 @@ watch(showBottom, (value) => {
   align-items: center;
   padding: 16px;
   justify-content: center;
-  background-color: #ebeff6;
+  background-color: var(--subtle-fill-color);
 
   &-left {
     position: absolute;
     left: 16px;
-    color: #747683;
+    color: var(--text-secondary-color);
   }
 
   &-right {
     position: absolute;
     right: 16px;
-    color: #327edc;
+    color: var(--theme-color);
 
     &.disabled {
-      color: #747683;
+      color: var(--text-secondary-color);
     }
   }
 
   &-title {
-    color: #2d2d2d;
+    color: var(--text-primary-color);
   }
 }
 
@@ -189,7 +194,7 @@ watch(showBottom, (value) => {
 
     .van-field {
       border-radius: 4px;
-      background: #f2f4f7;
+      background: var(--input-bg-color);
       padding: 6px 16px;
     }
   }

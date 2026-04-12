@@ -34,7 +34,7 @@
       <div v-if="files && files.length" class="view-all">
         <span>{{ t("totalItems", { count: total }) }}</span>
         <span
-          style="color: #327edc; margin-left: 8px"
+          style="color: var(--theme-color); margin-left: 8px"
           @click="handleClickViewAll"
           >{{ t("viewAll") }}</span
         >
@@ -182,13 +182,13 @@ onMounted(() => {
 
 <style scoped lang="scss">
 :deep(.van-search__action) {
-  color: #747683;
+  color: var(--text-secondary-color);
   font-size: 16px;
 }
 
 :deep(.van-field__control) {
   &::placeholder {
-    color: #747683;
+    color: var(--text-secondary-color);
     font-size: 15px;
   }
 }

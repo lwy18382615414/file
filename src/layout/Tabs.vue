@@ -87,10 +87,10 @@ watch(() => route.path, scrollActiveTabIntoView, { immediate: true });
     justify-content: center;
     height: 42px;
     font-size: 16px;
-    color: #7b8290;
+    color: var(--text-secondary-color);
 
     &.active {
-      color: #5665bb;
+      color: var(--theme-color);
       font-weight: 500;
 
       &::after {
@@ -100,7 +100,7 @@ watch(() => route.path, scrollActiveTabIntoView, { immediate: true });
         right: 0;
         bottom: 0;
         height: 2px;
-        background-color: #5665bb;
+        background-color: var(--theme-color);
         border-radius: 999px;
       }
     }

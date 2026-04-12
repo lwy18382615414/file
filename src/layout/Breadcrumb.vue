@@ -135,7 +135,7 @@ watch(crumbs, () => {
   height: 48px;
   padding-left: 16px;
   font-size: 14px;
-  color: #747683;
+  color: var(--text-secondary-color);
   white-space: nowrap;
   overflow: auto;
 
@@ -150,14 +150,14 @@ watch(crumbs, () => {
   }
 
   .active {
-    color: #2d2d2d;
+    color: var(--text-primary-color);
     font-weight: 500;
     cursor: default;
   }
 
   .separator {
     margin: 0 4px;
-    color: #747683;
+    color: var(--text-secondary-color);
     cursor: default;
   }
 }

@@ -31,7 +31,7 @@
         <div class="permission" @click="showPermission(item)">
           <span>{{ getHighestPermission(item.permissionType).name }}</span>
           <span v-if="!isReadOnly(item)">
-            <SvgIcon name="ic_arr_select" color="#999" />
+            <SvgIcon name="ic_arr_select" color="var(--text-weak-color)" />
           </span>
         </div>
       </template>
@@ -325,19 +325,19 @@ watchEffect(() => {
 
 <style scoped lang="scss">
 :deep(.van-search__content) {
-  background-color: #f2f4f7;
+  background-color: var(--input-bg-color);
   border-radius: 4px;
 }
 
 :deep(.van-search__action) {
-  color: #747683;
+  color: var(--text-secondary-color);
   font-size: calc(var(--base--font--size--16) * var(--scale-factor));
 }
 
 :deep(.van-field__control) {
   font-size: calc(var(--base--font--size--16) * var(--scale-factor));
   &::placeholder {
-    color: #747683;
+    color: var(--text-secondary-color);
     font-size: calc(var(--base--font--size--16) * var(--scale-factor));
   }
 }
@@ -369,14 +369,14 @@ watchEffect(() => {
 
 .permission {
   font-size: calc(var(--base--font--size--14) * var(--scale-factor));
-  color: #999;
+  color: var(--text-weak-color);
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 .tips {
-  color: #999999;
+  color: var(--text-weak-color);
   margin-left: 8px;
 }
 </style>

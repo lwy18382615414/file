@@ -51,7 +51,7 @@
       >
         <SvgIcon
           name="share-add"
-          :color="canCreateFolderWithPermission ? '' : '#fff'"
+          :color="canCreateFolderWithPermission ? '' : 'var(--btn-primary-text-color)'"
           style="margin-right: 8px"
         />
         {{ t("createFolder") }}
@@ -358,8 +358,8 @@ onMounted(() => {
   line-height: 50px;
   padding: 0 16px;
   font-size: 14px;
-  color: #747683;
-  border-bottom: 1px solid #f2f4f7;
+  color: var(--text-secondary-color);
+  border-bottom: 1px solid var(--card-border-color);
   overflow-x: auto;
   overflow-y: hidden;
   white-space: nowrap;
@@ -387,7 +387,7 @@ onMounted(() => {
   }
 
   .active {
-    color: #2d2d2d;
+    color: var(--text-primary-color);
   }
 }
 
@@ -401,7 +401,7 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  border-bottom: 1px solid #f2f4f7;
+  border-bottom: 1px solid var(--card-border-color);
   cursor: pointer;
 
   &__info {
@@ -412,7 +412,7 @@ onMounted(() => {
 
   &__name {
     margin-left: 8px;
-    color: #2d2d2d;
+    color: var(--text-primary-color);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -435,11 +435,11 @@ onMounted(() => {
 
 .empty-text {
   font-size: 14px;
-  color: #747683;
+  color: var(--text-secondary-color);
 }
 
 .btn-box {
-  background: #fff;
+  background: var(--btn-default-bg);
   border-top: 1px solid #e0e4eb;
   padding: 15px 20px;
   width: 100%;
@@ -463,24 +463,24 @@ onMounted(() => {
 .cancel-btn {
   background: #f2f6fe;
   border: none;
-  color: #327edc;
+  color: var(--theme-color);
 
   &.is-disabled {
     background: #b7b7b7;
-    color: #fff;
+    color: var(--btn-primary-text-color);
     border: 1px solid #b7b7b7;
   }
 }
 
 .confirm-btn {
   border: none;
-  background: #327edc;
+  background: var(--btn-primary-color);
   color: #fff;
   font-weight: 700;
 
   &.is-disabled {
     background: #b7b7b7;
-    color: #fff;
+    color: var(--btn-primary-text-color);
     border: 1px solid #b7b7b7;
   }
 }

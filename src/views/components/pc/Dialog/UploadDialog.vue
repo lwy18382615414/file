@@ -161,16 +161,16 @@ const handleClose = () => {
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  color: #2d2d2d;
+  color: var(--text-primary-color);
   font-size: calc(var(--base--font--size--16) * var(--scale-factor));
-  border-bottom: 1px solid #e3e6ec80;
+  border-bottom: 1px solid var(--dialog-divider-color);
   font-weight: bold;
   overflow: hidden;
 }
 
 .dialog-content {
   padding: 8px 30px 24px;
-  border-bottom: 1px solid #e3e6ec80;
+  border-bottom: 1px solid var(--dialog-divider-color);
 
   .file-wrapper {
     width: 400px;
@@ -180,7 +180,7 @@ const handleClose = () => {
     display: flex;
 
     &.no-file {
-      border: 1px dashed #5665bb;
+      border: 1px dashed var(--theme-color);
     }
 
     .empty-file {
@@ -190,7 +190,7 @@ const handleClose = () => {
       align-items: center;
 
       .text {
-        color: #2d2d2d;
+        color: var(--text-primary-color);
         font-size: calc(var(--base--font--size--14) * var(--scale-factor));
         margin-top: 6px;
       }
@@ -215,7 +215,7 @@ const handleClose = () => {
       padding: 13px 16px;
 
       &:not(:last-child) {
-        border-bottom: 1px solid #e3e6ec80;
+        border-bottom: 1px solid var(--dialog-divider-color);
       }
 
       .file-main {
@@ -225,7 +225,7 @@ const handleClose = () => {
       }
 
       .file-name {
-        color: #2d2d2d;
+        color: var(--text-primary-color);
         font-size: calc(var(--base--font--size--14) * var(--scale-factor));
         font-weight: bold;
         max-width: 290px;
@@ -250,12 +250,12 @@ const handleClose = () => {
   }
 
   .cancel-btn {
-    border: 1px solid #5665bb;
+    border: 1px solid var(--theme-color);
     background: #f2f4f8;
-    color: #5665bb;
+    color: var(--theme-color);
   }
   .confirm-btn {
-    background: #5665bb;
+    background: var(--btn-primary-color);
     color: #fff;
 
     &.is-disabled {
@@ -267,7 +267,7 @@ const handleClose = () => {
 
 .form-label {
   font-size: calc(var(--base--font--size--14) * var(--scale-factor));
-  color: #2d2d2d;
+  color: var(--text-primary-color);
   font-weight: bold;
   margin-right: 14px;
   margin-bottom: 14px;
@@ -292,8 +292,8 @@ const handleClose = () => {
 
   &.is-dragover {
     .file-wrapper {
-      background: #ecf5ffff;
-      border: 2px dashed #5665bb;
+      background: var(--theme-color-light);
+      border: 2px dashed var(--theme-color);
     }
   }
 }

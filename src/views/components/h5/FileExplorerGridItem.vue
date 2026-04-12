@@ -126,7 +126,7 @@ const isChecked = computed(() => {
 
   &.is-checked {
     border-radius: 4px;
-    box-shadow: 0 0 0 1px #327edc;
+    box-shadow: 0 0 0 1px var(--theme-color);
   }
 
   .cell {
@@ -137,7 +137,7 @@ const isChecked = computed(() => {
       margin-left: 12px;
       font-size: calc(var(--base--font--size--14) * var(--scale-factor));
       font-weight: 500;
-      color: #2d2d2d;
+      color: var(--text-primary-color);
       max-width: 92px;
       user-select: none;
       overflow: hidden;
@@ -153,13 +153,13 @@ const isChecked = computed(() => {
 
   &.is-checked {
     border-radius: 4px;
-    box-shadow: 0 0 0 1px #327edc;
+    box-shadow: 0 0 0 1px var(--theme-color);
   }
 
   .file-bg {
     height: 104px;
     padding: 8px 8px 0 8px;
-    border: 1px solid #f2f4f7;
+    border: 1px solid var(--input-bg-color);
     border-bottom: transparent;
     border-radius: 4px 4px 0 0;
     position: relative;
@@ -178,7 +178,7 @@ const isChecked = computed(() => {
   }
 
   .file-info {
-    border: 1px solid #f2f4f7;
+    border: 1px solid var(--input-bg-color);
     border-radius: 0 0 4px 4px;
     padding: 6px 12px 8px;
     user-select: none;
@@ -196,14 +196,14 @@ const isChecked = computed(() => {
         white-space: nowrap;
         font-size: calc(var(--base--font--size--15) * var(--scale-factor));
         font-weight: 500;
-        color: #2d2d2d;
+        color: var(--text-primary-color);
       }
     }
 
     .file-desc {
       font-size: calc(var(--base--font--size--12) * var(--scale-factor));
       margin-bottom: 4px;
-      color: #747683;
+      color: var(--text-secondary-color);
       max-width: 100%;
       overflow: hidden;
       text-overflow: ellipsis;

@@ -3,7 +3,6 @@ import "regenerator-runtime/runtime";
 import "element-plus/dist/index.css";
 import "vant/lib/index.css";
 import "normalize.css/normalize.css";
-import "./styles/theme.css";
 import "./styles/index.css";
 import "virtual:svg-icons-register";
 
@@ -12,6 +11,8 @@ import App from "./App.vue";
 import router from "@/routers/index";
 import i18n from "@/lang";
 import pinia from "./stores/index";
+import { applyTheme } from "@/theme/applyTheme";
+import { defaultTheme } from "@/theme/themes";
 
 import { borderCursor } from "@/directives/borderCursor";
 import { truncateMiddle } from "@/directives/truncaeMiddle";
@@ -132,6 +133,8 @@ const enablePcVConsoleDrag = () => {
 
   observer.observe(document.body, { childList: true, subtree: true });
 };
+
+applyTheme(defaultTheme);
 
 const app = createApp(App);
 

@@ -177,9 +177,9 @@ const handleConfirm = () => {
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  color: #2d2d2d;
+  color: var(--text-primary-color);
   font-size: calc(var(--base--font--size--16) * var(--scale-factor));
-  border-bottom: 1px solid #e3e6ec80;
+  border-bottom: 1px solid var(--dialog-divider-color);
   font-weight: bold;
 }
 
@@ -200,7 +200,7 @@ const handleConfirm = () => {
   justify-content: space-between;
   gap: 12px;
   padding: 12px 20px;
-  border-bottom: 1px solid #e3e6ec80;
+  border-bottom: 1px solid var(--dialog-divider-color);
   cursor: pointer;
 }
 
@@ -212,12 +212,12 @@ const handleConfirm = () => {
 
 .select-all-text,
 .selected-count {
-  color: #2d2d2d;
+  color: var(--text-primary-color);
   font-size: 14px;
 }
 
 .selected-count {
-  color: #6d7176;
+  color: var(--text-secondary-color);
 }
 
 .user-item {
@@ -261,7 +261,7 @@ const handleConfirm = () => {
 
 .user-name,
 .user-permission {
-  color: #2d2d2d;
+  color: var(--text-primary-color);
   font-size: 14px;
 }
 
@@ -285,7 +285,7 @@ const handleConfirm = () => {
   justify-content: flex-end;
   gap: 12px;
   padding: 16px;
-  border-top: 1px solid #e3e6ec80;
+  border-top: 1px solid var(--dialog-divider-color);
 }
 
 .cancel-btn,
@@ -295,8 +295,8 @@ const handleConfirm = () => {
 }
 
 .cancel-btn {
-  border: 1px solid #327edc;
+  border: 1px solid var(--theme-color);
   background: #f2f4f8;
-  color: #327edc;
+  color: var(--theme-color);
 }
 </style>

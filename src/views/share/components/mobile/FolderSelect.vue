@@ -87,8 +87,8 @@
     show-cancel-button
     width="80%"
     :confirm-button-text="t('clickToView')"
-    confirm-button-color="#327edc"
-    cancel-button-color="#2d2d2d"
+    confirm-button-color="var(--theme-color)"
+    cancel-button-color="var(--text-primary-color)"
     :cancel-button-text="t('cancel')"
     @cancel="closeSaveSuccess"
     @confirm="goToCloudDrive"
@@ -179,7 +179,8 @@ const {
 const canCreateFolderButton = computed(() => {
   if (!canCreateFolder.value) return false;
   if (!selectFolder.value) return false;
-  if (selectFolder.value.contentId !== 0 || selectFolder.value.isPersonal) return true;
+  if (selectFolder.value.contentId !== 0 || selectFolder.value.isPersonal)
+    return true;
   return canCreateSharedRootFolder.value;
 });
 
@@ -260,22 +261,22 @@ watch(
   padding: 32px 0 28px;
 
   .success-text {
-    color: #2d2d2d;
+    color: var(--text-primary-color);
     padding: 12px 0 8px;
   }
 
   .taget-folder {
     font-size: 14px;
-    color: #747683;
+    color: var(--text-secondary-color);
 
     .folder-name {
-      color: #327edc;
+      color: var(--theme-color);
     }
   }
 }
 
 .van-popup__container {
-  font-family: PingFang SC;
+  font-family: Inter;
 }
 
 .van-popup__header {
@@ -283,16 +284,16 @@ watch(
   align-items: center;
   padding: 16px;
   justify-content: center;
-  background-color: #ebeff6;
+  background-color: var(--subtle-fill-color);
 
   &-left {
     position: absolute;
     left: 16px;
-    color: #747683;
+    color: var(--text-secondary-color);
   }
 
   &-title {
-    color: #2d2d2d;
+    color: var(--text-primary-color);
   }
 }
 
@@ -304,8 +305,8 @@ watch(
     line-height: 50px;
     padding: 0 16px;
     font-size: 14px;
-    color: #747683;
-    border-bottom: 1px solid #f2f4f7;
+    color: var(--text-secondary-color);
+    border-bottom: 1px solid var(--card-border-color);
     max-width: calc(100vw - 16px);
     overflow-x: auto;
     overflow-y: hidden;
@@ -322,7 +323,7 @@ watch(
     }
 
     .active {
-      color: #2d2d2d;
+      color: var(--text-primary-color);
     }
   }
 
@@ -345,7 +346,7 @@ watch(
       align-items: center;
       justify-content: center;
       font-size: 14px;
-      color: #747683;
+      color: var(--text-secondary-color);
       margin-top: 50px;
     }
   }
@@ -354,11 +355,11 @@ watch(
     display: flex;
     align-items: center;
     padding: 16px;
-    border-bottom: 1px solid #f2f4f7;
+    border-bottom: 1px solid var(--card-border-color);
 
     &__title {
       margin-left: 8px;
-      color: #2d2d2d;
+      color: var(--text-primary-color);
       max-width: calc(100vw - 32px - 16px - 16px);
       overflow: hidden;
       text-overflow: ellipsis;
@@ -388,13 +389,13 @@ watch(
   }
 
   .van-button--new {
-    color: #5665bb;
-    background: #f3f4f6;
+    color: var(--theme-color);
+    background: var(--content-bg-color);
   }
 
   .van-button--save {
     color: #fff;
-    background: #5665bb;
+    background: var(--btn-primary-color);
   }
 }
 </style>

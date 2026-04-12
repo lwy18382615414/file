@@ -36,7 +36,7 @@ withDefaults(
 
 .empty-text {
   margin-top: 12px;
-  color: #999;
+  color: var(--text-weak-color);
   text-align: center;
   font-size: calc(var(--base--font--size--14) * var(--scale-factor));
 }

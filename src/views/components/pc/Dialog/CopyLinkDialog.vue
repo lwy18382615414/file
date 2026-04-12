@@ -276,7 +276,7 @@ function resetState() {
   align-items: center;
   justify-content: space-between;
   padding: 10px 16px;
-  color: #2d2d2d;
+  color: var(--text-primary-color);
   font-size: calc(var(--base--font--size--16) * var(--scale-factor));
   font-weight: bold;
   overflow: hidden;
@@ -299,7 +299,7 @@ function resetState() {
   gap: 12px;
 
   .file-name {
-    color: #2d2d2d;
+    color: var(--text-primary-color);
     font-size: calc(var(--base--font--size--16) * var(--scale-factor));
     line-height: 24px;
     max-width: 520px;
@@ -327,7 +327,7 @@ function resetState() {
 
 .form-label {
   min-width: 80px;
-  color: #2d2d2d;
+  color: var(--text-primary-color);
   font-size: calc(var(--base--font--size--16) * var(--scale-factor));
   line-height: 24px;
   text-align: right;
@@ -369,7 +369,7 @@ function resetState() {
 
 .password-tips {
   margin-top: 6px;
-  color: #747683;
+  color: var(--text-secondary-color);
   font-size: 12px;
   line-height: 18px;
 
@@ -399,7 +399,7 @@ function resetState() {
 }
 
 :deep(.result-row .el-input__suffix-inner) {
-  color: #747683;
+  color: var(--text-secondary-color);
   font-size: 12px;
 }
 
@@ -426,7 +426,7 @@ function resetState() {
   }
 
   .el-radio__label {
-    color: #2d2d2d;
+    color: var(--text-primary-color);
     font-size: calc(var(--base--font--size--16) * var(--scale-factor));
     line-height: 24px;
   }

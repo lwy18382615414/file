@@ -13,7 +13,7 @@ defineProps<Props>();
 .checkbox {
   width: 16px;
   height: 16px;
-  border: 1px solid #747683;
+  border: 1px solid var(--text-secondary-color);
   position: relative;
 
   &::before {
@@ -31,23 +31,23 @@ defineProps<Props>();
   }
 
   &.is-partial {
-    background: #ffffff;
+    background: var(--btn-default-bg);
 
     &::before {
       display: block;
-      border: 2px solid #5665bb;
+      border: 2px solid var(--theme-color);
       border-left: 0;
       border-top: 0;
     }
   }
 
   &.is-all {
-    background: #5665bb;
-    border-color: #5665bb;
+    background: var(--theme-color);
+    border-color: var(--theme-color);
 
     &::before {
       display: block;
-      border: 2px solid #ffffff;
+      border: 2px solid var(--btn-primary-text-color);
       border-left: 0;
       border-top: 0;
     }

@@ -108,9 +108,9 @@ const operateList = [
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  color: #2d2d2d;
+  color: var(--text-primary-color);
   font-size: calc(var(--base--font--size--16) * var(--scale-factor));
-  border-bottom: 1px solid #e3e6ec80;
+  border-bottom: 1px solid var(--dialog-divider-color);
   font-weight: bold;
   overflow: hidden;
   font-family:
@@ -120,7 +120,7 @@ const operateList = [
 
 .dialog-content {
   padding: 8px 30px 24px;
-  border-bottom: 1px solid #e3e6ec80;
+  border-bottom: 1px solid var(--dialog-divider-color);
 
   .file-list {
     max-height: 140px;
@@ -149,12 +149,12 @@ const operateList = [
   }
 
   .cancel-btn {
-    border: 1px solid #327edc;
+    border: 1px solid var(--theme-color);
     background: #f2f4f8;
-    color: #327edc;
+    color: var(--theme-color);
   }
   .confirm-btn {
-    background: #327edc;
+    background: var(--btn-primary-color);
     color: #fff;
   }
 }

@@ -22,7 +22,7 @@
           <svg-icon
             :name="'action-' + currentViewMode"
             size="24"
-            color="#7b8290"
+            color="var('--text-secondary-color')"
           />
         </div>
       </template>
@@ -79,20 +79,20 @@ const handleMoreClick = () => {
     display: flex;
     align-items: center;
     padding: 12px 16px;
-    background-color: #fff;
+    background-color: var(--btn-default-bg);
 
     .search-content {
       display: flex;
       align-items: center;
       flex: 1;
       padding: 11px 16px;
-      background-color: #f1f5f9;
+      background-color: var(--content-bg-color);
       border-radius: 12px;
 
       .search-text {
         margin-left: 8px;
         font-size: 14px;
-        color: #999;
+        color: var(--text-weak-color);
       }
     }
 
@@ -117,7 +117,7 @@ const handleMoreClick = () => {
     height: 100%;
     align-items: center;
     justify-content: center;
-    background-color: #fff;
+    background-color: var(--btn-default-bg);
   }
 }
 </style>

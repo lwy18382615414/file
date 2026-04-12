@@ -104,7 +104,7 @@ const emit = defineEmits<{
 .pc-context-menu__desc {
   font-size: 12px;
   line-height: 18px;
-  color: #909399;
+  color: var(--text-weak-color);
 }
 
 .pc-context-menu__item.is-danger .pc-context-menu__desc {

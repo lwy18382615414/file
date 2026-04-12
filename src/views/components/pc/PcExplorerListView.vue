@@ -592,7 +592,7 @@ onBeforeUnmount(() => {
 .loading {
   flex-shrink: 0;
   border: 3px solid hsla(213, 71%, 53%, 0.2);
-  border-top-color: #327edc;
+  border-top-color: var(--theme-color);
   border-radius: 50%;
   width: 18px;
   height: 18px;
@@ -617,7 +617,7 @@ onBeforeUnmount(() => {
 }
 
 .sort-header__arrow {
-  color: #409eff;
+  color: var(--theme-color);
   font-size: 12px;
   line-height: 1;
 }
@@ -628,11 +628,11 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #909399;
+  color: var(--text-weak-color);
   font-size: 13px;
 
   .no-more {
-    color: #c0c4cc;
+    color: var(--text-weak-color);
   }
 }
 </style>

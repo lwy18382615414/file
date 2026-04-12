@@ -29,7 +29,7 @@
           </el-input>
         </div>
         <button class="action-button" type="button" @click="emit('search')">
-          <SvgIcon name="common-search" size="22" color="#fff" />
+          <SvgIcon name="common-search" size="22" color="var(--btn-primary-text-color)" />
           {{ t("search") }}
         </button>
         <div
@@ -120,7 +120,7 @@ const pageTitleMap: Record<string, string> = {
 <style scoped lang="scss">
 .pc-explorer-header {
   padding: 24px 16px 16px;
-  background: #fff;
+  background: var(--btn-default-bg);
 }
 
 .header-main {
@@ -162,13 +162,13 @@ const pageTitleMap: Record<string, string> = {
   border-radius: 8px;
   cursor: pointer;
   padding: 0 12px;
-  background: #5665bb;
-  color: #fff;
+  background: var(--btn-primary-color);
+  color: var(--btn-primary-text-color);
   font-size: 14px;
 
   &:disabled {
     background: #cbd5e1;
-    color: #fff;
+    color: var(--btn-primary-text-color);
     cursor: not-allowed;
     pointer-events: none;
     opacity: 0.7;
@@ -180,7 +180,7 @@ const pageTitleMap: Record<string, string> = {
 
   &:disabled {
     background: #fecaca;
-    color: #fff;
+    color: var(--btn-primary-text-color);
   }
 }
 

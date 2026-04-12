@@ -147,14 +147,14 @@ const handleConfirm = () => {
   align-items: center;
   justify-content: space-between;
   padding-bottom: 10px;
-  color: #2d2d2d;
+  color: var(--text-primary-color);
   font-size: calc(var(--base--font--size--16) * var(--scale-factor));
-  border-bottom: 1px solid #e3e6ec80;
+  border-bottom: 1px solid var(--dialog-divider-color);
   font-weight: bold;
 }
 
 .dialog-content {
-  border-bottom: 1px solid #e3e6ec80;
+  border-bottom: 1px solid var(--dialog-divider-color);
 }
 
 .message {
@@ -177,8 +177,8 @@ const handleConfirm = () => {
 }
 
 .cancel-btn {
-  border: 1px solid #327edc;
+  border: 1px solid var(--theme-color);
   background: #f2f4f8;
-  color: #327edc;
+  color: var(--theme-color);
 }
 </style>

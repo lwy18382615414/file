@@ -16,7 +16,7 @@ defineProps(["isChoose"]);
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  border: 1px solid #327edc;
+  border: 1px solid var(--theme-color);
 }
 
 .half-choose {

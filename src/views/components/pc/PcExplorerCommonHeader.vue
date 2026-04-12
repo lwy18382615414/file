@@ -320,7 +320,7 @@ watch(() => route.fullPath, syncHistoryState, { immediate: true });
 
     &:hover {
       background: #e2e8f0;
-      color: #5665bb;
+      color: var(--theme-color);
     }
   }
 }
@@ -403,21 +403,21 @@ watch(() => route.fullPath, syncHistoryState, { immediate: true });
       gap: 4px;
       border: 0;
       border-radius: 6px;
-      background: #f1f5f9;
-      color: #5665bb;
+      background: var(--content-bg-color);
+      color: var(--theme-color);
       font-size: 14px;
       cursor: pointer;
       border: 1px solid #e2e8f0;
 
       &.primary {
-        background: #5665bb;
-        color: #fff;
+        background: var(--btn-primary-color);
+        color: var(--btn-primary-text-color);
         border: none;
       }
 
       &.danger {
         color: #dd262f;
-        background: #fff;
+        background: var(--btn-default-bg);
         border: 1px solid #dd262f;
       }
     }
@@ -485,7 +485,7 @@ watch(() => route.fullPath, syncHistoryState, { immediate: true });
       cursor: pointer;
 
       &:hover {
-        background: #f1f5f9;
+        background: var(--content-bg-color);
       }
 
       &:disabled {
@@ -516,7 +516,7 @@ watch(() => route.fullPath, syncHistoryState, { immediate: true });
     align-items: center;
     padding: 3px;
     border-radius: 8px;
-    background: #f1f5f9;
+    background: var(--content-bg-color);
     border: 1px solid #e5e7eb;
     gap: 4px;
 
@@ -537,12 +537,12 @@ watch(() => route.fullPath, syncHistoryState, { immediate: true });
         box-shadow 0.2s ease;
 
       &:hover {
-        color: #5665bb;
+        color: var(--theme-color);
       }
 
       &.active {
-        background: #fff;
-        color: #5665bb;
+        background: var(--btn-default-bg);
+        color: var(--theme-color);
         box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
       }
     }

@@ -10,7 +10,7 @@
       <div class="sheet-header">
         <span class="sheet-title">{{ title }}</span>
         <button class="close-btn" type="button" @click="handleCancel">
-          <SvgIcon name="ic_close" size="18" color="#ffffff" />
+          <SvgIcon name="ic_close" size="18" color="var(--btn-primary-text-color)" />
         </button>
       </div>
 
@@ -115,7 +115,7 @@ const handleConfirm = () => {
 .name-edit-sheet {
   width: 100%;
   padding: 0 16px 24px;
-  background: #ffffff;
+  background: var(--btn-default-bg);
   border-radius: 20px 20px 0 0;
   box-sizing: border-box;
 }
@@ -131,7 +131,7 @@ const handleConfirm = () => {
   font-size: 18px;
   font-weight: 600;
   line-height: 25px;
-  color: #2d2d2d;
+  color: var(--text-primary-color);
 }
 
 .close-btn {
@@ -149,13 +149,13 @@ const handleConfirm = () => {
 }
 
 :deep(.van-field) {
-  background: #f3f4f6;
+  background: var(--content-bg-color);
   border-radius: 12px;
 }
 
 :deep(.van-field__control) {
   min-height: 22px;
-  color: #2d2d2d;
+  color: var(--text-primary-color);
 }
 
 :deep(.van-field__word-limit) {
@@ -177,13 +177,13 @@ const handleConfirm = () => {
 }
 
 .cancel-btn {
-  color: #2d2d2d;
-  background: #f3f4f6;
+  color: var(--text-primary-color);
+  background: var(--content-bg-color);
 }
 
 .confirm-btn {
-  color: #ffffff;
-  background: #5665bb;
+  color: var(--btn-primary-text-color);
+  background: var(--btn-primary-color);
 }
 
 .confirm-btn:disabled {

@@ -435,13 +435,13 @@ onUnmounted(() => {
   .item-person {
     &.add-button {
       .avatar-img {
-        border: 1px dashed #999;
+        border: 1px dashed var(--text-weak-color);
         position: relative;
 
         &::after {
           content: "+";
           font-size: calc(var(--base--font--size--24) * var(--scale-factor));
-          color: #999;
+          color: var(--text-weak-color);
           position: absolute;
           top: 50%;
           left: 50%;
@@ -463,7 +463,7 @@ onUnmounted(() => {
         max-width: 48px;
         margin-top: 4px;
         font-size: calc(var(--base--font--size--12) * var(--scale-factor));
-        color: #747683;
+        color: var(--text-secondary-color);
         text-align: center;
       }
     }
@@ -499,7 +499,7 @@ onUnmounted(() => {
 .divider {
   width: 100%;
   height: 12px;
-  background-color: #f9f9fa;
+  background-color: var(--content-bg-color);
 }
 .space-info {
   border-radius: 4px;
@@ -515,7 +515,7 @@ onUnmounted(() => {
 
   :deep(.van-button--default) {
     border: none;
-    color: #2d2d2d;
+    color: var(--text-primary-color);
     padding: 0 16px;
     border-radius: 8px;
 
@@ -530,7 +530,7 @@ onUnmounted(() => {
     }
 
     &.delete-button {
-      background: #7476831a;
+      background: var(--content-bg-color);
     }
   }
 }

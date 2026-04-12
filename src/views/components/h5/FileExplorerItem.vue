@@ -149,7 +149,7 @@ const handleClick = () => {
         font-weight: 400;
         font-size: 12px;
         line-height: 16px;
-        color: #7b8290;
+        color: var(--text-secondary-color);
 
         .share-meta-flex {
           display: flex;

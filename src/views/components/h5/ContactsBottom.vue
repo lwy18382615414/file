@@ -108,7 +108,7 @@ watchEffect(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #f2f4f7;
+  background-color: var(--input-bg-color);
   position: fixed;
   bottom: 0;
   left: 0;
@@ -121,7 +121,7 @@ watchEffect(() => {
   }
 
   .confirmBtn {
-    background: #327edc;
+    background: var(--btn-primary-color);
     color: #fff;
     height: 30px;
     font-size: calc(var(--base--font--size--14) * var(--scale-factor));

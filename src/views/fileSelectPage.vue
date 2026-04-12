@@ -683,7 +683,7 @@ onUnmounted(() => {
     line-height: 150%;
     font-size: calc(var(--base--font--size--14) * var(--scale-factor));
     font-weight: bold;
-    color: #2d2d2d;
+    color: var(--text-primary-color);
   }
 }
 
@@ -712,8 +712,8 @@ onUnmounted(() => {
   line-height: 50px;
   padding: 0 16px;
   font-size: 14px;
-  color: #747683;
-  border-bottom: 1px solid #f2f4f7;
+  color: var(--text-secondary-color);
+  border-bottom: 1px solid var(--card-border-color);
   max-width: calc(100vw - 16px);
   overflow-x: auto;
   overflow-y: hidden;
@@ -730,7 +730,7 @@ onUnmounted(() => {
   }
 
   .active {
-    color: #2d2d2d;
+    color: var(--text-primary-color);
   }
 }
 
@@ -747,11 +747,11 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   padding: 16px;
-  border-bottom: 1px solid #f2f4f7;
+  border-bottom: 1px solid var(--card-border-color);
 
   &__title {
     margin-left: 8px;
-    color: #2d2d2d;
+    color: var(--text-primary-color);
     max-width: calc(100vw - 32px - 16px - 16px);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -771,7 +771,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   font-size: 14px;
-  color: #747683;
+  color: var(--text-secondary-color);
   margin-top: 50px;
 }
 
@@ -795,13 +795,13 @@ onUnmounted(() => {
   }
 
   .btn-secondary {
-    color: #5665bb;
-    background: #f3f4f6;
+    color: var(--theme-color);
+    background: var(--content-bg-color);
   }
 
   .btn-primary {
     color: #fff;
-    background: #5665bb;
+    background: var(--btn-primary-color);
   }
 
   .uploader-btn :deep(.van-uploader__wrapper) {

@@ -524,7 +524,7 @@ const schemeUrl = computed(() => {
   position: relative;
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: var(--btn-default-bg);
   min-height: 488px;
 }
 
@@ -537,7 +537,7 @@ const schemeUrl = computed(() => {
   line-height: 1.5;
   font-size: calc(var(--base--font--size--14) * var(--scale-factor));
   font-weight: bold;
-  color: #2d2d2d;
+  color: var(--text-primary-color);
   padding: 10px 16px;
 
   &--content {
@@ -586,7 +586,7 @@ const schemeUrl = computed(() => {
     margin-top: 12px;
     font-size: 12px;
     line-height: 20px;
-    color: #747683;
+    color: var(--text-secondary-color);
     text-align: center;
   }
 }
@@ -617,7 +617,7 @@ const schemeUrl = computed(() => {
       margin-left: 8px;
       font-weight: 400;
       font-size: calc(var(--base--font--size--16) * var(--scale-factor));
-      color: #2d2d2d;
+      color: var(--text-primary-color);
       max-width: calc(100% - 8px);
       white-space: nowrap;
       overflow: hidden;
@@ -631,7 +631,7 @@ const schemeUrl = computed(() => {
       align-items: center;
       margin-left: 16px;
       font-size: calc(var(--base--font--size--14) * var(--scale-factor));
-      color: #747683;
+      color: var(--text-secondary-color);
       line-height: 18px;
 
       .share-person {
@@ -639,7 +639,7 @@ const schemeUrl = computed(() => {
         align-items: center;
         gap: 4px;
         font-family: Microsoft YaHei;
-        color: #747683;
+        color: var(--text-secondary-color);
       }
 
       .divider {
@@ -656,7 +656,7 @@ const schemeUrl = computed(() => {
       width: 100px;
       padding: 7px 0;
       border-radius: 4px;
-      background: #ffffff;
+      background: var(--btn-default-bg);
       box-sizing: border-box;
       border: 1px solid var(--el-color-primary);
       color: var(--el-color-primary);
@@ -671,10 +671,10 @@ const schemeUrl = computed(() => {
 
 .share-file-list-wrapper {
   flex: 1;
-  border: 1px solid #f2f4f7;
+  border: 1px solid var(--card-border-color);
   border-radius: 8px;
   overflow: hidden;
-  background: #fff;
+  background: var(--btn-default-bg);
 }
 
 .breadcrumb {
@@ -683,8 +683,8 @@ const schemeUrl = computed(() => {
   overflow-y: hidden;
   white-space: nowrap;
   scrollbar-width: none;
-  border-bottom: 1px solid #f2f4f7;
-  background: #fff;
+  border-bottom: 1px solid var(--card-border-color);
+  background: var(--btn-default-bg);
   display: flex;
   align-items: center;
 
@@ -704,7 +704,7 @@ const schemeUrl = computed(() => {
     align-items: center;
     white-space: nowrap;
     cursor: pointer;
-    color: #747683;
+    color: var(--text-secondary-color);
     font-size: calc(var(--base--font--size--14) * var(--scale-factor));
   }
 
@@ -723,7 +723,7 @@ const schemeUrl = computed(() => {
 
   &.is-current {
     :deep(.el-breadcrumb__inner) {
-      color: #5665bb;
+      color: var(--theme-color);
       font-weight: 500;
     }
   }
@@ -782,10 +782,10 @@ const schemeUrl = computed(() => {
     .el-table__header-wrapper th.el-table__cell {
       height: 44px;
       padding: 0;
-      background: #fff;
+      background: var(--btn-default-bg);
 
       .cell {
-        color: #747683;
+        color: var(--text-secondary-color);
         font-size: calc(var(--base--font--size--14) * var(--scale-factor));
         font-weight: 400;
       }
@@ -802,14 +802,14 @@ const schemeUrl = computed(() => {
     }
 
     .el-checkbox__inner {
-      border-color: #747683;
+      border-color: var(--text-secondary-color);
       border-radius: 2px;
     }
 
     .el-checkbox__input.is-checked .el-checkbox__inner,
     .el-checkbox__input.is-indeterminate .el-checkbox__inner {
-      background: #5665bb;
-      border-color: #5665bb;
+      background: var(--theme-color);
+      border-color: var(--theme-color);
     }
   }
 
@@ -821,12 +821,12 @@ const schemeUrl = computed(() => {
 .table-header-select {
   display: inline-flex;
   align-items: center;
-  color: #747683;
+  color: var(--text-secondary-color);
   font-size: calc(var(--base--font--size--14) * var(--scale-factor));
 }
 
 .selected-count {
-  color: #747683;
+  color: var(--text-secondary-color);
 }
 
 .file-name-cell {
@@ -834,7 +834,7 @@ const schemeUrl = computed(() => {
   align-items: center;
   gap: 10px;
   min-width: 0;
-  color: #2d2d2d;
+  color: var(--text-primary-color);
   cursor: pointer;
 }
 
@@ -848,7 +848,7 @@ const schemeUrl = computed(() => {
 }
 
 .table-muted {
-  color: #747683;
+  color: var(--text-secondary-color);
   font-size: calc(var(--base--font--size--14) * var(--scale-factor));
 }
 
@@ -864,15 +864,15 @@ const schemeUrl = computed(() => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border: 1px solid #e3e6ec;
+    border: 1px solid var(--card-border-color);
     border-radius: 4px;
-    color: #747683;
+    color: var(--text-secondary-color);
     padding: 10px;
     cursor: pointer;
 
     .folder-name {
       margin-left: 8px;
-      color: #2d2d2d;
+      color: var(--text-primary-color);
       max-width: 188px;
       white-space: nowrap;
       overflow: hidden;
@@ -896,7 +896,7 @@ const schemeUrl = computed(() => {
 
     &.is-disabled {
       background: #b7b7b7;
-      color: #fff;
+      color: var(--btn-primary-text-color);
       font-weight: normal;
       border: 1px solid #b7b7b7;
     }
@@ -922,7 +922,7 @@ const schemeUrl = computed(() => {
     white-space: nowrap;
     font-size: 20px;
     font-weight: 700;
-    color: #2d2d2d;
+    color: var(--text-primary-color);
     margin-top: 20px;
   }
 
@@ -930,7 +930,7 @@ const schemeUrl = computed(() => {
     margin: 20px 0;
 
     .folder-name {
-      color: #327edc;
+      color: var(--theme-color);
     }
   }
 
@@ -946,7 +946,7 @@ const schemeUrl = computed(() => {
   align-items: center;
   justify-content: center;
   min-height: 450px;
-  color: #747683;
+  color: var(--text-secondary-color);
   position: absolute;
   inset: 0;
 

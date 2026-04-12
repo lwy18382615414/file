@@ -54,7 +54,7 @@
             <div class="menu-item-icon">
               <SvgIcon
                 :name="'nav-' + item.icon"
-                :color="item.path === activePath ? '#5665bb' : '#252525'"
+                :color="item.path === activePath ? 'var(--theme-color)' : 'var(--text-primary-color)'"
               />
             </div>
             <div class="menu-item-title">
@@ -723,11 +723,11 @@ onBeforeUnmount(() => {
       padding: 8px 12px;
       font-size: 14px;
       border-radius: 8px;
-      background-color: #5665bb;
+      background-color: var(--btn-primary-color);
       text-align: center;
       font-weight: 600;
       line-height: 20px;
-      color: #fff;
+      color: var(--btn-primary-text-color);
       cursor: pointer;
     }
 
@@ -801,7 +801,7 @@ onBeforeUnmount(() => {
 
           .menu-item-title {
             font-weight: 600;
-            color: #5665bb;
+            color: var(--theme-color);
           }
         }
 
@@ -841,7 +841,7 @@ onBeforeUnmount(() => {
           &.expanded {
             .menu-item-title,
             .shared-item-arrow {
-              color: #5665bb;
+              color: var(--theme-color);
             }
           }
         }
@@ -853,7 +853,7 @@ onBeforeUnmount(() => {
     height: 72px;
     position: relative;
     padding: 12px;
-    background-color: #fff;
+    background-color: var(--btn-default-bg);
     border-radius: 4px;
 
     &::before {

@@ -204,7 +204,7 @@ watchEffect(() => {
 
 <style scoped lang="scss">
 :deep(.van-search__content) {
-  background-color: #f2f4f7;
+  background-color: var(--input-bg-color);
   border-radius: 4px;
 }
 
@@ -292,7 +292,7 @@ watchEffect(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: #999;
+  color: var(--text-weak-color);
   font-size: calc(var(--base--font--size--14) * var(--scale-factor));
 }
 

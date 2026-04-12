@@ -131,7 +131,8 @@
               <el-button
                 :disabled="alreadyChooseList.length === 0"
                 :style="{
-                  background: alreadyChooseList.length === 0 ? '' : '#327edc',
+                  background:
+                    alreadyChooseList.length === 0 ? '' : 'var(--btn-primary-color)',
                 }"
                 class="submit"
                 type="primary"
@@ -657,7 +658,7 @@ onMounted(() => {
             white-space: nowrap;
             text-overflow: ellipsis;
             line-height: 19px;
-            color: #2d2d2d;
+            color: var(--text-primary-color);
             height: 19px;
             text-align: left;
           }
@@ -666,7 +667,7 @@ onMounted(() => {
             height: 16px;
             line-height: 16px;
             font-size: calc(var(--base--font--size--12) * var(--scale-factor));
-            color: #6d7176;
+            color: var(--text-secondary-color);
             text-align: left;
             width: 200px;
             overflow: hidden;
@@ -687,7 +688,7 @@ onMounted(() => {
 
         .node-name {
           margin-left: 8px;
-          color: #2d2d2d;
+          color: var(--text-primary-color);
           max-width: 150px;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -713,7 +714,7 @@ onMounted(() => {
         justify-content: space-between;
         align-items: center;
         font-size: calc(var(--base--font--size--12) * var(--scale-factor));
-        color: #2d2d2d;
+        color: var(--text-primary-color);
         font-weight: bold;
         padding-right: 54px;
         margin-bottom: 15px;
@@ -729,7 +730,7 @@ onMounted(() => {
           display: flex;
           align-items: center;
           font-size: calc(var(--base--font--size--14) * var(--scale-factor));
-          color: #2d2d2d;
+          color: var(--text-primary-color);
           height: 40px;
           line-height: 40px;
 
@@ -750,12 +751,11 @@ onMounted(() => {
         padding-top: 10px;
 
         .cancel {
-          border: 1px solid #327edc;
-          color: #327edc;
+          border: 1px solid var(--theme-color);
+          color: var(--theme-color);
         }
 
         .submit {
-          //background: #327edc;
           border: none;
         }
 

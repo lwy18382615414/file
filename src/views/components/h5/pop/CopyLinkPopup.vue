@@ -62,7 +62,9 @@
               :placeholder="t('passwordHint')"
             />
             <div
-              v-if="(extracode.length > 0 && isRightPassword) || showPasswordTips"
+              v-if="
+                (extracode.length > 0 && isRightPassword) || showPasswordTips
+              "
               class="password-tips"
             >
               {{ t("passwordFormatError") }}
@@ -134,20 +136,20 @@ watch(
 
 <style lang="scss" scoped>
 .action-sheet-header {
-  background-color: #ebeff6;
+  background-color: var(--subtle-fill-color);
   display: flex;
   align-items: center;
   padding: 16px;
-  font-family: PingFang SC;
+  font-family: Inter;
   white-space: nowrap;
 
   .close-text {
-    color: #747683;
+    color: var(--text-secondary-color);
   }
 
   .title {
     font-family: PingFang;
-    color: #2d2d2d;
+    color: var(--text-primary-color);
     margin: 0 auto;
   }
 
@@ -161,18 +163,18 @@ watch(
   padding: 17px 16px 17px 25px;
 
   .van-cell__title {
-    color: #2d2d2d;
+    color: var(--text-primary-color);
     white-space: nowrap;
   }
 
   .van-cell__value {
-    color: #747683;
+    color: var(--text-secondary-color);
   }
 }
 
 .action-sheet-content {
   :deep(.van-cell__right-icon) {
-    color: #c0c6d2;
+    color: var(--text-weak-color);
   }
 }
 
@@ -186,7 +188,7 @@ watch(
   padding-top: 0;
 
   .van-field__control {
-    color: #2d2d2d;
+    color: var(--text-primary-color);
     font-size: 14px;
   }
 }

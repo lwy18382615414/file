@@ -64,7 +64,7 @@ const cancelSelection = () => {
 
 .action-text {
   font-size: 14px;
-  color: #5665bb;
+  color: var(--theme-color);
   white-space: nowrap;
 }
 </style>

@@ -371,7 +371,7 @@ export function useFileActions(options?: {
         title: t("confirmCancelShare"),
         message: t("cancelShareWarning"),
         showCancelButton: true,
-        confirmButtonColor: "#327edc",
+        confirmButtonColor: "var(--theme-color)",
         confirmButtonText: t("Ok"),
         cancelButtonText: t("cancel"),
         width: "80%",

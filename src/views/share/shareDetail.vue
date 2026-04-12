@@ -4,9 +4,9 @@
       <SvgIcon
         :name="
           shareInfo.isDeleteAll
-            ? 'icon_folder'
+            ? 'file-folder'
             : handleFileAndFolderName(shareInfo.shareFile) === t('folder')
-              ? 'icon_folder'
+              ? 'file-folder'
               : getFileIcon(shareInfo.shareFile)
         "
         size="48"
@@ -129,20 +129,21 @@ const copyLinkToClipboard = async () => {
 .share-detail {
   width: 100vw;
   height: 100vh;
-  background-color: #f9f9fa;
+  background-color: var(--content-bg-color);
   padding: 8px 16px;
-  font-family: PingFang SC;
+  font-family: Inter;
 
   .file-info {
     height: 140px;
     background-color: #fff;
-    border: 1px solid #f2f4f7;
-    padding: 22px 16px;
+    border: 1px solid var(--divider-color);
+    padding: 16px;
+    border-radius: 12px;
 
     .file-name {
       margin: 6px 0;
       font-size: 18px;
-      color: #2d2d2d;
+      color: var(--text-primary-color);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -150,7 +151,7 @@ const copyLinkToClipboard = async () => {
     }
 
     .share-time {
-      color: #747683;
+      color: var(--text-secondary-color);
       font-size: 12px;
       display: flex;
       justify-content: space-between;
@@ -165,6 +166,7 @@ const copyLinkToClipboard = async () => {
     display: flex;
     justify-content: space-evenly;
     align-items: center;
+    border: 1px solid var(--divider-color);
 
     .count-item {
       display: flex;
@@ -175,19 +177,19 @@ const copyLinkToClipboard = async () => {
 
       .count {
         font-size: 18px;
-        color: #2d2d2d;
+        color: var(--text-primary-color);
       }
 
       .label {
         font-size: 12px;
-        color: #9e9e9e;
+        color: var(--text-weak-color);
       }
     }
   }
 
   .share-meta {
     background-color: #fff;
-    border: 1px solid #f2f4f7;
+    border: 1px solid var(--divider-color);
     border-radius: 12px;
 
     .cell {
@@ -201,7 +203,7 @@ const copyLinkToClipboard = async () => {
         box-sizing: border-box;
         bottom: 0;
         left: 12px;
-        border-bottom: 1px solid #f2f4f7;
+        border-bottom: 1px solid var(--divider-color);
       }
 
       span {
@@ -210,11 +212,11 @@ const copyLinkToClipboard = async () => {
 
       .label {
         width: 92px;
-        color: #9e9e9e;
+        color: var(--text-weak-color);
       }
 
       .value {
-        color: #2d2d2d;
+        color: var(--text-primary-color);
 
         &.is-disabled {
           text-decoration: line-through;
@@ -236,12 +238,12 @@ const copyLinkToClipboard = async () => {
       line-height: 48px;
       text-align: center;
       font-size: 16px;
-      color: #2d2d2d;
-      background-color: #ebeff6;
+      color: var(--text-primary-color);
+      background-color: var(--subtle-fill-color);
       border-radius: 8px;
 
       &.cancel-share {
-        color: #2d2d2d;
+        color: var(--text-primary-color);
       }
 
       &.copy-link {
