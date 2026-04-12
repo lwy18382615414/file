@@ -21,6 +21,7 @@ type UploadTaskItem = {
   taskId: string;
   sourceFile: File;
   contentId?: number;
+  signal?: AbortSignal;
 };
 
 type PreparedUploadTask = {
@@ -99,20 +100,21 @@ export async function uploadFiles(options: UploadExecutionOptions) {
   const requestTasks = tasks.map((task) => {
     return async () => {
       try {
-        throwIfAborted(signal);
-        const preparedTask = await prepareUploadTask(task, signal);
-        throwIfAborted(signal);
+        const taskSignal = task.signal ?? signal;
+        throwIfAborted(taskSignal);
+        const preparedTask = await prepareUploadTask(task, taskSignal);
+        throwIfAborted(taskSignal);
 
         if (preparedTask.encryptedFile.size > fileChunkSize.value) {
           const uploadRes = await uploadInChunks(preparedTask.encryptedFile, {
-            signal,
+            signal: taskSignal,
             onProgress: (_fileName, percent) => {
               onProgress?.(preparedTask.taskId, percent);
             },
           });
 
           if (!uploadRes) throw new Error("分片上传失败");
-          throwIfAborted(signal);
+          throwIfAborted(taskSignal);
 
           const uploadedFile: Task = {
             taskId: preparedTask.taskId,
@@ -128,14 +130,14 @@ export async function uploadFiles(options: UploadExecutionOptions) {
         }
 
         const uploadRes = await uploadSingleFile(preparedTask.encryptedFile, {
-          signal,
+          signal: taskSignal,
           onProgress: (_fileName, percent) => {
             onProgress?.(preparedTask.taskId, percent);
           },
         });
 
         if (!uploadRes) throw new Error("单文件上传失败");
-        throwIfAborted(signal);
+        throwIfAborted(taskSignal);
 
         const uploadedFile: Task = {
           taskId: preparedTask.taskId,
@@ -170,6 +172,10 @@ export async function uploadFiles(options: UploadExecutionOptions) {
   throwIfAborted(signal);
 
   if (!successCount) {
+    if (tasks.every((task) => task.signal?.aborted || signal?.aborted)) {
+      throw new Error("__UPLOAD_ABORTED__");
+    }
+
     return { fileList: [], serverRes: { code: 0, data: [] } };
   }
 

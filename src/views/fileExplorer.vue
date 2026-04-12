@@ -29,6 +29,8 @@
         @on-repeat="showRepeatFile = true"
       />
 
+      <UploadProgressPopup />
+
       <RepeatFilePopup
         :show="showRepeatFile"
         :content-id="context.currentFolderId"
@@ -78,6 +80,7 @@ import FileListMobile from "./components/h5/FileListMobile.vue";
 import FileListPc from "./components/pc/FileListPc.vue";
 import CreateChoosePopup from "./components/h5/pop/CreateChoosePopup.vue";
 import UploadPopup from "./components/h5/pop/UploadPopup.vue";
+import UploadProgressPopup from "./components/h5/pop/UploadProgressPopup.vue";
 import RepeatFilePopup from "./components/h5/pop/RepeatFilePopup.vue";
 import NameEditPopup from "./components/h5/pop/NameEditPopup.vue";
 import { useFileData } from "./useFileData";

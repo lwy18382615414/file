@@ -172,7 +172,6 @@
 </template>
 
 <script setup lang="ts">
-import { useShareSpace } from "@/hooks/useShareSpace.ts";
 import type { OrgTreeCallbackParams } from "@/api/type";
 import { computed, ref, watch, watchEffect, nextTick } from "vue";
 import { debounce } from "lodash-es";

@@ -218,6 +218,8 @@ export function useFileData() {
       } else {
         hasMore.value = false;
       }
+    } catch {
+      hasMore.value = false;
     } finally {
       loading.value = false;
       initialFetchDone.value = true;

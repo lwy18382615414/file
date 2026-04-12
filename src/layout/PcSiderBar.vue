@@ -156,10 +156,7 @@ import NameEditDialog from "@/views/components/pc/Dialog/NameEditDialog.vue";
 import PcFileContextMenu from "@/views/components/pc/PcFileContextMenu.vue";
 import SettingDialog from "@/views/components/pc/Dialog/SettingDialog.vue";
 import { useShareLink } from "@/views/hooks/useShareLink";
-import type {
-  PcFileContextAction,
-  PcFileContextActionKey,
-} from "@/views/hooks/usePcFileContextMenu";
+import type { PcFileContextAction } from "@/views/hooks/usePcFileContextMenu";
 import { useI18n } from "vue-i18n";
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";

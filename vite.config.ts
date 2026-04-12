@@ -34,7 +34,7 @@ export default defineConfig(({ mode }) => {
       symbolId: "icon-[dir]-[name]",
     }),
     vitePluginZipDist({ zipName: `${name}-${mode}` }),
-    // basicSsl(),
+    basicSsl(),
     legacy({
       targets: [
         "defaults",

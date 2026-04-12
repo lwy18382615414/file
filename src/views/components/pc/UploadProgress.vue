@@ -32,6 +32,14 @@
           </div>
 
           <div class="file-info">
+            <button
+              v-if="task.status === 'pending' || task.status === 'uploading'"
+              class="task-remove-btn"
+              type="button"
+              @click="confirmRemoveTask(task.id, task.name)"
+            >
+              <SvgIcon name="ic_close-bg" size="18" />
+            </button>
             <div class="file-name" :title="task.name">{{ task.name }}</div>
 
             <div class="progress-wrapper">
@@ -72,16 +80,41 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useUploadFlow, type UploadingTask } from "@/hooks/upload/useUploadFlow";
+import { useUiFeedback } from "@/hooks/useUiFeedback";
 import { getFileIcon, t } from "@/utils";
 
 const emit = defineEmits<{
   (e: "close"): void;
 }>();
 
-const { showUpload, uploadingTasks, cancelCurrentUpload, retryFailedUploads } =
-  useUploadFlow();
+const {
+  showUpload,
+  uploadingTasks,
+  cancelCurrentUpload,
+  retryFailedUploads,
+  removeUploadTask,
+} = useUploadFlow();
+const { confirm } = useUiFeedback();
 
 const isMinimized = ref(false);
+
+const confirmRemoveTask = async (taskId: string, fileName: string) => {
+  try {
+    await confirm({
+      title: t("delete"),
+      message: t("confirmDeleteFileWithName", { name: fileName }),
+      confirmButtonText: t("delete"),
+      cancelButtonText: t("cancel"),
+      confirmButtonColor: "#f5222d",
+      showCancelButton: true,
+      type: "warning",
+    });
+  } catch {
+    return;
+  }
+
+  removeUploadTask(taskId);
+};
 
 const getStatusText = (task: UploadingTask) => {
   switch (task.status) {
@@ -219,6 +252,23 @@ $border-color: #ebeef5;
     min-width: 0;
     display: flex;
     flex-direction: column;
+    position: relative;
+    padding-right: 28px;
+
+    .task-remove-btn {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 20px;
+      height: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+    }
     gap: 4px;
 
     .file-name {

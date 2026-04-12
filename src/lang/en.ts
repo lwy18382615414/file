@@ -253,6 +253,7 @@ export default {
     "After the transfer, you will not be able to set admins or delete the root directory folder.",
   removeMember: "Remove members",
   confirmRemoveMember: "Confirm to remove [{name}]",
+  confirmDeleteFileWithName: "Are you sure you want to delete [{name}]?",
   fileUpload: "File upload",
   duplicateAction: "Repeat",
   selectedDocumentsCount:

@@ -50,6 +50,7 @@ type UploadTaskEntry = {
   id: string;
   sourceFile: File;
   contentId?: number;
+  controller?: AbortController;
 };
 
 type ActiveUploadBatch = UploadCallbacks & {
@@ -67,6 +68,7 @@ const duplicateTasks = ref<Task[]>([]);
 const showBubbleWarning = ref(false);
 const currentBatch = ref<ActiveUploadBatch | null>(null);
 const currentController = ref<AbortController | null>(null);
+const removedTaskIds = ref<Set<string>>(new Set());
 
 const createTaskId = () =>
   globalThis.crypto?.randomUUID?.() ??
@@ -81,12 +83,14 @@ const createBatchTasks = (
       id: createTaskId(),
       sourceFile: item.file,
       contentId: item.contentId,
+      controller: new AbortController(),
     }));
   }
 
   return files.map((file) => ({
     id: createTaskId(),
     sourceFile: file,
+    controller: new AbortController(),
   }));
 };
 
@@ -206,9 +210,45 @@ const clearUploadState = () => {
   showBubbleWarning.value = false;
   currentBatch.value = null;
   currentController.value = null;
+  removedTaskIds.value = new Set();
 };
 
+const syncBatchVisibility = () => {
+  if (!uploadingTasks.value.length) {
+    clearUploadState();
+    return;
+  }
+
+  showUpload.value = true;
+};
+
+const removeUploadTask = (taskId: string) => {
+  removedTaskIds.value.add(taskId);
+
+  const taskEntry = currentBatch.value?.tasks.find((task) => task.id === taskId);
+  taskEntry?.controller?.abort();
+
+  uploadingTasks.value = uploadingTasks.value.filter((task) => task.id !== taskId);
+  allTasks.value = allTasks.value.filter((task) => task.taskId !== taskId);
+  duplicateTasks.value = duplicateTasks.value.filter((task) => task.taskId !== taskId);
+
+  if (currentBatch.value) {
+    currentBatch.value = {
+      ...currentBatch.value,
+      tasks: currentBatch.value.tasks.filter((task) => task.id !== taskId),
+    };
+  }
+
+  syncBatchVisibility();
+};
+
+const isTaskRemoved = (taskId: string) => removedTaskIds.value.has(taskId);
+
 const cancelCurrentUpload = () => {
+  currentBatch.value?.tasks.forEach((task) => {
+    task.controller?.abort();
+    removedTaskIds.value.add(task.id);
+  });
   currentController.value?.abort();
   clearUploadState();
 };
@@ -250,17 +290,29 @@ const runUploadBatch = async (
       taskId: task.id,
       sourceFile: task.sourceFile,
       contentId: task.contentId,
+      signal: task.controller?.signal,
     })),
-    onProgress: updateTaskProgress,
-    onTaskSuccess: markTaskSuccess,
+    onProgress(taskId, progress) {
+      if (isTaskRemoved(taskId)) return;
+      updateTaskProgress(taskId, progress);
+    },
+    onTaskSuccess(taskId) {
+      if (isTaskRemoved(taskId)) return;
+      markTaskSuccess(taskId);
+    },
     onTaskError(taskId, errorMsg, errorType) {
-      if (errorType === "abort") return;
+      if (errorType === "abort" || isTaskRemoved(taskId)) return;
       markTaskError(taskId, errorMsg, errorType);
     },
     onDuplicate(tasks, duplicates) {
-      setAllTasks(tasks);
-      setDuplicateTasks(duplicates);
-      duplicates.forEach((task) => markTaskDuplicate(task.taskId));
+      setAllTasks(tasks.filter((task) => !isTaskRemoved(task.taskId)));
+      setDuplicateTasks(
+        duplicates.filter((task) => !isTaskRemoved(task.taskId)),
+      );
+      duplicates.forEach((task) => {
+        if (isTaskRemoved(task.taskId)) return;
+        markTaskDuplicate(task.taskId);
+      });
     },
     onComplete(callbackData) {
       if (allTasksSucceeded.value) {
@@ -268,6 +320,19 @@ const runUploadBatch = async (
       }
     },
   };
+
+  const activeTasks = batch.tasks.filter((task) => !isTaskRemoved(task.id));
+  if (!activeTasks.length) {
+    syncBatchVisibility();
+    return;
+  }
+
+  uploadContext.tasks = activeTasks.map((task) => ({
+    taskId: task.id,
+    sourceFile: task.sourceFile,
+    contentId: task.contentId,
+    signal: task.controller?.signal,
+  }));
 
   try {
     await startUploadTask(uploadContext);
@@ -280,6 +345,8 @@ const runUpload = async (
   context: UploadBatchContext,
   options?: { register?: boolean },
 ) => {
+  removedTaskIds.value = new Set();
+
   const batch: ActiveUploadBatch = {
     contentId: context.contentId,
     isByChat: context.isByChat,
@@ -356,6 +423,7 @@ export function useUploadFlow() {
     closeUploadDialog,
     clearUploadState,
     cancelCurrentUpload,
+    removeUploadTask,
     runUpload,
     retryFailedUploads,
   };

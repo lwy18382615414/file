@@ -1,63 +1,61 @@
 <template>
   <van-action-sheet v-model:show="showUpload" @close="handleClose">
-    <div class="header">
-      <div class="title">
-        <span>{{ t("uploadFile") }}</span>
+    <div class="upload-sheet">
+      <div class="sheet-header">
+        <span class="sheet-title">{{ t("uploadFile") }}</span>
+        <button class="close-btn" type="button" @click="showUpload = false">
+          <SvgIcon name="ic_close" size="18" color="#ffffff" />
+        </button>
       </div>
-      <div class="close" @click="showUpload = false">
-        <SvgIcon name="ic_close" />
-      </div>
-    </div>
-    <div class="content">
-      <div class="file-info">
-        <div class="form-label">{{ t("chooseFile") }}:</div>
-        <van-loading v-if="fileLoading" color="#327edc" size="24px" vertical>
-          {{ t("fileLoading") }}...
-        </van-loading>
-        <template v-else>
-          <van-uploader
-            v-if="selectedFile.length === 0"
-            :after-read="afterRead"
-            :before-read="beforeRead"
-            accept="*"
-            multiple
-          >
-            <div class="select-file">
-              <SvgIcon name="ic_empty_file" size="54" />
-              <span class="text">{{ t("clickToChooseFile") }}</span>
-            </div>
-          </van-uploader>
-          <div v-else class="file-list">
-            <div
-              v-for="file in selectedFile"
-              :key="file.name"
-              class="file-item"
+
+      <div class="sheet-body">
+        <div class="file-info">
+          <div class="form-label">{{ t("chooseFile") }}</div>
+          <van-loading v-if="fileLoading" color="#5665bb" size="24px" vertical>
+            {{ t("fileLoading") }}...
+          </van-loading>
+          <template v-else>
+            <van-uploader
+              v-if="selectedFile.length === 0"
+              :after-read="afterRead"
+              :before-read="beforeRead"
+              accept="*"
+              multiple
             >
-              <div class="flex items-center gap-[12px]">
-                <SvgIcon :name="getFileIcon(file.name)" size="30" />
-                <div class="file-name">{{ file.name }}</div>
+              <div class="select-file">
+                <SvgIcon name="ic_empty_file" size="54" />
+                <span class="text">{{ t("clickToChooseFile") }}</span>
               </div>
-              <SvgIcon name="ic_close-bg" @click="handleRemove(file.name)" />
+            </van-uploader>
+            <div v-else class="file-list">
+              <div
+                v-for="file in selectedFile"
+                :key="file.name"
+                class="file-item"
+              >
+                <div class="file-meta">
+                  <SvgIcon :name="getFileIcon(file.name)" size="30" />
+                  <div class="file-name">{{ file.name }}</div>
+                </div>
+                <SvgIcon name="ic_close-bg" @click="handleRemove(file.name)" />
+              </div>
             </div>
-          </div>
-        </template>
+          </template>
+        </div>
       </div>
-      <div class="divider"></div>
-      <div class="btn-group">
-        <van-button
-          color="#fff"
-          style="color: #327edc; border-color: #327edc"
-          type="primary"
-          @click="handleClose"
-          >{{ t("cancel") }}</van-button
-        >
-        <van-button
+
+      <div class="sheet-actions">
+        <button class="action-btn cancel-btn" type="button" @click="handleClose">
+          {{ t("cancel") }}
+        </button>
+        <button
+          class="action-btn confirm-btn"
+          type="button"
           :disabled="fileLoading"
-          color="#327edc"
-          type="primary"
           @click="handleUpload"
-          >{{ t("Ok") }}</van-button
         >
+          {{ t("Ok") }}
+        </button>
       </div>
     </div>
   </van-action-sheet>
@@ -66,15 +64,9 @@
 <script setup lang="ts">
 import { t, getFileIcon, checkFileSize } from "@/utils";
 import { type PropType, watch, ref } from "vue";
-import type { UploaderFileListItem } from "vant";
-import { handleFileEncryption } from "@/utils/upload/encrypt";
+import { showToast, type UploaderFileListItem } from "vant";
 import { useUploadFlow } from "@/hooks/upload/useUploadFlow";
 
-type EncryptedFileType = {
-  file: File;
-  key: string;
-  name: string;
-};
 const props = defineProps({
   uploadVisible: {
     type: Boolean as PropType<boolean>,
@@ -96,15 +88,11 @@ const { runUpload, closeUploadDialog } = useUploadFlow();
 const showUpload = ref(props.uploadVisible);
 const fileLoading = ref(false);
 const selectedFile = ref<File[]>([]);
-const encryptKeyList = ref<{ name: string; aesKey: string }[]>([]);
-let controller = new AbortController();
 
 function handleClose() {
   selectedFile.value = [];
-
+  fileLoading.value = false;
   showUpload.value = false;
-  encryptKeyList.value = [];
-  controller.abort();
 }
 
 function beforeRead(
@@ -139,27 +127,13 @@ async function afterRead(
   fileInfos: UploaderFileListItem | UploaderFileListItem[],
 ) {
   try {
-    let encryptedFile: EncryptedFileType[];
-    if (Array.isArray(fileInfos)) {
-      const files = fileInfos.map((item) => item.file!);
+    const files = (Array.isArray(fileInfos) ? fileInfos : [fileInfos])
+      .map((item) => item.file)
+      .filter((file): file is File => file instanceof File);
 
-      encryptedFile = await handleFileEncryption(files, controller.signal);
-    } else {
-      encryptedFile = await handleFileEncryption(
-        [fileInfos.file!],
-        controller.signal,
-      );
-    }
-    selectedFile.value = encryptedFile.map((item) => item.file);
-    encryptKeyList.value = encryptedFile.map((item) => ({
-      name: item.name,
-      aesKey: item.key,
-    }));
-    fileLoading.value = false;
-  } catch (err: any) {
-    console.log(err);
-    if (err?.message === "__ENCRYPT_ABORTED__") return;
-    console.error("批量加密失败", err);
+    selectedFile.value = files;
+  } catch (error) {
+    console.error(error);
     showToast(t("operationFailedRetry"));
   } finally {
     fileLoading.value = false;
@@ -170,7 +144,6 @@ function handleRemove(name: string) {
   const index = selectedFile.value.findIndex((file) => file.name === name);
   if (index !== -1) {
     selectedFile.value.splice(index, 1);
-    encryptKeyList.value.splice(index, 1);
   }
 }
 
@@ -181,7 +154,6 @@ async function handleUpload() {
   }
   runUpload({
     files: selectedFile.value,
-    encryptKeys: encryptKeyList.value,
     contentId: props.contentId,
     completeAllTasks() {
       showToast({ message: t("uploadSuccess"), type: "success" });
@@ -205,8 +177,8 @@ watch(
   (val) => {
     showUpload.value = val;
     if (val) {
-      controller = new AbortController();
       fileLoading.value = false;
+      selectedFile.value = [];
     }
   },
 );
@@ -217,126 +189,160 @@ watch(showUpload, (val) => {
 </script>
 
 <style scoped lang="scss">
-.header {
+.upload-sheet {
+  width: 100%;
+  padding: 0 16px calc(24px + env(safe-area-inset-bottom));
+  background: #ffffff;
+  border-radius: 20px 20px 0 0;
+  box-sizing: border-box;
+}
+
+.sheet-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
-  background: #ebeff6;
+  padding: 16px 0;
+}
 
-  .title {
-    color: #000;
-    font-size: calc(var(--base--font--size--16) * var(--scale-factor));
-    font-family: PingFang SC;
+.sheet-title {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 25px;
+  color: #2d2d2d;
+}
+
+.close-btn {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  padding: 0;
+  background: transparent;
+}
+
+.sheet-body {
+  padding: 8px 0 24px;
+}
+
+:deep(.van-uploader) {
+  width: 100%;
+  margin-top: 8px;
+
+  .van-uploader__input-wrapper {
+    width: 100%;
   }
 }
-.content {
-  padding: 24px 16px;
 
-  :deep(.van-uploader) {
-    width: 100%;
-    margin: 8px 0;
+.file-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
 
-    .van-uploader__input-wrapper {
-      width: 100%;
-    }
+.form-label {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: #2d2d2d;
+}
+
+.select-file {
+  width: 100%;
+  min-height: 148px;
+  border-radius: 12px;
+  border: 1px dashed #b8c2e5;
+  background: #f3f4f6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px;
+  box-sizing: border-box;
+
+  .text {
+    font-size: 14px;
+    line-height: 20px;
+    color: #2d2d2d;
   }
-  .file-info {
-    .form-label {
-      font-size: calc(var(--base--font--size--14) * var(--scale-factor));
-      color: #2d2d2d;
-      font-weight: bold;
-    }
+}
 
-    .select-file {
-      width: 100%;
-      height: 140px;
-      border-radius: 6px;
-      border: 1px dashed #327edc;
-      background-color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
+.file-list {
+  width: 100%;
+  max-height: 188px;
+  overflow-y: auto;
+  border-radius: 12px;
+  background: #f3f4f6;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
 
-      .text {
-        font-size: calc(var(--base--font--size--14) * var(--scale-factor));
-        color: #2d2d2d;
-      }
-    }
+.file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid rgba(227, 230, 236, 0.8);
   }
+}
 
-  .file-list {
-    margin-top: 14px;
-    width: 100%;
-    max-height: 140px;
-    overflow-y: auto;
-    border-radius: 6px;
-    background-color: #fff;
-    padding: 0 8px;
+.file-meta {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
 
-    .file-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 13px 0;
+.file-name {
+  color: #2d2d2d;
+  font-size: 16px;
+  font-weight: 500;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-      &:not(:last-child) {
-        border-bottom: 1px solid #e3e6ec80;
-      }
+:deep(.van-loading) {
+  margin: 20px 0;
+  color: #5665bb;
+}
 
-      .file-name {
-        color: #2d2d2d;
-        font-size: calc(var(--base--font--size--16) * var(--scale-factor));
-        font-weight: bold;
-        max-width: calc(100vw - 155px);
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-    }
-  }
+:deep(.van-checkbox) {
+  border-radius: 2px;
+}
 
-  :deep(.van-checkbox) {
-    border-radius: 2px;
-  }
+.sheet-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
 
-  .divider {
-    width: 100%;
-    height: 1px;
-    background: #e8ecf280;
-    margin: 16px 0;
-  }
+.action-btn {
+  height: 44px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 500;
+}
 
-  .btn-group {
-    display: flex;
-    width: 100%;
-    gap: 16px;
+.cancel-btn {
+  color: #2d2d2d;
+  background: #f3f4f6;
+}
 
-    .van-button {
-      width: 50%;
-      text-align: center;
-      padding: 10px 0;
-      border-radius: 8px;
-      font-size: calc(var(--base--font--size--16) * var(--scale-factor));
+.confirm-btn {
+  color: #ffffff;
+  background: #5665bb;
+}
 
-      &.cancel-btn {
-        border: 1px solid #327edc;
-        color: #327edc;
-      }
-
-      &.confirm-btn {
-        background: #327edc;
-        color: #ffffff;
-      }
-    }
-  }
-
-  .repeat-file-operate-list {
-    .active {
-      background: #ebf0ff;
-    }
-  }
+.confirm-btn:disabled {
+  opacity: 0.5;
 }
 </style>

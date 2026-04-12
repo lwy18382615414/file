@@ -64,7 +64,7 @@ export function useUiFeedback() {
       cancelButtonText: options.cancelButtonText,
       confirmButtonColor: options.confirmButtonColor,
       showCancelButton: options.showCancelButton,
-      width: options.width,
+      width: options.width ?? "80%",
     });
   };
 

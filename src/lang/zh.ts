@@ -243,6 +243,7 @@ export default {
   confirmTransferSuperAdminExtra: "转让后你将不可设置管理员和删除根目录文件夹",
   removeMember: "移除成员",
   confirmRemoveMember: "确定将[{name}]移除吗",
+  confirmDeleteFileWithName: "确定删除[{name}]吗？",
   fileUpload: "文件上传",
   duplicateAction: "重复",
   selectedDocumentsCount: "已选择{count}项文档",
