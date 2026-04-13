@@ -7,8 +7,10 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from "vue";
+import { showToast } from "vant";
 import { useRoute, useRouter } from "vue-router";
 import { getParentFolderContentIdApi } from "@/api/common";
+import { t } from "@/utils";
 import { buildFolderRoute, ExplorerPageType } from "@/views/fileExplorer";
 
 const route = useRoute();
@@ -63,6 +65,9 @@ const jump = async () => {
     router.replace(target);
   } catch (error) {
     console.error("跳转失败:", error);
+    showToast({
+      message: t("jumpFailedLoginCheck"),
+    });
     router.replace("/recent-view");
   }
 };

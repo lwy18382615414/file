@@ -1,15 +1,56 @@
 import { computed, ref } from "vue";
 import type { ContentType } from "@/types/type";
-import {
-  getContentId,
-  getIsFolder,
-  getIsSetTop,
-  getPermissionType,
-} from "@/utils/typeUtils";
+import { getContentId, getPermissionType } from "@/utils/typeUtils";
 import type { FileMenuAction } from "../components/h5/pop/FileMenuPopup.vue";
 import { useI18n } from "vue-i18n";
 import { ExplorerPageType, getExplorerContext } from "@/views/fileExplorer";
 import { useRoute, useRouter } from "vue-router";
+import {
+  ensureMenuPermissions,
+  type FileActionKey,
+  getSingleMenuActionKeys,
+} from "./fileMenuPermissions";
+
+const actionIconMap: Record<FileActionKey, string> = {
+  open: "co_open",
+  download: "co_download",
+  share: "co_share",
+  copyLink: "co_copy",
+  rename: "co_rename",
+  move: "co_move",
+  top: "co_topSet",
+  unTop: "co_topSet",
+  delete: "co_delete",
+  restore: "co_restore",
+  deletePermanently: "co_delete",
+  cancelShare: "co_delete",
+};
+
+const actionLabelKeyMap: Record<FileActionKey, string> = {
+  open: "open",
+  download: "download",
+  share: "shareToFriend",
+  copyLink: "copyLink",
+  rename: "rename",
+  move: "move",
+  top: "pin",
+  unTop: "unpin",
+  delete: "delete",
+  restore: "restore",
+  deletePermanently: "deletePermanently",
+  cancelShare: "cancelShare",
+};
+
+const buildMenuActions = (
+  keys: FileActionKey[],
+  t: (key: string) => string,
+): FileMenuAction[] => {
+  return keys.map((key) => ({
+    key: key === "copyLink" ? "copy" : key,
+    label: t(actionLabelKeyMap[key]),
+    icon: actionIconMap[key],
+  }));
+};
 
 export function useFileMenu() {
   const { t } = useI18n();
@@ -21,51 +62,14 @@ export function useFileMenu() {
 
   const menuActions = computed<FileMenuAction[]>(() => {
     if (!activeItem.value) return [];
-
     const context = getExplorerContext(route);
-
-    if (context.pageType === ExplorerPageType.RECYCLE) {
-      return [
-        { key: "restore", label: t("restore"), icon: "co_restore" },
-        {
-          key: "deletePermanently",
-          label: t("deletePermanently"),
-          icon: "co_delete",
-        },
-      ];
-    }
-
-    const isSetTop = getIsSetTop(activeItem.value);
-    const commonActions: FileMenuAction[] = [
-      { key: "share", label: t("shareToFriend"), icon: "co_share" },
-      { key: "copy", label: t("copyLink"), icon: "co_copy" },
-      { key: "rename", label: t("rename"), icon: "co_rename" },
-      ...(context.pageType === ExplorerPageType.MY ||
-      (context.pageType === ExplorerPageType.SHARED && !context.isRoot)
-        ? [{ key: "move", label: t("move"), icon: "co_move" }]
-        : []),
-      {
-        key: isSetTop ? "unTop" : "top",
-        label: isSetTop ? t("unpin") : t("pin"),
-        icon: "co_topSet",
-      },
-      { key: "delete", label: t("delete"), icon: "co_delete" },
-    ];
-
-    if (getIsFolder(activeItem.value)) {
-      return [
-        { key: "open", label: t("open"), icon: "co_open" },
-        ...commonActions,
-      ];
-    }
-
-    return [
-      { key: "download", label: t("download"), icon: "co_download" },
-      ...commonActions,
-    ];
+    return buildMenuActions(
+      getSingleMenuActionKeys(activeItem.value, context.pageType),
+      t,
+    );
   });
 
-  const handleMenu = (item: ContentType) => {
+  const handleMenu = async (item: ContentType) => {
     const context = getExplorerContext(route);
 
     if (context.pageType === ExplorerPageType.SHARED && context.isRoot) {
@@ -79,7 +83,11 @@ export function useFileMenu() {
       return;
     }
 
-    activeItem.value = item;
+    const [itemWithPermission] = await ensureMenuPermissions(
+      [item],
+      context.pageType,
+    );
+    activeItem.value = itemWithPermission ?? item;
     menuVisible.value = true;
   };
 

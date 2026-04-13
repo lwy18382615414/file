@@ -797,12 +797,12 @@ const handleSearch = () => {
   });
 };
 
-const handleRowContextmenu = (payload: {
+const handleRowContextmenu = async (payload: {
   row: ContentType;
   event: MouseEvent;
 }) => {
   if (isDraftCreateRow(payload.row)) return;
-  openForRow(payload.row, payload.event);
+  await openForRow(payload.row, payload.event);
 };
 
 const handleRowDbClick = async (payload: { row: ContentType }) => {

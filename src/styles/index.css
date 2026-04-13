@@ -61,3 +61,13 @@ html {
     }
   }
 }
+
+.el-message-box {
+  .el-message-box__status {
+    display: none;
+  }
+
+  .el-message-box__message {
+    padding-left: 0;
+  }
+}

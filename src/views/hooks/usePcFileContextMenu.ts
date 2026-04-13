@@ -1,16 +1,15 @@
 import { ref, unref, type Ref } from "vue";
 import type { ContentType } from "@/types/type";
-import { Permission } from "@/enum/permission";
-import { hasPermission, t } from "@/utils";
+import { t } from "@/utils";
 import { ExplorerPageType } from "@/views/fileExplorer";
 import { useFileSelection } from "@/hooks/useFileSelection";
+import { getRowKey } from "@/utils/typeUtils";
 import {
-  getIsDeleteAll,
-  getIsFolder,
-  getIsSetTop,
-  getPermissionType,
-  getRowKey,
-} from "@/utils/typeUtils";
+  ensureMenuPermissions,
+  getMultiMenuActionKeys,
+  getSingleMenuActionKeys,
+  type FileActionKey,
+} from "./fileMenuPermissions";
 
 export type PcFileContextActionKey =
   | "open"
@@ -51,121 +50,41 @@ export function usePcFileContextMenu(options: {
   const contextItems = ref<ContentType[]>([]);
   const anchorRow = ref<ContentType | null>(null);
 
-  const canUsePermission = (
-    item: ContentType,
-    permission: Permission,
-    pageType: ExplorerPageType,
-  ) => {
-    const permissionType = getPermissionType(item);
+  const actionLabelMap: Record<FileActionKey, string> = {
+    open: t("open"),
+    download: t("download"),
+    share: t("shareToFriend"),
+    copyLink: t("copyLink"),
+    unTop: t("unpin"),
+    top: t("pin"),
+    rename: t("rename"),
+    move: t("moveTo"),
+    delete: t("delete"),
+    restore: t("restore"),
+    deletePermanently: t("deletePermanently"),
+    cancelShare: t("cancelShare"),
+  };
 
-    if (pageType === ExplorerPageType.SHARED) {
-      if (permissionType == null) return false;
-    }
-
-    return hasPermission(permissionType, permission);
+  const buildActions = (keys: FileActionKey[]): PcFileContextAction[] => {
+    return keys.map((key) => ({
+      key,
+      label: actionLabelMap[key],
+      ...(key === "delete" ? { danger: true } : {}),
+    }));
   };
 
   const buildSingleActions = (
     item: ContentType,
     pageType: ExplorerPageType,
   ): PcFileContextAction[] => {
-    if (pageType === ExplorerPageType.RECYCLE) {
-      return [
-        { key: "restore", label: t("restore") },
-        { key: "deletePermanently", label: t("deletePermanently") },
-      ];
-    }
-
-    if (pageType === ExplorerPageType.MY_SHARES) {
-      const nextActions: PcFileContextAction[] = [
-        { key: "cancelShare", label: t("cancelShare") },
-      ];
-      if (!getIsDeleteAll(item)) {
-        nextActions.unshift({ key: "copyLink", label: t("copyLink") });
-      }
-      return nextActions;
-    }
-
-    const nextActions: PcFileContextAction[] = [];
-    const isFolder = getIsFolder(item);
-
-    if (isFolder) {
-      if (canUsePermission(item, Permission.View, pageType)) {
-        nextActions.push({ key: "open", label: t("open") });
-      }
-    } else if (canUsePermission(item, Permission.View, pageType)) {
-      nextActions.push({ key: "download", label: t("download") });
-    }
-
-    if (canUsePermission(item, Permission.Share, pageType)) {
-      nextActions.push({ key: "share", label: t("shareToFriend") });
-      nextActions.push({ key: "copyLink", label: t("copyLink") });
-    }
-
-    if (getIsSetTop(item)) {
-      nextActions.push({ key: "unTop", label: t("unpin") });
-    } else {
-      nextActions.push({ key: "top", label: t("pin") });
-    }
-
-    if (canUsePermission(item, Permission.Edit, pageType)) {
-      nextActions.push({ key: "rename", label: t("rename") });
-      if (
-        pageType === ExplorerPageType.MY ||
-        pageType === ExplorerPageType.SHARED
-      ) {
-        nextActions.push({ key: "move", label: t("moveTo") });
-      }
-      nextActions.push({ key: "delete", label: t("delete"), danger: true });
-    }
-
-    return nextActions;
+    return buildActions(getSingleMenuActionKeys(item, pageType));
   };
 
   const buildMultiActions = (
     items: ContentType[],
     pageType: ExplorerPageType,
   ): PcFileContextAction[] => {
-    if (pageType === ExplorerPageType.RECYCLE) {
-      return [
-        { key: "restore", label: t("restore") },
-        { key: "deletePermanently", label: t("deletePermanently") },
-      ];
-    }
-    if (pageType === ExplorerPageType.MY_SHARES) {
-      return [{ key: "cancelShare", label: t("cancelShare") }];
-    }
-
-    const nextActions: PcFileContextAction[] = [];
-    const allFiles = items.every((item) => !getIsFolder(item));
-
-    if (
-      items.every((item) => canUsePermission(item, Permission.Share, pageType))
-    ) {
-      nextActions.push({ key: "share", label: t("shareToFriend") });
-      nextActions.push({ key: "copyLink", label: t("copyLink") });
-    }
-
-    if (
-      items.every((item) => canUsePermission(item, Permission.Edit, pageType))
-    ) {
-      if (
-        pageType === ExplorerPageType.MY ||
-        pageType === ExplorerPageType.SHARED
-      ) {
-        nextActions.push({ key: "move", label: t("moveTo") });
-      }
-      nextActions.push({ key: "delete", label: t("delete"), danger: true });
-    }
-
-    if (
-      allFiles &&
-      items.every((item) => canUsePermission(item, Permission.View, pageType))
-    ) {
-      nextActions.unshift({ key: "download", label: t("download") });
-    }
-
-    return nextActions;
+    return buildActions(getMultiMenuActionKeys(items, pageType));
   };
 
   const resolvePosition = (event: MouseEvent, actionCount: number) => {
@@ -188,7 +107,7 @@ export function usePcFileContextMenu(options: {
     anchorRow.value = null;
   };
 
-  const openForRow = (row: ContentType, event: MouseEvent) => {
+  const openForRow = async (row: ContentType, event: MouseEvent) => {
     const pageType = unref(options.pageType);
     const rowKey = getRowKey(row);
     const selectedItems = selected.value.some(
@@ -197,18 +116,22 @@ export function usePcFileContextMenu(options: {
       ? [...selected.value]
       : [row];
 
+    const itemsWithPermission = await ensureMenuPermissions(selectedItems, pageType);
+    const nextRow =
+      itemsWithPermission.find((item) => getRowKey(item) === rowKey) ?? row;
+
     const nextActions =
-      selectedItems.length > 1
-        ? buildMultiActions(selectedItems, pageType)
-        : buildSingleActions(row, pageType);
+      itemsWithPermission.length > 1
+        ? buildMultiActions(itemsWithPermission, pageType)
+        : buildSingleActions(nextRow, pageType);
 
     if (!nextActions.length) {
       close();
       return;
     }
 
-    anchorRow.value = row;
-    contextItems.value = selectedItems;
+    anchorRow.value = nextRow;
+    contextItems.value = itemsWithPermission;
     actions.value = nextActions;
     position.value = resolvePosition(event, nextActions.length);
     visible.value = true;

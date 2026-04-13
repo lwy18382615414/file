@@ -352,6 +352,7 @@ export default {
     "The selected files has been shared. After deletion, it will no longer be accessible in the shared view. Are you sure delete it?",
   fileDeleted: "file has been deleted",
   fileDeletedCount: "{count} files have been deleted",
+  jumpFailedLoginCheck: "Please log in to the management backstage to check!",
 
   route: {
     recentView: "Recent",

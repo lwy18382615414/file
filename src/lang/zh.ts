@@ -335,6 +335,7 @@ export default {
   shareDelete: "所选文件已被分享，删除后分享中将无法查看该文件，确定删除吗？",
   fileDeleted: "文件已被删除",
   fileDeletedCount: "文件已被删除{count}项",
+  jumpFailedLoginCheck: "请登录管理后台查看！",
 
   route: {
     recentView: "最近浏览",
