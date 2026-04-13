@@ -525,7 +525,7 @@ const schemeUrl = computed(() => {
   display: flex;
   flex-direction: column;
   background: var(--btn-default-bg);
-  min-height: 488px;
+  min-height: 468px;
 }
 
 .share-loading {

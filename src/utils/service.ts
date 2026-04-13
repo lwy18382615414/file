@@ -1,13 +1,6 @@
 import axios from "axios";
 import { DeviceType } from "@/enum/baseEnum";
-import {
-  getFromApp,
-  getToken,
-  removeAll,
-  removeToken,
-  getDeviceId,
-  getFromPc,
-} from "./auth";
+import { getFromApp, getToken, getDeviceId, getFromPc } from "./auth";
 import configUrl from "@/config";
 import { getDeviceType, isTokenCleared } from "@/utils";
 import httpCode, { httpMessage } from "@/utils/httpCode";
@@ -77,10 +70,6 @@ request.interceptors.request.use((config: any) => {
 request.interceptors.response.use(
   (response) => {
     const res = response.data;
-    if (unAuthorizedCode.includes(res.code)) {
-      removeAll();
-      removeToken();
-    }
     if (!excludeCode.includes(res.code)) {
       // if (isPcEnv) {
       //   ElMessage.warning(t(httpMessage[res.code] || `E${res.code}`));

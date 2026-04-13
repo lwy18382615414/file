@@ -12,10 +12,10 @@ const router = createRouter({
     {
       path: "/",
       component: () => import("@/layout/index.vue"),
-      redirect: "/recent",
+      redirect: "/recent-view",
       children: [
         {
-          path: "recent",
+          path: "recent-view",
           name: "Recent",
           component: () => import("@/views/fileExplorer.vue"),
           meta: { type: "recent", title: "最近浏览" },

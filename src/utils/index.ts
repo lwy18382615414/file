@@ -14,7 +14,8 @@ import { checkFileIsSharedApi } from "@/api/fileService";
 import dayjs from "dayjs";
 import { getUserAppsApi } from "@/api/common";
 
-const { cloudDriveUploadUrl, fileMaxSize } = config();
+const getCloudDriveUploadUrl = () => config().cloudDriveUploadUrl.value;
+const getFileMaxSize = () => config().fileMaxSize.value;
 
 export const AppNameMap: Record<string, string> = {
   so: "Supper Office",
@@ -780,7 +781,7 @@ export const downloadInAppFile = async (options: DownloadAppOptions) => {
   const file = {
     fileName: fileName,
     filePath:
-      cloudDriveUploadUrl.value +
+      getCloudDriveUploadUrl() +
       `/api/file/download/clouddrive?fileid=${fileId}`,
     fileSize: fileSize,
     sn: aesKey,
@@ -970,8 +971,9 @@ export function getAssetUrl(file: string, dir: "images" | "icons" = "images") {
 
 // 校验文件大小
 export function checkFileSize(file: File): boolean {
-  console.log("file.size", file.size, fileMaxSize.value);
-  return file.size > fileMaxSize.value + 5 * 1024 * 1024;
+  const fileMaxSize = getFileMaxSize();
+  console.log("file.size", file.size, fileMaxSize);
+  return file.size > fileMaxSize + 5 * 1024 * 1024;
 }
 
 // 校验是否有云盘应用

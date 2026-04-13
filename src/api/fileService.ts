@@ -11,7 +11,7 @@ import type {
 } from "@/api/type";
 import config from "@/hooks/config";
 
-const { cloudDriveUploadUrl } = config();
+const getCloudDriveUploadUrl = () => config().cloudDriveUploadUrl.value;
 
 // 文件上传第一步
 export function uploadFileStep1Api(
@@ -22,7 +22,7 @@ export function uploadFileStep1Api(
   },
 ): Promise<IResponse<UploadFileStep1CallbackParams>> {
   return request.post(
-    `${cloudDriveUploadUrl.value}/api/file/clouddrive`,
+    `${getCloudDriveUploadUrl()}/api/file/clouddrive`,
     file,
     {
       headers: {
@@ -54,7 +54,7 @@ export function getDownloadFileIdApi(
 // 下载文件
 export function downloadFileApi(fileId: string): Promise<IResponse<any>> {
   return request.get(
-    `${cloudDriveUploadUrl.value}/api/file/download/clouddrive`,
+    `${getCloudDriveUploadUrl()}/api/file/download/clouddrive`,
     {
       params: {
         fileId,
@@ -106,9 +106,9 @@ export function moveFileOrDirApi(data: {
 export function requestUploadFileApi(
   data: UploadFileChunkParams,
 ): Promise<IResponse<string>> {
-  console.log("请求文件上传接口，参数：", cloudDriveUploadUrl.value, data);
+  console.log("请求文件上传接口，参数：", getCloudDriveUploadUrl(), data);
   return request.post(
-    `${cloudDriveUploadUrl.value}/api/file/requestuploadfile`,
+    `${getCloudDriveUploadUrl()}/api/file/requestuploadfile`,
     data,
   );
 }
@@ -119,7 +119,7 @@ export function uploadFileChunkApi(
   signal?: AbortSignal,
 ): Promise<IResponse<null>> {
   return request.post(
-    `${cloudDriveUploadUrl.value}/api/file/chunkuploadfile`,
+    `${getCloudDriveUploadUrl()}/api/file/chunkuploadfile`,
     {
       ...data,
       onUploadProgress: undefined,
@@ -141,7 +141,7 @@ export function mergeFileApi(data: {
   md5: string;
   uploadResourceType: number;
 }): Promise<IResponse<MergeCallbackParams>> {
-  return request.post(`${cloudDriveUploadUrl.value}/api/file/filemerge`, data);
+  return request.post(`${getCloudDriveUploadUrl()}/api/file/filemerge`, data);
 }
 
 // 下载文件次数增加
@@ -163,7 +163,7 @@ export function getTransferFileInfoApi(data: {
   transferStorageFiles: TransferFileItem[];
 }): Promise<IResponse<any[]>> {
   return request.post(
-    `${cloudDriveUploadUrl.value}/api/file/clouddrivetransferstorage`,
+    `${getCloudDriveUploadUrl()}/api/file/clouddrivetransferstorage`,
     data,
   );
 }

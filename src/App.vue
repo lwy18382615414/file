@@ -4,12 +4,10 @@
 
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
-import { useClientEnv } from "./hooks/useClientEnv";
 import config from "./hooks/config";
 import i18n from "@/lang";
 import { getLanguageCode, getToken } from "./utils/auth";
 import useMyUserInfo from "./hooks/useMyUserInfo";
-const { isMobileApp } = useClientEnv();
 
 const { ensureConfigReady } = config();
 const { getMyInfoByApi } = useMyUserInfo();

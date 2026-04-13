@@ -26,7 +26,7 @@ const jump = async () => {
       router.replace("/my");
       return;
     }
-    await router.replace("/recent");
+    await router.replace("/recent-view");
     return;
   }
 
@@ -65,7 +65,7 @@ const jump = async () => {
     router.replace(target);
   } catch (error) {
     console.error("跳转失败:", error);
-    router.replace("/recent");
+    router.replace("/recent-view");
   }
 };
 

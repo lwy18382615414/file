@@ -194,7 +194,7 @@ const progress = ref(0);
 let createPermissionTimer: ReturnType<typeof setInterval> | null = null;
 
 const fixedMenu = [
-  { path: "/recent", name: "route.recentView", icon: "recent" },
+  { path: "/recent-view", name: "route.recentView", icon: "recent" },
   { path: "/my", name: "route.myFiles", icon: "my" },
   { path: "/my-shares", name: "route.myShares", icon: "shared" },
   { path: "/recycle-bin", name: "route.recycleBin", icon: "recycle_bin" },

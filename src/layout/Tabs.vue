@@ -25,7 +25,7 @@ const { t } = useI18n();
 const tabsRef = ref<HTMLElement | null>(null);
 
 const tabs = [
-  { path: "/recent", title: t("recentView") },
+  { path: "/recent-view", title: t("recentView") },
   { path: "/my", title: t("myFiles") },
   { path: "/shared", title: t("shared") },
   { path: "/my-shares", title: t("myShares") },

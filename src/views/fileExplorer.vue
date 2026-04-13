@@ -67,7 +67,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { clearRecycleBinApi } from "@/api/recycleBin";
@@ -234,6 +234,10 @@ useExplorerMobileHeader({
   onOpenShareSettings: openShareSettings,
   onClearRecycleBin: clearRecycle,
   onBack: handleBack,
+});
+
+onMounted(() => {
+  window.refreshData = refreshList;
 });
 </script>
 

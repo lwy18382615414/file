@@ -1,9 +1,5 @@
 <template>
   <div class="mobile-top-bar">
-    <van-nav-bar title="File" left-arrow>
-      <template #right> </template>
-    </van-nav-bar>
-
     <div v-if="!isSearchPage" class="search-wrapper">
       <div class="search-content" @click="handleSearchClick">
         <svg-icon name="action-search" size="18" />
