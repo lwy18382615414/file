@@ -1,97 +1,102 @@
 <template>
   <div class="space-setting-page">
-    <div class="person-info">
-      <div ref="personListRef" class="space-person">
-        <div
-          v-for="item in [...personList].slice(0, staffCount)"
-          :key="item.id"
-          class="item-person"
-        >
-          <div class="avatar">
-            <div v-if="item.avatar" class="avatar-img">
-              <AvatarBox
-                class="avatar"
-                :userId="item.userId"
-                :avatar="item.avatar"
-                :size="48"
-              />
-            </div>
-            <SvgIcon v-else name="ic_department" size="48" />
-            <div class="name">{{ item.label }}</div>
-          </div>
-        </div>
-        <template v-if="hasPermission(permissionType, Permission.Admin)">
-          <component
-            :is="getFromApp() ? 'div' : 'router-link'"
-            class="item-person add-button"
-            :to="!getFromApp() && { path: '/add-staff', query: { contentId } }"
-            v-on="getFromApp() ? { click: toAppSelect } : {}"
+    <template v-if="pageReady">
+      <div class="person-info">
+        <div ref="personListRef" class="space-person">
+          <div
+            v-for="item in [...personList].slice(0, staffCount)"
+            :key="item.id"
+            class="item-person"
           >
             <div class="avatar">
-              <div
-                class="avatar-img"
-                :style="{ borderRadius: isSgMode ? '50%' : '0.5rem' }"
-              ></div>
+              <div v-if="item.avatar" class="avatar-img">
+                <AvatarBox
+                  class="avatar"
+                  :userId="item.userId"
+                  :avatar="item.avatar"
+                  :size="48"
+                />
+              </div>
+              <SvgIcon v-else name="ic_department" size="48" />
+              <div class="name">{{ item.label }}</div>
             </div>
-          </component>
-        </template>
+          </div>
+          <template v-if="hasPermission(permissionType, Permission.Admin)">
+            <component
+              :is="getFromApp() ? 'div' : 'router-link'"
+              class="item-person add-button"
+              :to="
+                !getFromApp() && { path: '/add-staff', query: { contentId } }
+              "
+              v-on="getFromApp() ? { click: toAppSelect } : {}"
+            >
+              <div class="avatar">
+                <div
+                  class="avatar-img"
+                  :style="{ borderRadius: isSgMode ? '50%' : '0.5rem' }"
+                ></div>
+              </div>
+            </component>
+          </template>
+        </div>
+        <van-cell
+          :title="t('viewAllMembers')"
+          is-link
+          class="person-cell"
+          :value="personCount"
+          @click="toStaffList(contentId, permissionType)"
+        />
+        <van-cell
+          :title="t('notifyUsers')"
+          is-link
+          class="person-cell"
+          :value="notifyCount"
+          @click="toNotifyList(contentId, permissionType)"
+        />
       </div>
-      <van-cell
-        :title="t('viewAllMembers')"
-        is-link
-        class="person-cell"
-        :value="personCount"
-        @click="toStaffList(contentId, permissionType)"
-      />
-      <van-cell
-        :title="t('notifyUsers')"
-        is-link
-        class="person-cell"
-        :value="notifyCount"
-        @click="toNotifyList(contentId, permissionType)"
-      />
-    </div>
-    <div class="divider"></div>
-    <div class="space-info">
-      <van-cell
-        :title="t('folderName')"
-        :is-link="hasPermission(permissionType, Permission.SuperAdmin)"
-        class="name-cell"
-        :value="title"
-        @click="renameSpace"
-      >
-        <template #value>
-          <div class="custom-title">{{ title }}</div>
-        </template>
-      </van-cell>
+      <div class="divider"></div>
+      <div class="space-info">
+        <van-cell
+          :title="t('folderName')"
+          :is-link="hasPermission(permissionType, Permission.SuperAdmin)"
+          class="name-cell"
+          :value="title"
+          @click="renameSpace"
+        >
+          <template #value>
+            <div class="custom-title">{{ title }}</div>
+          </template>
+        </van-cell>
 
-      <van-cell :title="t('pinFolder')">
-        <template #right-icon>
-          <van-switch v-model="checked" size="20" @change="changeTop" />
-        </template>
-      </van-cell>
-    </div>
+        <van-cell :title="t('pinFolder')">
+          <template #right-icon>
+            <van-switch v-model="checked" size="20" @change="changeTop" />
+          </template>
+        </van-cell>
+      </div>
 
-    <div class="btn-group">
-      <van-button class="exit-button" block @click="exitSpace">
-        <template #default>
-          <span>{{ t("exit") }}</span>
-        </template>
-      </van-button>
-      <div class="line"></div>
-      <van-button
-        v-if="
-          permissionType && hasPermission(permissionType, Permission.SuperAdmin)
-        "
-        class="delete-button"
-        block
-        @click="deleteSpace"
-      >
-        <template #default>
-          <span>{{ t("delete") }}</span>
-        </template>
-      </van-button>
-    </div>
+      <div class="btn-group">
+        <van-button class="exit-button" block @click="exitSpace">
+          <template #default>
+            <span>{{ t("exit") }}</span>
+          </template>
+        </van-button>
+        <div class="line"></div>
+        <van-button
+          v-if="
+            permissionType &&
+            hasPermission(permissionType, Permission.SuperAdmin)
+          "
+          class="exit-button"
+          block
+          @click="deleteSpace"
+        >
+          <template #default>
+            <span>{{ t("delete") }}</span>
+          </template>
+        </van-button>
+      </div>
+    </template>
   </div>
   <NameEditPopup
     :show="rename.show"
@@ -103,7 +108,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
   addFolderPermissionApi,
@@ -142,6 +147,7 @@ const title = ref("");
 const permissionType = ref(0);
 const personCount = ref(0);
 const notifyCount = ref(0);
+const pageReady = ref(false);
 
 const contentId = computed<number>(() => {
   const queryId = route.query.contentId;
@@ -344,24 +350,32 @@ const confirmRename = async (spaceName: string) => {
 
 // 获取文件夹信息
 const getSpaceInfo = async () => {
-  const res = await getFolderPermissionApi(contentId.value);
-  if (res.code === 1) {
-    personList.value = res.data.permissions;
-    title.value = res.data.name;
-    checked.value = res.data.isSetTop;
-    permissionType.value = res.data.permissionType;
-    personCount.value = res.data.personCount;
-    notifyCount.value = res.data.permissions.filter(
-      (item: { isNotify?: boolean; userId?: number }) =>
-        item.isNotify && item.userId,
-    ).length;
+  pageReady.value = false;
+  try {
+    const res = await getFolderPermissionApi(contentId.value);
+    if (res.code === 1) {
+      personList.value = res.data.permissions;
+      title.value = res.data.name;
+      checked.value = res.data.isSetTop;
+      permissionType.value = res.data.permissionType;
+      personCount.value = res.data.personCount;
+      notifyCount.value = res.data.permissions.filter(
+        (item: { isNotify?: boolean; userId?: number }) =>
+          item.isNotify && item.userId,
+      ).length;
 
-    countStaffNum();
-  } else {
-    personList.value = [];
-    title.value = "";
-    checked.value = false;
-    notifyCount.value = 0;
+      pageReady.value = true;
+      await nextTick();
+      countStaffNum();
+    } else {
+      personList.value = [];
+      title.value = "";
+      checked.value = false;
+      notifyCount.value = 0;
+      pageReady.value = true;
+    }
+  } finally {
+    pageReady.value = true;
   }
 };
 
@@ -410,6 +424,7 @@ onUnmounted(() => {
 <style scoped lang="scss">
 .space-setting-page {
   height: 100vh;
+  background: var(--page-bg);
 }
 
 :deep(.van-cell__title) {
@@ -422,6 +437,7 @@ onUnmounted(() => {
 }
 
 .space-person {
+  background: var(--card-bg-color);
   padding: 26px;
   display: grid;
   grid-template-columns: repeat(auto-fill, 48px);

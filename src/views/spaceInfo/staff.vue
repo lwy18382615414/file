@@ -324,6 +324,10 @@ watchEffect(() => {
 </script>
 
 <style scoped lang="scss">
+.van-search {
+  border-bottom: 1px solid var(--input-border-color);
+}
+
 :deep(.van-search__content) {
   background-color: var(--input-bg-color);
   border-radius: 4px;
@@ -343,8 +347,9 @@ watchEffect(() => {
 }
 
 .person-list {
-  max-height: 100vh;
+  height: 100vh;
   overflow-y: auto;
+  background: var(--page-bg);
 }
 
 .avatar-name {

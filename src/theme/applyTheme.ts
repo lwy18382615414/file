@@ -66,11 +66,6 @@ export const applyTheme = (theme: ThemeTokens) => {
   root.style.setProperty("--card-border-color", theme.cardBorderColor);
   root.style.setProperty("--border-color", theme.dividerColor);
   root.style.setProperty("--icon-bg-color", theme.iconBackgroundColor);
-  root.style.setProperty("--card-shadow", "0 2px 8px rgba(37, 37, 37, 0.04)");
-  root.style.setProperty(
-    "--card-shadow-hover",
-    "0 4px 16px rgba(37, 37, 37, 0.08)",
-  );
 
   root.style.setProperty("--radius-xs", "4px");
   root.style.setProperty("--radius-sm", "6px");

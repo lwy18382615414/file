@@ -42,8 +42,6 @@ const jump = async () => {
     const lastParentId = parentPathIds[parentPathIds.length - 1] || 0;
     const targetFolderId = res.data.isFolder ? id : Number(lastParentId);
 
-    fileBelong.value = res.data.isShare ? "shareSpace" : "mySpace";
-
     if (!targetFolderId) {
       router.replace(`/${pageType}`);
       return;
