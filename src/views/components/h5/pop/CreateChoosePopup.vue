@@ -13,7 +13,10 @@
         <div class="name">{{ action.name }}</div>
       </div>
     </div>
-    <div class="cancel-btn-wrapper">
+    <div
+      class="cancel-btn-wrapper"
+      @click="emits('update:createVisible', false)"
+    >
       <div class="text">{{ t("cancel") }}</div>
     </div>
   </van-action-sheet>

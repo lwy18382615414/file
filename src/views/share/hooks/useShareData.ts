@@ -243,6 +243,7 @@ export const useShareData = () => {
           JSON.stringify({
             type: "12",
             data: { contentIds: contentIds, shareId: shareId.value },
+            openAfterDownload: true,
           }),
         );
         return;

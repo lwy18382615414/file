@@ -2,7 +2,10 @@
   <div
     :class="[
       'file-list-mobile',
-      { 'is-grid': currentViewMode === LayoutMode.GRID },
+      {
+        'is-grid': currentViewMode === LayoutMode.GRID,
+        'is-long-pressing': isLongPressing,
+      },
     ]"
   >
     <!-- 列表 -->
@@ -14,7 +17,7 @@
       @load="$emit('loadMore')"
     >
       <template v-if="loading && !list.length">
-        <FileListSkeleton :count="15" />
+        <FileListSkeleton :count="10" />
       </template>
 
       <template v-else-if="list.length">
@@ -84,6 +87,16 @@
         <button class="toolbar-text-button" @click="handleMyShareAction">
           {{ selectedCount ? t("cancelShare") : t("cancel") }}
         </button>
+      </template>
+      <template v-if="isRecycleBinPage">
+        <div class="btns">
+          <button class="toolbar-text-button" @click="handleRestoreSelected">
+            {{ t("restore") }}
+          </button>
+          <button class="toolbar-text-button del" @click="handleDeleteSelected">
+            {{ t("deletePermanently") }}
+          </button>
+        </div>
       </template>
       <template v-else>
         <div
@@ -208,6 +221,11 @@ const buildMovePayload = (items: ContentType[]): MovePayload => {
 const isMySharePage = computed(
   () => props.pageType === ExplorerPageType.MY_SHARES,
 );
+
+const isRecycleBinPage = computed(
+  () => props.pageType === ExplorerPageType.RECYCLE,
+);
+
 const selectedCount = computed(() => getSelectedCount());
 
 const { sections } = useMobileFileSections({
@@ -229,6 +247,8 @@ const {
   shareToFriendMany,
   cancelShareMany,
   removeMany,
+  deletePermanentlyMany,
+  restoreMany,
   handleMenuAction,
 } = useFileActions({
   onRefresh: () => emit("refresh"),
@@ -337,6 +357,20 @@ const handleMyShareAction = async () => {
   clearLongPressState();
 };
 
+const handleRestoreSelected = async () => {
+  const restored = await restoreMany(getSelectedItems());
+  if (!restored) return;
+  clear();
+  clearLongPressState();
+};
+
+const handleDeleteSelected = async () => {
+  const removed = await deletePermanentlyMany(getSelectedItems());
+  if (!removed) return;
+  clear();
+  clearLongPressState();
+};
+
 watch(
   () => props.list,
   (list) => {
@@ -402,6 +436,12 @@ const handlePopupSelect = async (key: string) => {
     :deep(.van-list) {
       padding-bottom: 112px;
     }
+  }
+
+  &.is-long-pressing {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
   }
 }
 
@@ -469,6 +509,16 @@ const handlePopupSelect = async (key: string) => {
     background: var(--subtle-fill-color);
     color: var(--text-primary-color);
     font-size: 14px;
+  }
+
+  .btns {
+    width: 100%;
+    display: flex;
+    gap: 16px;
+
+    .del {
+      color: var(--warning-red-color);
+    }
   }
 }
 </style>

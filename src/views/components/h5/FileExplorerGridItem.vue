@@ -1,214 +1,140 @@
 <template>
-  <template v-if="type === FileTypeEnum.Folder">
-    <div class="list-cell" :class="{ 'is-checked': canCheck }">
-      <div class="cell">
-        <span>
-          <SvgIcon name="icon_folder" size="30" />
+  <div
+    v-long-press
+    :class="['file-explorer-grid-item', { 'is-selected': selected }]"
+    @click="handleClick"
+  >
+    <div class="grid-preview">
+      <SvgIcon :name="computedIcon" :size="72" class="item-icon" />
+      <div v-if="isLongPressing" class="select-indicator">
+        <CustomCheckBox :class="selected ? 'is-all' : ''" />
+      </div>
+      <SvgIcon
+        v-else-if="!isSharePage"
+        size="18"
+        name="action-menu_dots"
+        class="menu-icon"
+        @click.stop="emit('menu', content)"
+      />
+    </div>
+
+    <div class="grid-info">
+      <div class="grid-title">{{ primaryText }}</div>
+      <div v-if="metaLines.length" class="grid-meta">
+        <span v-for="(meta, index) in metaLines" :key="`${meta}-${index}`">
+          {{ meta }}
         </span>
-        <div class="cell-title">{{ getName(item) }}</div>
-      </div>
-      <span v-if="!isLongPress" @click.stop="emit('menu', item)">
-        <SvgIcon name="ic_h5_dots" size="24" />
-      </span>
-      <div v-else class="checkbox-content">
-        <CustomCheckBox :checkBoxClass="isChecked" />
       </div>
     </div>
-  </template>
-
-  <template v-else>
-    <div class="grid-cell" :class="{ 'is-checked': canCheck }">
-      <div class="file-bg">
-        <div class="file-content">
-          <span class="file-icon">
-            <SvgIcon
-              :name="getIsFolder(item) ? 'icon_folder' : getFileIcon(getName(item))"
-              size="90"
-            />
-          </span>
-        </div>
-      </div>
-      <div class="file-info">
-        <div class="file-title">
-          <span class="file-name">{{ getName(item) }}</span>
-          <span
-            v-if="!isLongPress"
-            class="file-icon"
-            @click.stop="emit('menu', item)"
-          >
-            <SvgIcon name="ic_h5_dots" size="30" />
-          </span>
-          <div v-else class="checkbox-content">
-            <CustomCheckBox :checkBoxClass="isChecked" />
-          </div>
-        </div>
-
-        <div class="file-desc">
-          <span v-if="getIsFolder(item)"> {{ t("folder") }} </span>
-          <span v-else> {{ handleFileAndFolderName(getName(item)) }} </span>
-
-          <span v-if="getSize(item)">
-            ·
-            {{ formatFileSize(getSize(item)) }}
-          </span>
-          <span v-if="getExpireTime(item)">
-            ·
-            {{ countdown(getExpireTime(item)!) }}
-          </span>
-        </div>
-      </div>
-    </div>
-  </template>
+  </div>
 </template>
 
-<script setup lang="ts">
-import { SvgIcon, CustomCheckBox } from "@/components";
-import {
-  countdown,
-  formatFileSize,
-  getFileIcon,
-  handleFileAndFolderName,
-  t,
-} from "@/utils";
-import { computed, type PropType } from "vue";
+<script lang="ts" setup>
+import { CustomCheckBox, SvgIcon } from "@/components";
+import { FileTypeEnum } from "@/enum/baseEnum";
+import { useLongPress } from "@/hooks/useLongPress";
 import type { ContentType } from "@/types/type";
-import { getName, getSize, getIsFolder, getExpireTime } from "@/utils/typeUtils";
-import { FileTypeEnum } from "@/enum/baseEnum.ts";
+import { ExplorerPageType } from "@/views/fileExplorer";
+import { useFileExplorerItemData } from "../../hooks/useFileExplorerItemData";
+
+const props = defineProps<{
+  content: ContentType;
+  type: FileTypeEnum;
+  pageType: ExplorerPageType;
+  selected: boolean;
+}>();
 
 const emit = defineEmits<{
   (e: "menu", item: ContentType): void;
+  (e: "open", item: ContentType): void;
+  (e: "selection-change", item: ContentType): void;
 }>();
 
-const props = defineProps({
-  item: {
-    type: Object as PropType<ContentType>,
-    default: () => ({}),
-  },
-  type: {
-    type: Number as PropType<FileTypeEnum>,
-    default: FileTypeEnum.File,
-  },
-  isLongPress: {
-    type: Boolean,
-    default: false,
-  },
-  checked: {
-    type: Boolean,
-    default: false,
-  },
-  isDisabled: {
-    type: Boolean,
-    default: false,
-  },
-});
+const { isLongPressing } = useLongPress();
+const { isSharePage, isFolderItem, computedIcon, primaryText, metaLines } =
+  useFileExplorerItemData({
+    content: () => props.content,
+    type: () => props.type,
+    pageType: () => props.pageType,
+  });
 
-const canCheck = computed(() => {
-  if (props.isDisabled) return false;
-  return props.checked;
-});
-
-const isChecked = computed(() => {
-  if (props.isDisabled) return "is-disabled";
-  return props.checked ? "is-all" : "";
-});
+const handleClick = () => {
+  if (isLongPressing.value) {
+    emit("selection-change", props.content);
+  } else if (isSharePage.value || isFolderItem.value) {
+    emit("open", props.content);
+  }
+};
 </script>
 
-<style scoped lang="scss">
-.list-cell {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 100%;
-  width: 100%;
-  border-radius: 4px;
-  border: 1px solid #e8ecf2;
-  padding: 10px 6px;
-
-  &.is-checked {
-    border-radius: 4px;
-    box-shadow: 0 0 0 1px var(--theme-color);
-  }
-
-  .cell {
-    display: flex;
-    align-items: center;
-
-    .cell-title {
-      margin-left: 12px;
-      font-size: calc(var(--base--font--size--14) * var(--scale-factor));
-      font-weight: 500;
-      color: var(--text-primary-color);
-      max-width: 92px;
-      user-select: none;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-  }
-}
-.grid-cell {
-  width: 100%;
+<style lang="scss" scoped>
+.file-explorer-grid-item {
   display: flex;
   flex-direction: column;
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px #eaedf2;
 
-  &.is-checked {
-    border-radius: 4px;
-    box-shadow: 0 0 0 1px var(--theme-color);
+  &.is-selected {
+    box-shadow: 0 0 0 1px #5665bb;
+  }
+}
+
+.grid-preview {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  border-bottom: 1px solid #eaedf2;
+
+  .item-icon {
+    flex-shrink: 0;
   }
 
-  .file-bg {
-    height: 104px;
-    padding: 8px 8px 0 8px;
-    border: 1px solid var(--input-bg-color);
-    border-bottom: transparent;
-    border-radius: 4px 4px 0 0;
-    position: relative;
-
-    .file-content {
-      width: 100%;
-      height: 100%;
-    }
-
-    .file-icon {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
+  .menu-icon,
+  .select-indicator {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
+}
 
-  .file-info {
-    border: 1px solid var(--input-bg-color);
-    border-radius: 0 0 4px 4px;
-    padding: 6px 12px 8px;
-    user-select: none;
+.grid-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+}
 
-    .file-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+.grid-title {
+  color: #252525;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 500;
+  word-break: break-all;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
 
-      .file-name {
-        display: inline-block;
-        max-width: 100%;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        font-size: calc(var(--base--font--size--15) * var(--scale-factor));
-        font-weight: 500;
-        color: var(--text-primary-color);
-      }
-    }
+.grid-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: #7b8290;
+  font-size: 12px;
+  line-height: 16px;
 
-    .file-desc {
-      font-size: calc(var(--base--font--size--12) * var(--scale-factor));
-      margin-bottom: 4px;
-      color: var(--text-secondary-color);
-      max-width: 100%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 </style>

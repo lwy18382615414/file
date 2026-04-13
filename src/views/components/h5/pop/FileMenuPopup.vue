@@ -52,8 +52,9 @@
         </div>
       </div>
 
-      <div class="divider"></div>
-      <div class="cancel" @click="close">{{ t("cancel") }}</div>
+      <div class="cancel-btn-wrapper" @click="close">
+        <div class="text">{{ t("cancel") }}</div>
+      </div>
     </div>
   </van-popup>
 </template>
@@ -191,16 +192,15 @@ const selectAction = (key: string) => {
   }
 }
 
-.divider {
-  height: 8px;
+.cancel-btn-wrapper {
   width: 100%;
-  background-color: #f7f8fa;
-  padding: 0 16px;
-}
+  padding: 16px;
 
-.cancel {
-  color: var(--text-primary-color);
-  text-align: center;
-  padding: 14px 0;
+  .text {
+    padding: 12px 16px;
+    text-align: center;
+    border-radius: 12px;
+    border: 1px solid #d1d5db;
+  }
 }
 </style>

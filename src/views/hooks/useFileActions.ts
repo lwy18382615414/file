@@ -197,7 +197,13 @@ export function useFileActions(options?: {
         return false;
       }
 
-      console.log(JSON.stringify({ type: "12", data: contentIds }));
+      console.log(
+        JSON.stringify({
+          type: "12",
+          data: contentIds,
+          openAfterDownload: true,
+        }),
+      );
       return true;
     }
 
@@ -554,6 +560,12 @@ export function useFileActions(options?: {
     move: move,
     share: shareToFriend,
     delete: remove,
+    deletePermanently: async (item) => {
+      await deletePermanentlyMany([item]);
+    },
+    restore: async (item) => {
+      await restoreMany([item]);
+    },
     top: top,
     unTop: unTop,
     copy: copyLink,

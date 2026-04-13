@@ -22,9 +22,20 @@ export function useFileMenu() {
   const menuActions = computed<FileMenuAction[]>(() => {
     if (!activeItem.value) return [];
 
-    const isSetTop = getIsSetTop(activeItem.value);
-
     const context = getExplorerContext(route);
+
+    if (context.pageType === ExplorerPageType.RECYCLE) {
+      return [
+        { key: "restore", label: t("restore"), icon: "co_restore" },
+        {
+          key: "deletePermanently",
+          label: t("deletePermanently"),
+          icon: "co_delete",
+        },
+      ];
+    }
+
+    const isSetTop = getIsSetTop(activeItem.value);
     const commonActions: FileMenuAction[] = [
       { key: "share", label: t("shareToFriend"), icon: "co_share" },
       { key: "copy", label: t("copyLink"), icon: "co_copy" },

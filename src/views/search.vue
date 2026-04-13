@@ -10,7 +10,7 @@
       @cancel="onCancel"
     >
       <template #left-icon>
-        <SvgIcon name="ic_search" size="22" />
+        <svg-icon name="action-search" size="18" />
       </template>
     </van-search>
 
@@ -181,6 +181,11 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
+:deep(.van-search__content) {
+  border-radius: 4px;
+  border: 1px solid var(--input-border-color);
+}
+
 :deep(.van-search__action) {
   color: var(--text-secondary-color);
   font-size: 16px;
@@ -198,6 +203,7 @@ onMounted(() => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  background: var(--page-bg);
 }
 
 .search-result {
