@@ -1,9 +1,9 @@
 <template>
-  <div class="layout" :class="{ 'is-mobile-app': isMobileApp }">
-    <div v-if="isPcClient">
+  <div class="layout" :class="{ 'is-mobile-layout': isMobileLayout }">
+    <div v-if="showPcSiderBar">
       <pc-sider-bar />
     </div>
-    <div v-else-if="isMobileApp">
+    <div v-else-if="showTopBar">
       <top-bar
         @searchClick="handleSearchClick"
         @sortClick="handleSortClick"
@@ -28,6 +28,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import { useClientEnv } from "@/hooks/useClientEnv";
 import { useLayoutMode } from "@/hooks/useLayoutMode";
 import { useExplorerSort } from "@/hooks/sort/useExplorerSort";
@@ -37,7 +38,28 @@ import TopBar from "./TopBar.vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
-const { isMobileApp, isPcClient } = useClientEnv();
+const { isMobileApp, isPcClient, isWebBrowser } = useClientEnv();
+const isMobileDevice = computed(() => {
+  if (isMobileApp.value) {
+    return true;
+  }
+
+  if (isPcClient.value) {
+    return false;
+  }
+
+  if (isWebBrowser.value) {
+    const ua = navigator.userAgent.toLowerCase();
+    return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
+      ua,
+    );
+  }
+
+  return false;
+});
+const showPcSiderBar = computed(() => !isMobileDevice.value);
+const showTopBar = computed(() => isMobileDevice.value);
+const isMobileLayout = computed(() => isMobileDevice.value);
 const { toggleLayoutMode } = useLayoutMode();
 const {
   sortList,
@@ -74,7 +96,7 @@ const handleMoreClick = () => {
   width: 100%;
   height: 100vh;
 
-  &.is-mobile-app {
+  &.is-mobile-layout {
     flex-direction: column;
   }
 

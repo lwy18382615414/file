@@ -173,7 +173,8 @@
 <script setup lang="ts" defer>
 import { useI18n } from "vue-i18n";
 import { onMounted, onUnmounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import { computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import {
   getEnterpriseApi,
   getAreaCodeApi,
@@ -190,8 +191,14 @@ import { getLanguageFormatCode } from "@/utils";
 
 const { policyUrl } = config();
 
-const { t, locale } = useI18n();
+const { locale } = useI18n();
 const router = useRouter();
+const route = useRoute();
+const redirectPath = computed(() => {
+  const redirect = route.query.redirect;
+  return typeof redirect === "string" && redirect ? redirect : "/";
+});
+const navigateAfterLogin = () => router.push(redirectPath.value);
 const cancelReason = "initiative cancel login";
 const isNavigating = ref(false); //是否立即调用获取二维码方法
 //二维码参数
@@ -233,7 +240,7 @@ const loginCheck = async () => {
               userId = 0;
               qrCodeContent = "";
               // await goLogin()
-              router.push("/");
+              navigateAfterLogin();
               return;
             } else if (res.data.userId > 0) {
               // // 有用户信息
@@ -361,7 +368,7 @@ const selectTenant = (item: any) => {
   switchEnterpriseApi(item.tenantId).then((res: any) => {
     sessionStorage.setItem("myUserInfo", JSON.stringify(res.data));
     sessionStorage.setItem("tenantId", item.tenantId);
-    router.push("/");
+    navigateAfterLogin();
   });
 };
 const openUrl = (str: string) => {

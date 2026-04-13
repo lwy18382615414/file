@@ -1,9 +1,48 @@
-import { createRouter, createWebHashHistory } from "vue-router";
+import {
+  createRouter,
+  createWebHashHistory,
+  type RouteLocationNormalized,
+} from "vue-router";
 import { getQueryVariable, initFontScale, SessionStorageUtil } from "@/utils";
 import { getToken } from "@/utils/auth";
 import useMyUserInfo from "@/hooks/useMyUserInfo";
+import config from "@/hooks/config";
 
 const { getMyInfoByAuth } = useMyUserInfo();
+const { ensureConfigReady } = config();
+const publicRoutes = new Set([
+  "/login",
+  "/jump-page",
+  "/share-page",
+  "/share-content",
+  "/share-detail",
+]);
+
+const isPublicRoute = (path: string) => publicRoutes.has(path);
+
+const buildLoginRedirect = (to: RouteLocationNormalized) => {
+  const fullPath = to.fullPath || "/";
+  return {
+    path: "/login",
+    query: {
+      redirect: fullPath,
+    },
+  };
+};
+
+const handleAuthLogin = async (tenantId: number) => {
+  const auth = getQueryVariable("Auth");
+  if (!auth) {
+    return false;
+  }
+
+  await getMyInfoByAuth(auth, tenantId);
+  return true;
+};
+
+const shouldSkipLogin = (path: string) => isPublicRoute(path);
+
+const isLoginRoute = (path: string) => path === "/login";
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -81,11 +120,6 @@ const router = createRouter({
       component: () => import("@/views/share/index.vue"),
     },
     {
-      path: "/share-content",
-      name: "ShareContent",
-      component: () => import("@/views/share/index.vue"),
-    },
-    {
       path: "/file-select",
       name: "FileSelect",
       component: () => import("@/views/fileSelectPage.vue"),
@@ -130,33 +164,50 @@ const router = createRouter({
 
 const isSetFontScale = initFontScale();
 
-router.beforeEach(async (to, from, next) => {
-  // pc通信 云盘成功打开网站
+router.beforeEach(async (to) => {
   console.log(JSON.stringify({ type: "3", message: "云盘h5连接成功" }));
 
-  // 租户tenantId
   const urlTenantId = getQueryVariable("chatTenantId");
-  const cachedTenantId = SessionStorageUtil.get("tenantId");
+  const cachedTenantId = SessionStorageUtil.get<number>("tenantId");
 
-  // 如果 URL 中有值，且和缓存里的不一样，才进行覆盖存储
-  if (urlTenantId && urlTenantId !== cachedTenantId) {
+  if (urlTenantId && Number(urlTenantId) !== cachedTenantId) {
     SessionStorageUtil.set("tenantId", Number(urlTenantId));
   }
 
+  if (!isSetFontScale) initFontScale();
+
+  await ensureConfigReady();
+
+  const tenantId = Number(urlTenantId) || Number(cachedTenantId) || 0;
   const token = getToken();
 
   if (!token) {
-    const auth = getQueryVariable("Auth");
-    if (auth) {
-      const tenantId: number = Number(urlTenantId) || Number(cachedTenantId);
-      getMyInfoByAuth(auth, tenantId);
+    try {
+      const authLoggedIn = await handleAuthLogin(tenantId);
+      if (authLoggedIn) {
+        if (isLoginRoute(to.path)) {
+          const redirect =
+            typeof to.query.redirect === "string" ? to.query.redirect : "/";
+          return redirect;
+        }
+        return true;
+      }
+    } catch (error) {
+      console.error("Auth 登录失败", error);
+    }
+
+    if (!shouldSkipLogin(to.path)) {
+      return buildLoginRedirect(to);
     }
   }
 
-  // 设置字体缩放
-  if (!isSetFontScale) initFontScale();
+  if (token && isLoginRoute(to.path)) {
+    const redirect =
+      typeof to.query.redirect === "string" ? to.query.redirect : "/";
+    return redirect;
+  }
 
-  next();
+  return true;
 });
 
 export default router;

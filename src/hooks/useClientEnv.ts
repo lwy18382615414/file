@@ -1,5 +1,5 @@
 import { SessionStorageUtil } from "@/utils";
-import { getFromApp } from "@/utils/auth";
+import { getFromApp, getFromPc } from "@/utils/auth";
 import { ref, computed, onMounted } from "vue";
 
 const isFromAppStr = ref<number | null>(null);
@@ -41,7 +41,7 @@ const applyFallbackClientEnv = () => {
 
 const refreshClientEnv = () => {
   isFromAppStr.value = Number(getFromApp());
-  useByPcStr.value = SessionStorageUtil.get<number>("useByPc");
+  useByPcStr.value = Number(getFromPc());
 };
 
 const waitClientEnvReady = () => {
