@@ -4,6 +4,7 @@ import type { ContentType } from "@/types/type";
 import { generateShareText, t, copyToClipboard } from "@/utils";
 import { generateShareLinkApi } from "@/api/share";
 import { getContentId, getName } from "@/utils/typeUtils";
+import { getPermissionDeniedIds } from "@/utils/permissionDenied";
 
 export type ShareLinkParams = {
   contentIds: number[];
@@ -49,12 +50,10 @@ export async function createShareLinkWithPermission(
       result,
     };
   } catch (error) {
-    const responseData = getErrorResponseData(error);
-    if (!responseData) {
+    const deniedIds = getPermissionDeniedIds(error);
+    if (!deniedIds) {
       throw error;
     }
-
-    const deniedIds = JSON.parse(responseData) as number[];
 
     if (deniedIds.length === params.contentIds.length) {
       return { type: "all-denied" };
@@ -154,7 +153,7 @@ export function getPasswordOptions() {
 }
 
 export function getShareErrorResponseData(error: unknown) {
-  return getErrorResponseData(error);
+  return getPermissionDeniedIds(error);
 }
 
 export async function handleSharePermissionResult(options: {
@@ -201,18 +200,6 @@ export async function handleSharePermissionResult(options: {
   };
 }
 
-function getErrorResponseData(error: unknown): string | undefined {
-  if (!(error instanceof Error)) return undefined;
-  const maybeResponse = error as Error & {
-    response?: {
-      data?: {
-        data?: unknown;
-      };
-    };
-  };
-  const data = maybeResponse.response?.data?.data;
-  return typeof data === "string" ? data : undefined;
-}
 
 export function useShareLink() {
   const shareLinkVisible = ref(false);

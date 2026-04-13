@@ -1,6 +1,5 @@
 import { useRoute, useRouter } from "vue-router";
 import type { ContentType } from "@/types/type";
-import type { PcFileContextActionKey } from "./usePcFileContextMenu";
 import {
   cancelTopSpaceApi,
   getParentFolderContentIdApi,
@@ -13,7 +12,7 @@ import {
   moveFileOrDirApi,
 } from "@/api/fileService";
 import { deleteFileApi, restoreFile } from "@/api/recycleBin";
-import { cancelShareApi, generateShareLinkApi } from "@/api/share";
+import { cancelShareApi } from "@/api/share";
 import {
   buildFolderRoute,
   ExplorerPageType,
@@ -37,6 +36,11 @@ import {
 } from "@/utils/typeUtils";
 import { useI18n } from "vue-i18n";
 import { useUiFeedback } from "@/hooks/useUiFeedback";
+import {
+  createShareLinkWithPermission,
+  filterAllowedContentIds,
+} from "@/views/hooks/useShareLink";
+import { getPermissionDeniedIdsFromResponse, httpCode } from "@/utils/permissionDenied";
 
 export type MovePayload = {
   items: ContentType[];
@@ -307,18 +311,79 @@ export function useFileActions(options?: {
     }
 
     const buildShareData = async (shareItems: ContentType[]) => {
-      const shareRes = await generateShareLinkApi({
-        contentIds: shareItems.map((item) => getContentId(item)!),
+      const shareContentIds = shareItems
+        .map((item) => getContentId(item))
+        .filter((contentId): contentId is number => !!contentId);
+
+      if (!shareContentIds.length) {
+        toast(t("noSharePermission"));
+        return false;
+      }
+
+      const shareResult = await createShareLinkWithPermission({
+        contentIds: shareContentIds,
         expireType: 5,
         passwordType: 0,
         password: "",
-        canShare: false,
       });
 
-      const data = shareItems.map((item) => ({
+      if (shareResult.type === "all-denied") {
+        toast(t("noSharePermission"));
+        return false;
+      }
+
+      let allowedItems = shareItems;
+      let shareKey =
+        shareResult.type === "success" ? shareResult.result.shareKey : "";
+
+      if (shareResult.type === "partial-denied") {
+        const noPermissionCount = shareResult.deniedIds.length;
+
+        try {
+          await confirm({
+            title: t("shareFile"),
+            message: t("sharePermissionWarning", { count: noPermissionCount }),
+            cancelButtonText: t("cancel"),
+            confirmButtonText: t("Ok"),
+          });
+        } catch {
+          return false;
+        }
+
+        const allowedContentIds = filterAllowedContentIds(
+          shareItems,
+          shareResult.deniedIds,
+        );
+
+        allowedItems = shareItems.filter((item) => {
+          const contentId = getContentId(item);
+          return contentId != null && allowedContentIds.includes(contentId);
+        });
+
+        if (!allowedItems.length) {
+          toast(t("noSharePermission"));
+          return false;
+        }
+
+        const retryResult = await createShareLinkWithPermission({
+          contentIds: allowedContentIds,
+          expireType: 5,
+          passwordType: 0,
+          password: "",
+        });
+
+        if (retryResult.type !== "success") {
+          toast(t("noSharePermission"));
+          return false;
+        }
+
+        shareKey = retryResult.result.shareKey;
+      }
+
+      const data = allowedItems.map((item) => ({
         ...item,
         name: getName(item),
-        shareKey: shareRes.data.shareKey,
+        shareKey,
       }));
 
       if (!isPcClient.value) {
@@ -477,11 +542,64 @@ export function useFileActions(options?: {
       toast(t("selectFile"));
       return false;
     }
-    const contentIds = items
-      .map((item) => getContentId(item) ?? 0)
-      .filter((contentId) => contentId > 0);
 
-    if (!contentIds.length) return false;
+    const deleteItems = async (
+      targetItems: ContentType[],
+    ): Promise<boolean> => {
+      const targetContentIds = targetItems
+        .map((item) => getContentId(item) ?? 0)
+        .filter((contentId) => contentId > 0);
+
+      if (!targetContentIds.length) {
+        toast(t("noDeletePermission"), "error");
+        return false;
+      }
+
+      const res = await deleteFileOrDirApi(targetContentIds);
+      const deniedIds = getPermissionDeniedIdsFromResponse(res);
+
+      if (deniedIds) {
+        if (deniedIds.length >= targetContentIds.length) {
+          toast(t("noDeletePermission"), "error");
+          return false;
+        }
+
+        try {
+          await confirm({
+            title: t("deleteFile"),
+            message: t("deletePermissionWarning", { count: deniedIds.length }),
+            showCancelButton: true,
+            confirmButtonColor: "#f5222d",
+            confirmButtonText: t("delete"),
+            cancelButtonText: t("cancel"),
+            width: "80%",
+          });
+        } catch {
+          return false;
+        }
+
+        const allowedItems = targetItems.filter((item) => {
+          const contentId = getContentId(item);
+          return contentId != null && !deniedIds.includes(contentId);
+        });
+
+        if (!allowedItems.length) {
+          toast(t("noDeletePermission"), "error");
+          return false;
+        }
+
+        return deleteItems(allowedItems);
+      }
+
+      if (res.code !== httpCode.Success) {
+        toast(t("errorOccurred"), "error");
+        return false;
+      }
+
+      toast(t("deleteSuccess"), "success");
+      await onRefresh?.();
+      return true;
+    };
 
     try {
       await confirm({
@@ -497,11 +615,7 @@ export function useFileActions(options?: {
       return false;
     }
 
-    await deleteFileOrDirApi(contentIds);
-
-    toast(t("deleteSuccess"), "success");
-    await onRefresh?.();
-    return true;
+    return deleteItems(items);
   };
 
   // 移除单个文件或文件夹

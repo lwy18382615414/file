@@ -465,6 +465,7 @@ const handleMenuSelect = (key: string) => {
     default:
       break;
   }
+  contextMenuVisible.value = false;
 };
 
 const transferSuperAdmin = async () => {

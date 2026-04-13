@@ -4,6 +4,8 @@ import config from "@/hooks/config";
 import { useChunkUploader } from "@/hooks/upload/useChunkUploader";
 import { useSimpleUploader } from "@/hooks/upload/useSimpleUploader";
 import type { Task } from "@/hooks/upload/useUploadFlow";
+import { t } from "@/utils";
+import httpCode from "@/utils/httpCode";
 import { createUploadPoolWithRetry } from "@/utils/upload/concurrentUpload";
 import { handleFileEncryption } from "@/utils/upload/encrypt";
 
@@ -14,6 +16,7 @@ export interface Step2ExecutionResult {
     contentId: number;
     tasks: Task[];
     message: string;
+    errorType?: string;
   }>;
 }
 
@@ -239,7 +242,14 @@ export async function executeGroupedUploadStep2(options: {
       result.failedTasks.push({
         contentId: currentContentId,
         tasks: groupTasks,
-        message: serverRes.message || "上传失败",
+        message:
+          serverRes.code === httpCode.noEditPermission
+            ? t("uploadPermissionDenied")
+            : serverRes.message || "上传失败",
+        errorType:
+          serverRes.code === httpCode.noEditPermission
+            ? "no-permission"
+            : "server",
       });
       continue;
     }
@@ -388,7 +398,7 @@ export async function startUploadTask(context: UploadContext) {
 
   step2Result.failedTasks.forEach((failedGroup) => {
     failedGroup.tasks.forEach((file) => {
-      onTaskError?.(file.taskId, failedGroup.message, "server");
+      onTaskError?.(file.taskId, failedGroup.message, failedGroup.errorType);
     });
   });
 

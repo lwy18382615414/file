@@ -337,8 +337,12 @@ export default {
     "You don't have the editing permission for the selected folder and can't create a new folder. Please re-select a folder",
   noSharePermission:
     "You don't have the sharing permission for the selected file. Please re-select a file",
+  noDeletePermission:
+    "You don't have the delete permission for the selected file. Please re-select a file",
   noSavePermission:
     "You don't have the saving permission for the selected file. Please re-select a file",
+  deletePermissionWarning:
+    "There are {count} files without delete permission that cannot be deleted. Do you want to delete other files?",
   savePermissionWarning:
     "There are {count} files without saving permission that cannot be saved. Do you want to save other files?",
   cloudDriveSharing: "File Sharing",
@@ -383,7 +387,7 @@ export default {
     deleteFilePermission: "Can delete files",
     uploadPermission: "Upload & Download",
     uploadDownloadShare:
-      "Supports uploading, downloading, renaming, and sharing files, but does not allow deletion.",
+      "Supports uploading, downloading, and sharing files, but does not allow deletion.",
     sharable: "Allow share",
     viewDownloadShareOnly:
       "Can view, upload, download and share files, but cannot upload files",

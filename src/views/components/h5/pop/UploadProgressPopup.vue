@@ -28,7 +28,6 @@
 
           <div class="file-info">
             <button
-              v-if="task.status === 'pending' || task.status === 'uploading'"
               class="task-remove-btn"
               type="button"
               @click="confirmRemoveTask(task.id, task.name)"
@@ -58,7 +57,7 @@
             >
               {{ task.errorMsg || t("operationFailedRetry") }}
               <span
-                v-if="task.status === 'error'"
+                v-if="task.status === 'error' && task.errorType !== 'no-permission'"
                 class="retry-text"
                 @click="retryFailedUploads"
               >
@@ -143,6 +142,10 @@ watch(hasTasks, (val) => {
 });
 
 const getStatusText = (task: UploadingTask) => {
+  if (task.errorType === "no-permission") {
+    return t("noPermission");
+  }
+
   switch (task.status) {
     case "pending":
       return "等待中";

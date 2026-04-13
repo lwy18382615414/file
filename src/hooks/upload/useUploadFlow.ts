@@ -165,6 +165,7 @@ const markTaskError = (
   task.status = "error";
   task.errorMsg = errorMsg;
   task.errorType = errorType;
+  task.progress = task.progress > 0 ? task.progress : 100;
 };
 
 const markTaskDuplicate = (taskId: string) => {

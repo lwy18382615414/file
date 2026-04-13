@@ -159,6 +159,7 @@ import { useShareLink } from "@/views/hooks/useShareLink";
 import type { PcFileContextAction } from "@/views/hooks/usePcFileContextMenu";
 import { useI18n } from "vue-i18n";
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import httpCode from "@/utils/httpCode";
 import { useRouter } from "vue-router";
 
 const MENU_WIDTH = 168;
@@ -477,6 +478,11 @@ const handleConfirmRename = async (name: string) => {
 
   try {
     const res = await renameFileApi(item.contentId, nextName);
+    if (res.code === httpCode.noEditPermission) {
+      toast(t("noPermission"), "error");
+      return;
+    }
+
     if (res.code !== 1) {
       toast(t("renameFailed"), "error");
       return;

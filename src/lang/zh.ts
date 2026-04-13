@@ -322,7 +322,10 @@ export default {
   noEditPermission:
     "你没有所选文件夹的编辑权限，不能新建文件夹，请重新选择文件夹",
   noSharePermission: "所选文件没有分享权限，请重新选择文件",
+  noDeletePermission: "所选文件没有删除权限，请重新选择文件",
   noSavePermission: "所选文件没有保存权限，请重新选择文件",
+  deletePermissionWarning:
+    "有{count}个没有删除权限的文件无法删除，是否删除其他文件?",
   savePermissionWarning:
     "有{count}个没有保存权限的文件无法保存，是否保存其他文件?",
   cloudDriveSharing: "云盘分享",
@@ -365,7 +368,7 @@ export default {
     deletable: "可删除",
     deleteFilePermission: "可删除文件",
     uploadPermission: "可上传下载",
-    uploadDownloadShare: "可上传、下载、重命名、分享，不可删除文件",
+    uploadDownloadShare: "可上传、下载、分享，不可删除文件",
     sharable: "可分享",
     viewDownloadShareOnly: "可查看、下载、分享、不可上传文件",
     view: "查看",

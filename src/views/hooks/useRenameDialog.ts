@@ -6,6 +6,7 @@ import { getContentId, getName } from "@/utils/typeUtils";
 import { useI18n } from "vue-i18n";
 import { ExplorerPageType, getExplorerContext } from "@/views/fileExplorer";
 import { useRoute } from "vue-router";
+import httpCode from "@/utils/httpCode";
 
 export function useRenameDialog(options?: {
   onRefresh?: () => void | Promise<void>;
@@ -80,6 +81,11 @@ export function useRenameDialog(options?: {
       toast(t("renameSuccess"), "success");
       closeRename();
       await onRefresh?.();
+      return;
+    }
+
+    if (res.code === httpCode.noEditPermission) {
+      toast(t("noPermission"), "error");
       return;
     }
 
