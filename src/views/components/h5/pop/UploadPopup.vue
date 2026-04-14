@@ -4,7 +4,7 @@
       <div class="sheet-header">
         <span class="sheet-title">{{ t("uploadFile") }}</span>
         <button class="close-btn" type="button" @click="showUpload = false">
-          <SvgIcon name="ic_close" size="18" color="var(--btn-primary-text-color)" />
+          <SvgIcon name="action-close" size="18" color="var(--btn-primary-text-color)" />
         </button>
       </div>
 
@@ -42,7 +42,7 @@
                   <SvgIcon :name="getFileIcon(file.name)" size="30" />
                   <div class="file-name">{{ file.name }}</div>
                 </div>
-                <SvgIcon name="ic_close-bg" @click="handleRemove(file.name)" />
+                <SvgIcon name="action-close_bg" @click="handleRemove(file.name)" />
               </div>
             </div>
           </template>

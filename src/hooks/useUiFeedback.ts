@@ -53,6 +53,8 @@ export function useUiFeedback() {
               ? "info"
               : options.type,
         showClose: false,
+        customClass: "pc-ElMessageBox",
+        cancelButtonClass: "btn-custom-cancel",
       });
       return;
     }

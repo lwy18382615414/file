@@ -12,10 +12,10 @@
         >
         <div class="header-actions">
           <button class="icon-btn" type="button" @click="toggleMinimize">
-            <SvgIcon name="ic_retract" size="18" color="var(--text-primary-color)" />
+            <SvgIcon name="action-retract" size="18" color="var(--text-primary-color)" />
           </button>
           <button class="close-btn" type="button" @click="handleClose">
-            <SvgIcon name="ic_close" size="18" color="var(--btn-primary-text-color)" />
+            <SvgIcon name="action-close" size="18" color="var(--btn-primary-text-color)" />
           </button>
         </div>
       </div>
@@ -32,7 +32,7 @@
               type="button"
               @click="confirmRemoveTask(task.id, task.name)"
             >
-              <SvgIcon name="ic_close-bg" size="18" />
+              <SvgIcon name="action-close_bg" size="18" />
             </button>
             <div class="file-name">{{ task.name }}</div>
 

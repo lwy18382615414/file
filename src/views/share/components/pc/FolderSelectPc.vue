@@ -17,7 +17,7 @@
           v-if="index !== breadcrumbList.length - 1"
           class="breadcrumb-item__arrow"
         >
-          <SvgIcon name="ic_right" />
+          <SvgIcon name="nav-right" />
         </span>
       </div>
     </div>
@@ -34,7 +34,7 @@
             <SvgIcon name="file-folder" size="30" />
             <span class="folder-item__name">{{ item.name }}</span>
           </div>
-          <SvgIcon name="ic_right" size="16" color="#B7BDC8" />
+          <SvgIcon name="nav-right" size="16" color="#B7BDC8" />
         </div>
       </template>
       <div v-else-if="loading" class="skeleton-wrapper">
@@ -50,8 +50,10 @@
         @click="showCreateFolder = true"
       >
         <SvgIcon
-          name="share-add"
-          :color="canCreateFolderWithPermission ? '' : 'var(--btn-primary-text-color)'"
+          name="action-share_add"
+          :color="
+            canCreateFolderWithPermission ? '' : 'var(--btn-primary-text-color)'
+          "
           style="margin-right: 8px"
         />
         {{ t("createFolder") }}
@@ -482,6 +484,16 @@ onMounted(() => {
     background: #b7b7b7;
     color: var(--btn-primary-text-color);
     border: 1px solid #b7b7b7;
+  }
+}
+
+.el-dialog {
+  :deep(> .el-overlay > .el-overlay-dialog > .el-dialog) {
+    border-radius: 24px;
+    padding: 12px 0 10px 0;
+    > .el-dialog__body {
+      padding: 0 15px;
+    }
   }
 }
 </style>

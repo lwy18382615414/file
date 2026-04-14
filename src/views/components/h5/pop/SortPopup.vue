@@ -16,7 +16,7 @@
       <template v-if="sort.name === currentSortMethod" #icon>
         <svg-icon
           style="position: absolute"
-          :name="currentSortOrder === 'asc' ? 'ic_arr_up' : 'ic_arr_down'"
+          :name="currentSortOrder === 'asc' ? 'nav-arr_up' : 'nav-arr_down'"
           size="20"
         />
       </template>
@@ -24,7 +24,7 @@
         <span class="sort-text">{{ sort.title }}</span>
       </template>
       <template v-if="sort.name === currentSortMethod" #right-icon>
-        <svg-icon name="ic_check" />
+        <svg-icon name="common-check" />
       </template>
     </van-cell>
   </van-popup>
@@ -37,7 +37,7 @@
     <template #message>
       <div class="warn-content">
         <svg-icon
-          :name="currentSortOrder === 'asc' ? 'ic_arr_up' : 'ic_arr_down'"
+          :name="currentSortOrder === 'asc' ? 'nav-arr_up' : 'nav-arr_down'"
           color="#fff"
           size="50"
         />

@@ -9,7 +9,7 @@
     >
       <div class="contacts-list">
         <div class="close-button" @click="handleClose">
-          <SvgIcon name="ic_close" />
+          <SvgIcon name="action-close" />
         </div>
         <div class="content-box">
           <div class="select-box">
@@ -20,7 +20,7 @@
                 :placeholder="t('search')"
               >
                 <template #prefix>
-                  <SvgIcon name="ic_search" size="24" />
+                  <SvgIcon name="common-search" size="24" />
                 </template>
               </el-input>
             </div>
@@ -82,13 +82,13 @@
                       v-if="data.parentOrgId === 0"
                       alt=""
                       class="depart-icon"
-                      src="@/assets/icons/enter-icon.png"
+                      src="@/assets/icons/common/enter-icon.png"
                     />
                     <img
                       v-else
                       alt=""
                       class="depart-icon"
-                      src="@/assets/icons/department-pc-icon.svg"
+                      src="@/assets/icons/common/department-pc-icon.svg"
                     />
                   </template>
                   <div class="node-name">
@@ -119,7 +119,7 @@
                     class="ml-auto"
                     @click="removeChooseItem(item)"
                   >
-                    <SvgIcon name="ic_close" />
+                    <SvgIcon name="action-close" />
                   </span>
                 </template>
               </div>

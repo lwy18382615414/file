@@ -94,7 +94,7 @@
         <div class="card-icon">
           <SvgIcon
             :name="
-              item.isFolder ? 'icon_folder' : getFileIcon(item.contentName)
+              item.isFolder ? 'file-folder' : getFileIcon(item.contentName)
             "
             :size="40"
           ></SvgIcon>

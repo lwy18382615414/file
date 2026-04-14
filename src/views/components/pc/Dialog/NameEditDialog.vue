@@ -11,7 +11,7 @@
     <template #header>
       <div class="dialog-header">
         <span>{{ title }}</span>
-        <SvgIcon name="ic_close" @click="handleCancel" />
+        <SvgIcon name="action-close" @click="handleCancel" />
       </div>
     </template>
 

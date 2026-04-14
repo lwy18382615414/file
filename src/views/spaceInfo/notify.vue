@@ -6,7 +6,7 @@
       @update:model-value="handleSearch"
     >
       <template #left-icon>
-        <SvgIcon name="ic_search" size="22" />
+        <SvgIcon name="common-search" size="22" />
       </template>
     </van-search>
 
@@ -28,7 +28,7 @@
               :avatar="item.avatar"
               :size="40"
             />
-            <SvgIcon v-else name="ic_department" size="40" />
+            <SvgIcon v-else name="common-department" size="40" />
           </div>
 
           <div class="name">{{ item.label }}</div>

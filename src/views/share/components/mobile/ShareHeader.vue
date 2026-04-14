@@ -54,6 +54,7 @@ const avatarImageUrl = computed(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  background: var(--card-bg-color);
 
   .person-avatar {
     margin-top: 45px;

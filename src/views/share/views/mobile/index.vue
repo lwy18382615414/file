@@ -136,7 +136,7 @@ const schemeUrl = computed(() => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: var(--page-bg);
   position: relative;
 }
 
@@ -147,11 +147,14 @@ const schemeUrl = computed(() => {
   height: 100%;
 }
 
+:deep(.share-header) {
+  padding-bottom: 36px;
+}
+
 .divider {
   width: 100%;
   height: 12px;
   background: var(--content-bg-color);
-  margin-top: 36px;
 }
 
 .share-file-list-wrapper,
@@ -192,11 +195,12 @@ const schemeUrl = computed(() => {
   height: 67px;
   width: 100%;
   padding: 12px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  background: var(--card-bg-color);
 
   .download-btn {
     flex: 1;

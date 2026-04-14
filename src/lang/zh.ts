@@ -294,7 +294,7 @@ export default {
   moveSelectedItems: "{name} 等 {count} 项",
   emptyRecycleBinMessage: "您的回收站为空哦",
   recycleBinNotice: "回收站为您保存10天内删除的文件",
-  confirmDeletePermanentlyQuestion: "确定要彻底删除吗",
+  confirmDeletePermanentlyQuestion: "确定要彻底删除吗？",
   keepAll: "保留所有",
   modifiedTime: "修改时间",
   steadyWorkPromotion: "使用{appName}办公可帮助您的企业日常工作沟通更高效",

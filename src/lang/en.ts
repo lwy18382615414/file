@@ -306,7 +306,7 @@ export default {
   emptyRecycleBinMessage: "Your recycle bin is empty",
   recycleBinNotice:
     "The recycle bin saves the files you deleted within 10 days",
-  confirmDeletePermanentlyQuestion: "Confirm to delete completely",
+  confirmDeletePermanentlyQuestion: "Confirm to delete completely?",
   keepAll: "Keep all",
   modifiedTime: "Modify Time",
   steadyWorkPromotion:

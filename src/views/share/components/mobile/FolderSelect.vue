@@ -14,7 +14,7 @@
       </div>
       <div class="van-popup__content" :style="{ marginTop: '16px' }">
         <div class="item-select">
-          <SvgIcon name="selected-folder" size="30" />
+          <SvgIcon name="common-selected-folder" size="30" />
           <div class="item-select__title">{{ selectedFilesCountText }}</div>
         </div>
         <div v-if="showBreadcrumb" class="breadcrumb">
@@ -31,7 +31,7 @@
               {{ item.name }}
             </span>
             <span v-if="index !== breadcrumbList.length - 1">
-              <SvgIcon name="ic_right" />
+              <SvgIcon name="nav-right" />
             </span>
           </div>
         </div>
@@ -58,7 +58,7 @@
             <FileListSkeleton :count="10" />
           </div>
           <div v-else class="empty-wrapper">
-            <SvgIcon name="empty-folder" size="106" />
+            <SvgIcon name="file-empty-folder" size="106" />
             <div class="item-select__title">{{ t("noFolder") }}</div>
           </div>
         </div>
@@ -94,7 +94,7 @@
     @confirm="goToCloudDrive"
   >
     <div class="van-dialog__content">
-      <SvgIcon name="ic_save-success" size="50" />
+      <SvgIcon name="common-save-success" size="50" />
       <div class="success-text">{{ t("fileSaveSuccess") }}</div>
       <div class="taget-folder">
         <span>{{ t("savedTo") }}：</span>

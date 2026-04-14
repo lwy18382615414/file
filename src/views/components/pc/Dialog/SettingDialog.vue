@@ -16,7 +16,7 @@
             <div class="sub-title">{{ t("permissionSettings") }}</div>
           </div>
           <button class="close-button" type="button" @click="handleClose">
-            <SvgIcon name="ic_close" />
+            <SvgIcon name="action-close" />
           </button>
         </div>
       </template>
@@ -53,7 +53,7 @@
               >
                 <template #prefix>
                   <span class="search-prefix-icon">
-                    <SvgIcon name="ic_staff_search" size="18" />
+                    <SvgIcon name="common-staff_search" size="18" />
                   </span>
                 </template>
               </el-input>
@@ -72,13 +72,13 @@
               >
                 <SvgIcon
                   v-if="hasPermission(permissionType, Permission.Admin)"
-                  name="ic_staff_add"
+                  name="action-staff_add"
                   size="20"
                 />
-                <SvgIcon v-else name="ic_add_staff_disable" size="20" />
+                <SvgIcon v-else name="action-add_staff_disable" size="20" />
               </button>
               <button class="action-button" type="button" @click="showSearch">
-                <SvgIcon name="ic_staff_search" size="20" />
+                <SvgIcon name="common-staff_search" size="20" />
               </button>
             </template>
           </div>
@@ -92,7 +92,7 @@
                 <div class="staff-info">
                   <div class="avatar" @click="showStaff(item)">
                     <AvatarBox v-if="item.avatar" :avatar="item.avatar" />
-                    <svg-icon v-else name="ic_department" size="26" />
+                    <svg-icon v-else name="common-department" size="26" />
                   </div>
                   <div class="label">{{ item.label }}</div>
                 </div>
@@ -127,7 +127,7 @@
                       </span>
                     </el-tooltip>
                     <span v-if="!isReadOnly(item)" class="arrow-icon">
-                      <SvgIcon name="ic_arr_down_more" />
+                      <SvgIcon name="nav-arr_down_more" />
                     </span>
                   </template>
                 </div>
@@ -136,7 +136,7 @@
           </div>
 
           <div v-else class="empty-state">
-            {{ searchValue ? t("search") + " 0" : t("noData") }}
+            <EmptyState />
           </div>
         </div>
       </div>
@@ -187,7 +187,7 @@ import {
   transferSuperAdminApi,
 } from "@/api/common.ts";
 import { Permission, getHighestPermission } from "@/enum/permission.ts";
-import { CustomSelectPerson, SvgIcon } from "@/components";
+import { CustomSelectPerson, EmptyState, SvgIcon } from "@/components";
 import PcFileContextMenu from "../PcFileContextMenu.vue";
 import AddNotifyUserDialog from "./AddNotifyUserDialog.vue";
 import { ElMessage, ElMessageBox } from "element-plus";

@@ -71,3 +71,61 @@ html {
     padding-left: 0;
   }
 }
+
+.pc-ElMessageBox {
+  border-radius: 24px;
+  padding: 25px 25px var(--el-messagebox-padding-primary);
+
+  .el-message-box__container {
+    padding: 12px;
+    padding-bottom: 30px;
+  }
+
+  .el-message-box__title {
+    font-size: calc(var(--base--font--size--16) * var(--scale-factor));
+    color: var(--text-primary-color);
+    font-weight: bold;
+  }
+
+  .el-message-box__message p {
+    font-size: calc(var(--base--font--size--14) * var(--scale-factor));
+    color: var(--text-primary-color);
+  }
+
+  .el-message-box__btns {
+    justify-content: center;
+    border-top: 1px solid var(--divider-color);
+    gap: 16px;
+
+    .el-button {
+      padding: 9px 44px;
+    }
+
+    .btn-custom-cancel,
+    .btn-custom-cancel:hover,
+    .btn-custom-cancel:focus,
+    .btn-custom-cancel:active {
+      min-height: 41px;
+      border-radius: 10px;
+      --el-button-text-color: var(--text-primary-color);
+      --el-button-bg-color: transparent;
+      background: transparent;
+      border: 1px solid var(--border-color);
+    }
+
+    .el-button--primary,
+    .el-button--primary:hover,
+    .el-button--primary:focus,
+    .el-button--primary:active {
+      min-height: 41px;
+      border-radius: 10px;
+      color: var(--btn-text-white-color);
+      background-color: var(--theme-color);
+      border-color: var(--theme-color);
+    }
+  }
+
+  .el-message-box__status {
+    display: none;
+  }
+}

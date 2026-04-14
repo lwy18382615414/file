@@ -8,7 +8,7 @@
         @input="handleSearch"
       >
         <template #prefix>
-          <SvgIcon name="ic_search" size="20px" />
+          <SvgIcon name="common-search" size="20px" />
         </template>
       </el-input>
     </div>
@@ -77,7 +77,7 @@
                 <img src="../../assets/images/department-icon.svg" alt="" />
               </div>
               <div class="name">{{ item.orgName }}</div>
-              <SvgIcon name="ic_right_bold" />
+              <SvgIcon name="nav-right_bold" />
             </div>
           </div>
         </template>

@@ -6,7 +6,7 @@
       @update:model-value="handleSearch"
     >
       <template #left-icon>
-        <SvgIcon name="ic_search" size="22" />
+        <SvgIcon name="common-search" size="22" />
       </template>
     </van-search>
 

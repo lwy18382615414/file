@@ -64,7 +64,7 @@
     </div>
 
     <div v-else class="empty-wrapper">
-      <SvgIcon name="empty-folder" size="106" />
+      <SvgIcon name="file-empty-folder" size="106" />
       <div class="item-select__title">{{ t("noFiles") }}</div>
     </div>
   </div>
@@ -137,6 +137,7 @@ const itemCheckClass = (item: ShareContentType) => {
   height: 100%;
   display: flex;
   flex-direction: column;
+  background: var(--card-bg-color);
 }
 
 .checkbox-wrapper {

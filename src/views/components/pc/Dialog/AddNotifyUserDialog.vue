@@ -11,7 +11,7 @@
       <template #header>
         <div class="dialog-header">
           <span>{{ t("addNotifyUsers") }}</span>
-          <SvgIcon name="ic_close" @click="handleCancel" />
+          <SvgIcon name="action-close" @click="handleCancel" />
         </div>
       </template>
 
@@ -19,10 +19,17 @@
         <div v-if="availableUsers.length" class="user-list-container">
           <div class="select-all-bar" @click="toggleSelectAll">
             <div class="select-all-main">
-              <el-checkbox :model-value="isAllSelected" :indeterminate="isIndeterminate" />
-              <span class="select-all-text">{{ t(isAllSelected ? "unselectAll" : "selectAll") }}</span>
+              <el-checkbox
+                :model-value="isAllSelected"
+                :indeterminate="isIndeterminate"
+              />
+              <span class="select-all-text">{{
+                t(isAllSelected ? "unselectAll" : "selectAll")
+              }}</span>
             </div>
-            <span class="selected-count">{{ t("selectedPeople", { count: selectedUserIds.length }) }}</span>
+            <span class="selected-count">{{
+              t("selectedPeople", { count: selectedUserIds.length })
+            }}</span>
           </div>
 
           <div class="user-list">
@@ -48,7 +55,9 @@
           </div>
         </div>
 
-        <div v-else class="empty-state">{{ t("noData") }}</div>
+        <div v-else class="empty-state">
+          <EmptyState />
+        </div>
       </div>
 
       <template #footer>

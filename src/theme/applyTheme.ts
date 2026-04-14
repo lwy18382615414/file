@@ -34,6 +34,7 @@ export const applyTheme = (theme: ThemeTokens) => {
   root.style.setProperty("--link-hover-color", "var(--theme-color-hover)");
   root.style.setProperty("--tag-primary-bg", "var(--theme-color-light)");
   root.style.setProperty("--tag-primary-color", "var(--theme-color)");
+  root.style.setProperty("--btn-text-white-color", "#FBFBFB");
 
   root.style.setProperty("--btn-primary-color", theme.btnPrimaryColor);
   root.style.setProperty("--btn-primary-text-color", "#ffffff");

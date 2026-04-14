@@ -3,7 +3,9 @@
     "allow": [
       "Bash(grep -r \"setTheme\\\\|setColor\\\\|primaryColor\\\\|主题\\\\|color.*param\" /e/webcode/steadywork/CloudDriverH5/src --include=*.ts --include=*.js --include=*.vue)",
       "Bash(grep -r \"interface.*Window\\\\|declare.*Window\" /e/webcode/steadywork/CloudDriverH5/src --include=*.ts --include=*.d.ts)",
-      "Bash(grep -r \"window\\\\.\\\\|declare.*window\\\\|global\\\\.ts\\\\|type.*window\" /e/webcode/steadywork/CloudDriverH5/src --include=*.ts --include=*.d.ts)"
+      "Bash(grep -r \"window\\\\.\\\\|declare.*window\\\\|global\\\\.ts\\\\|type.*window\" /e/webcode/steadywork/CloudDriverH5/src --include=*.ts --include=*.d.ts)",
+      "Bash(claude config:*)",
+      "Bash(claude mcp:*)"
     ]
   }
 }

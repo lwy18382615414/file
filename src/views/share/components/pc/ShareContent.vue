@@ -57,7 +57,7 @@
 
         <div class="share-success-content">
           <div class="success-icon">
-            <SvgIcon name="ic_save-success" size="100" />
+            <SvgIcon name="common-save-success" size="100" />
           </div>
           <div class="success-text">{{ t("fileSaveSuccess") }}</div>
           <div class="taget-folder">
@@ -78,7 +78,7 @@
             class="share-title__back"
             @click="handleCancelFolderSelect"
           >
-            <SvgIcon name="ic_arr_back" size="20" />
+            <SvgIcon name="nav-arr_back" size="20" />
             {{ t("saveToFolder") }}
           </span>
         </div>
@@ -105,7 +105,7 @@
               </div>
               <div class="share-meta">
                 <span class="share-person">
-                  <SvgIcon name="ic_share-person" size="18" />
+                  <SvgIcon name="common-share-person" size="18" />
                   <span>{{ shareBaseInfo.sharePersonName }}</span>
                 </span>
                 <div class="divider"></div>
@@ -531,6 +531,10 @@ const schemeUrl = computed(() => {
 .share-loading {
   position: absolute;
   inset: 0;
+
+  :deep(.el-loading-mask) {
+    background: #fff;
+  }
 }
 
 .share-title {

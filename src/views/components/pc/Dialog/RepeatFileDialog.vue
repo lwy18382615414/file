@@ -18,7 +18,7 @@
     <template #header>
       <div class="dialog-header">
         <span>{{ t("fileDuplicate") }}</span>
-        <SvgIcon name="ic_close" @click="handleClose" />
+        <SvgIcon name="action-close" @click="handleClose" />
       </div>
     </template>
 

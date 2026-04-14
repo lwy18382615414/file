@@ -37,7 +37,7 @@
               type="button"
               @click="confirmRemoveTask(task.id, task.name)"
             >
-              <SvgIcon name="ic_close-bg" size="18" />
+              <SvgIcon name="action-close_bg" size="18" />
             </button>
             <div class="file-name" :title="task.name">{{ task.name }}</div>
 

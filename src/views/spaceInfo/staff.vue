@@ -6,7 +6,7 @@
       @update:model-value="handleSearch"
     >
       <template #left-icon>
-        <SvgIcon name="ic_search" size="22" />
+        <SvgIcon name="common-search" size="22" />
       </template>
     </van-search>
 
@@ -21,7 +21,7 @@
               :avatar="item.avatar"
               :size="40"
             />
-            <SvgIcon v-else name="ic_department" size="40" />
+            <SvgIcon v-else name="common-department" size="40" />
           </div>
 
           <div class="name">{{ item.label }}</div>
@@ -31,7 +31,7 @@
         <div class="permission" @click="showPermission(item)">
           <span>{{ getHighestPermission(item.permissionType).name }}</span>
           <span v-if="!isReadOnly(item)">
-            <SvgIcon name="ic_arr_select" color="var(--text-weak-color)" />
+            <SvgIcon name="nav-arr_select" color="var(--text-weak-color)" />
           </span>
         </div>
       </template>
@@ -55,7 +55,7 @@
               <span class="flex items-center">
                 <SvgIcon
                   v-if="activePermissionType === item.value"
-                  name="ic_check"
+                  name="common-check"
                 />
               </span>
             </template>

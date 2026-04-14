@@ -18,7 +18,7 @@
       <template #header>
         <div class="dialog-header">
           <span>{{ title }}</span>
-          <SvgIcon name="ic_close" @click="handleClose" />
+          <SvgIcon name="action-close" @click="handleClose" />
         </div>
       </template>
 
@@ -66,7 +66,7 @@
                   <SvgIcon :name="getFileIcon(file.name)" size="24" />
                   <div class="file-name">{{ file.name }}</div>
                 </div>
-                <SvgIcon name="ic_close-bg" @click.stop="handleRemove(file.name)" />
+                <SvgIcon name="action-close_bg" @click.stop="handleRemove(file.name)" />
               </div>
             </div>
           </div>

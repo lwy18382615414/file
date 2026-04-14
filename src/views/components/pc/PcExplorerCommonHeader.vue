@@ -8,7 +8,7 @@
         type="button"
         @click="handleOpenSharedSpaceSetting"
       >
-        <SvgIcon name="ic_group" size="22" />
+        <SvgIcon name="common-group" size="22" />
         <span>
           {{ currentFolderPermissionCount }}
         </span>

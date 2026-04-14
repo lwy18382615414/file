@@ -11,7 +11,7 @@
           <span>{{ t("fileDuplicate") }}</span>
         </div>
         <div class="close" @click="closePopup">
-          <SvgIcon name="ic_close" />
+          <SvgIcon name="action-close" />
         </div>
       </div>
       <div class="content">

@@ -10,7 +10,7 @@
       <div class="sheet-header">
         <span class="sheet-title">{{ title }}</span>
         <button class="close-btn" type="button" @click="handleCancel">
-          <SvgIcon name="ic_close" size="18" color="var(--btn-primary-text-color)" />
+          <SvgIcon name="action-close" size="18" color="var(--btn-primary-text-color)" />
         </button>
       </div>
 

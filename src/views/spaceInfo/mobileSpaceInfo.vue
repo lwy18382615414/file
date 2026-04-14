@@ -17,7 +17,7 @@
                   :size="48"
                 />
               </div>
-              <SvgIcon v-else name="ic_department" size="48" />
+              <SvgIcon v-else name="common-department" size="48" />
               <div class="name">{{ item.label }}</div>
             </div>
           </div>

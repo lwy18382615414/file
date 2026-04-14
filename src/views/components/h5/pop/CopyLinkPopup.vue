@@ -36,7 +36,7 @@
               @click="changeValidTime(item.value)"
             >
               <template v-if="item.value === validKey" #right-icon>
-                <SvgIcon name="ic_check" size="16" />
+                <SvgIcon name="common-check" size="16" />
               </template>
             </van-cell>
           </van-cell-group>
@@ -50,7 +50,7 @@
               @click="changePassword(item.value)"
             >
               <template v-if="item.value === passwordKey" #right-icon>
-                <SvgIcon name="ic_check" size="16" />
+                <SvgIcon name="common-check" size="16" />
               </template>
             </van-cell>
           </van-cell-group>

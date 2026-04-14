@@ -1,120 +1,122 @@
 <template>
-  <el-dialog
-    :model-value="visible"
-    :show-close="false"
-    :before-close="handleClose"
-    :modal="false"
-    destroy-on-close
-    width="640"
-    class="copy-link-pc-dialog"
-    style="
-      padding: 0;
-      overflow: hidden;
-      border-radius: 8px;
-      box-shadow: 0 3px 6px 1px rgba(95, 95, 95, 0.4);
-    "
-  >
-    <template #header>
-      <div class="dialog-header">
-        <div class="title">{{ t("shareFile") }}</div>
-        <SvgIcon name="ic_close" @click="handleClose" />
-      </div>
-    </template>
-
-    <div class="dialog-content">
-      <div v-if="firstFile" class="file-wrapper">
-        <SvgIcon
-          :name="
-            getIsFolder(firstFile)
-              ? 'file-folder'
-              : getFileIcon(getName(firstFile))
-          "
-          size="48"
-        />
-        <div class="file-name">
-          <span>{{ t("fileName", { name: getName(firstFile) }) }}</span>
-          <span v-if="props.items.length > 1">
-            {{ t("andItem", { count: props.items.length }) }}
-          </span>
+  <div class="copy-link-pc-dialog-wrapper">
+    <el-dialog
+      :model-value="visible"
+      :show-close="false"
+      :before-close="handleClose"
+      :modal="false"
+      destroy-on-close
+      width="640"
+      class="copy-link-pc-dialog"
+    >
+      <template #header>
+        <div class="dialog-header">
+          <div class="title">{{ t("shareFile") }}</div>
+          <SvgIcon name="action-close" @click="handleClose" />
         </div>
-      </div>
+      </template>
 
-      <div v-if="step === 1" class="settings-wrapper">
-        <div class="setting-row">
-          <div class="form-label">{{ t("expiration") }}</div>
-          <el-radio-group v-model="validity" class="radio-group validity-group">
-            <el-radio
-              v-for="item in validityOptions"
-              :key="item.value"
-              :value="item.value"
-            >
-              {{ item.label }}
-            </el-radio>
-          </el-radio-group>
+      <div class="dialog-content">
+        <div v-if="firstFile" class="file-wrapper">
+          <SvgIcon
+            :name="
+              getIsFolder(firstFile)
+                ? 'file-folder'
+                : getFileIcon(getName(firstFile))
+            "
+            size="48"
+          />
+          <div class="file-name">
+            <span>{{ t("fileName", { name: getName(firstFile) }) }}</span>
+            <span v-if="props.items.length > 1">
+              {{ t("andItem", { count: props.items.length }) }}
+            </span>
+          </div>
         </div>
 
-        <div class="setting-row password-row">
-          <div class="form-label">{{ t("password") }}</div>
-          <div class="password-content">
+        <div v-if="step === 1" class="settings-wrapper">
+          <div class="setting-row">
+            <div class="form-label">{{ t("expiration") }}</div>
             <el-radio-group
-              v-model="passwordType"
-              class="radio-group password-group"
+              v-model="validity"
+              class="radio-group validity-group"
             >
               <el-radio
-                v-for="item in passwordOptions"
+                v-for="item in validityOptions"
                 :key="item.value"
                 :value="item.value"
-                @change="handlePasswordTypeChange"
               >
                 {{ item.label }}
               </el-radio>
             </el-radio-group>
-            <div v-if="passwordType === 2" class="password-input-wrapper">
-              <el-input
-                v-model="password"
-                maxlength="4"
-                :placeholder="t('passwordHint')"
-                class="password-input"
-              />
-              <div class="password-tips" :class="{ 'is-error': passwordError }">
-                {{ passwordError || t("passwordFormatError") }}
+          </div>
+
+          <div class="setting-row password-row">
+            <div class="form-label">{{ t("password") }}</div>
+            <div class="password-content">
+              <el-radio-group
+                v-model="passwordType"
+                class="radio-group password-group"
+              >
+                <el-radio
+                  v-for="item in passwordOptions"
+                  :key="item.value"
+                  :value="item.value"
+                  @change="handlePasswordTypeChange"
+                >
+                  {{ item.label }}
+                </el-radio>
+              </el-radio-group>
+              <div v-if="passwordType === 2" class="password-input-wrapper">
+                <el-input
+                  v-model="password"
+                  maxlength="4"
+                  :placeholder="t('passwordHint')"
+                  class="password-input"
+                />
+                <div
+                  class="password-tips"
+                  :class="{ 'is-error': passwordError }"
+                >
+                  {{ passwordError || t("passwordFormatError") }}
+                </div>
               </div>
             </div>
           </div>
         </div>
+
+        <div v-else class="result-wrapper">
+          <div class="result-row">
+            <div class="form-label link">{{ t("link") }}</div>
+            <el-input v-model="shareLink" readonly>
+              <template #suffix>
+                {{ validityText }}
+              </template>
+            </el-input>
+          </div>
+          <div v-if="generatedPassword" class="result-row">
+            <div class="form-label password">{{ t("password") }}</div>
+            <el-input v-model="generatedPassword" style="width: 20%" readonly />
+          </div>
+        </div>
       </div>
 
-      <div v-else class="result-wrapper">
-        <div class="result-row">
-          <div class="form-label link">{{ t("link") }}</div>
-          <el-input v-model="shareLink" readonly>
-            <template #suffix>
-              {{ validityText }}
-            </template>
-          </el-input>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button class="cancel-btn" @click="handleClose">
+            {{ t("cancel") }}
+          </el-button>
+          <el-button
+            class="confirm-btn"
+            :disabled="disabled"
+            @click="handleCopyLink"
+          >
+            {{ step === 1 ? t("createLink") : t("copyLinkAndPassword") }}
+          </el-button>
         </div>
-        <div v-if="generatedPassword" class="result-row">
-          <div class="form-label password">{{ t("password") }}</div>
-          <el-input v-model="generatedPassword" style="width: 20%" readonly />
-        </div>
-      </div>
-    </div>
-
-    <template #footer>
-      <div class="dialog-footer">
-        <el-button class="cancel-btn" @click="handleClose">
-          {{ t("cancel") }}
-        </el-button>
-        <el-button
-          class="confirm-btn"
-          :disabled="disabled"
-          @click="handleCopyLink"
-        >
-          {{ step === 1 ? t("createLink") : t("copyLinkAndPassword") }}
-        </el-button>
-      </div>
-    </template>
-  </el-dialog>
+      </template>
+    </el-dialog>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -153,6 +155,7 @@ const passwordType = ref(1);
 const password = ref("");
 const passwordError = ref("");
 const step = ref(1);
+const shareKey = ref("");
 const shareLink = ref("");
 const generatedPassword = ref("");
 const shareCount = ref(0);
@@ -220,9 +223,10 @@ async function handleCopyLink() {
         return;
       }
 
+      shareKey.value = shareResult.result.shareKey;
       generatedPassword.value = shareResult.result.password;
       shareLink.value = buildShareLink(
-        shareResult.result.shareKey,
+        shareKey.value,
         generatedPassword.value,
       );
       shareCount.value = shareResult.contentIds.length;
@@ -239,7 +243,7 @@ async function handleCopyLink() {
       buildShareCopyText({
         count: shareCount.value,
         firstItem: firstFile.value,
-        shareKey: shareLink.value.split("shareKey=")[1] ?? "",
+        shareKey: shareKey.value,
         password: generatedPassword.value,
       }),
     );
@@ -263,6 +267,7 @@ function resetState() {
   password.value = "";
   passwordError.value = "";
   step.value = 1;
+  shareKey.value = "";
   shareLink.value = "";
   generatedPassword.value = "";
   shareCount.value = 0;
@@ -270,6 +275,10 @@ function resetState() {
 </script>
 
 <style lang="scss" scoped>
+:deep(.copy-link-pc-dialog) {
+  border-radius: 8px;
+  padding: 0;
+}
 .dialog-header {
   height: 40px;
   display: flex;

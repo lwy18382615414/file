@@ -64,6 +64,10 @@ export const useShareData = () => {
   });
 
   const shareKey = computed(() => route.query.shareKey as string);
+  const sharePassword = computed(() => {
+    const password = route.query.psw;
+    return typeof password === "string" ? password : "";
+  });
   const isAnonymous = computed(() => !!getToken());
 
   const applyShareBaseInfo = (content: ShareContentCallbackParams) => {
@@ -298,8 +302,9 @@ export const useShareData = () => {
       const cachedPassword = SessionStorageUtil.get<string>(
         `share_pwd_${shareKey.value}`,
       );
+      psw.value = sharePassword.value || cachedPassword || "";
 
-      const res = await getShareContent(cachedPassword);
+      const res = await getShareContent(cachedPassword || undefined);
 
       if (res) {
         applyShareBaseInfo(res);

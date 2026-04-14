@@ -11,7 +11,7 @@
       @blur="handleInputBlur"
     >
       <template #prefix>
-        <SvgIcon name="ic_search" size="24" />
+        <SvgIcon name="common-search" size="24" />
       </template>
     </el-input>
 

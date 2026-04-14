@@ -20,11 +20,10 @@
               class="dialog-title__extra"
             >
               {{ t("andItem", { count: items.length }) }}
-              <SvgIcon name="ic_arr_down_more" :size="14" />
             </button>
           </div>
           <button type="button" class="icon-button" @click="handleClose">
-            <SvgIcon name="ic_close" :size="18" />
+            <SvgIcon name="action-close" :size="18" />
           </button>
         </div>
       </template>
@@ -65,7 +64,7 @@
             <template v-if="hiddenBreadcrumbs.length">
               <span class="breadcrumb-separator">
                 <SvgIcon
-                  name="ic_right"
+                  name="nav-right"
                   :size="14"
                   color="var(--text-weak-color)"
                 />
@@ -101,7 +100,7 @@
             <template v-if="breadcrumbList.length > 1">
               <span class="breadcrumb-separator">
                 <SvgIcon
-                  name="ic_right"
+                  name="nav-right"
                   :size="14"
                   color="var(--text-weak-color)"
                 />
@@ -120,7 +119,7 @@
         <div class="toolbar-actions">
           <div class="search-box">
             <SvgIcon
-              name="ic_search"
+              name="common-search"
               :size="16"
               color="var(--text-weak-color)"
             />
@@ -158,7 +157,7 @@
               <span class="tree-item__indicator"></span>
               <span class="tree-item__name">{{ item.contentName }}</span>
               <SvgIcon
-                name="ic_right"
+                name="nav-right"
                 :size="14"
                 color="var(--text-weak-color)"
               />
@@ -227,7 +226,7 @@
                         @mousedown.prevent="commitInlineCreate"
                       >
                         <SvgIcon
-                          name="ic_ok"
+                          name="action-ok"
                           :size="24"
                           color="var(--theme-color)"
                         />
@@ -238,7 +237,7 @@
                         @mousedown.prevent="cancelInlineCreate"
                       >
                         <SvgIcon
-                          name="ic_cancel"
+                          name="action-cancel"
                           :size="24"
                           color="var(--theme-color)"
                         />
@@ -275,7 +274,11 @@
             :disabled="isSavingInline"
             @click="handleStartInlineCreate"
           >
-            <SvgIcon name="share-add" :size="16" color="var(--theme-color)" />
+            <SvgIcon
+              name="action-share_add"
+              :size="16"
+              color="var(--theme-color)"
+            />
             <span>{{ t("createFolder") }}</span>
           </button>
 
@@ -1103,8 +1106,17 @@ const handleForward = async () => {
 
 .tree-panel {
   width: 280px;
+  display: flex;
+  flex-direction: column;
   border-right: 1px solid var(--card-border-color);
   background: var(--card-bg-color);
+  min-height: 0;
+}
+
+.tree-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .tree-root {

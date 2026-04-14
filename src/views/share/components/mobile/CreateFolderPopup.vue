@@ -24,7 +24,7 @@
       </div>
       <div class="van-popup__content">
         <div class="new-folder-icon">
-          <SvgIcon name="all-folder" size="68" />
+          <SvgIcon name="file-all-folder" size="68" />
         </div>
         <div class="van-intro-input">
           <van-field

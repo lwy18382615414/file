@@ -78,7 +78,7 @@
             <div
               :class="['shared-item-arrow', { expanded: sharedMenuExpanded }]"
             >
-              <SvgIcon name="ic_arr_down_more" />
+              <SvgIcon name="nav-arr_down_more" />
             </div>
           </div>
         </div>

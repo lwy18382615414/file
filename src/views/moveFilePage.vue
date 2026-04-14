@@ -12,7 +12,7 @@
           @update:model-value="handleSearch"
         >
           <template #left-icon>
-            <SvgIcon name="ic_search" size="22" />
+            <SvgIcon name="common-search" size="22" />
           </template>
         </van-search>
       </div>
@@ -35,7 +35,7 @@
             v-if="index !== breadcrumbList.length - 1"
             class="breadcrumb-separator"
           >
-            <SvgIcon name="ic_right" size="16" />
+            <SvgIcon name="nav-right" size="16" />
           </span>
         </div>
       </div>
@@ -61,7 +61,7 @@
             <div class="item-select__title">{{ item.contentName }}</div>
             <SvgIcon
               v-if="!isTargetLocked(item.contentId, item.path || '')"
-              name="ic_right"
+              name="nav-right"
               size="24"
             />
           </button>

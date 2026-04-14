@@ -32,7 +32,7 @@
           </div>
         </div>
         <span class="close-btn" @click="close">
-          <SvgIcon name="ic_retract" size="24" />
+          <SvgIcon name="action-retract" size="24" />
         </span>
       </div>
 
