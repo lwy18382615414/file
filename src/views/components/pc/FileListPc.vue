@@ -46,6 +46,12 @@
       @update:repeat-visible="handleMoveRepeatVisibleChange"
       @handle-repeat-file="handleMoveRepeatFile"
     />
+    <RecycleRepeatFile
+      :repeat-visible="restoreRepeatVisible"
+      :repeat-list="restoreRepeatList"
+      @update:repeat-visible="handleRestoreRepeatVisibleChange"
+      @handle-repeat-file="handleRestoreRepeatFile"
+    />
     <NameEditDialog
       :show="renameVisible"
       :item="renameItem"
@@ -275,6 +281,9 @@ const moveSubmitting = ref(false);
 const moveRepeatVisible = ref(false);
 const moveRepeatList = ref<Record<string, string>[]>([]);
 const pendingMoveTargetId = ref<number | null>(null);
+const restoreRepeatVisible = ref(false);
+const restoreRepeatList = ref<Record<string, string>[]>([]);
+const pendingRestoreItems = ref<ContentType[]>([]);
 
 const openMoveDialog = (payload: MovePayload) => {
   movePayload.value = payload;
@@ -285,6 +294,12 @@ const resetMoveRepeatState = () => {
   moveRepeatVisible.value = false;
   moveRepeatList.value = [];
   pendingMoveTargetId.value = null;
+};
+
+const resetRestoreRepeatState = () => {
+  restoreRepeatVisible.value = false;
+  restoreRepeatList.value = [];
+  pendingRestoreItems.value = [];
 };
 
 const closeMoveDialog = () => {
@@ -363,6 +378,30 @@ const handleMoveDuplicateFiles = (data: Record<number, string>[]) => {
   hideMoveDialogKeepPayload();
 };
 
+const handleRestoreDuplicateFiles = (data: Record<number, string>[]) => {
+  restoreRepeatList.value = buildRepeatList(data);
+  restoreRepeatVisible.value = true;
+};
+
+const handleRestoreRepeatVisibleChange = (value: boolean) => {
+  restoreRepeatVisible.value = value;
+  if (!value) {
+    resetRestoreRepeatState();
+  }
+};
+
+const handleRestoreRepeatFile = async (repeatFileOperateType: number) => {
+  const items = pendingRestoreItems.value;
+
+  if (!items.length) return;
+
+  const restored = await restoreMany(items, repeatFileOperateType);
+  if (!restored) return;
+
+  resetRestoreRepeatState();
+  clear();
+};
+
 watch(moveVisible, (value) => {
   if (!value && !moveRepeatVisible.value) {
     moveSubmitting.value = false;
@@ -430,11 +469,9 @@ const {
   onRenameDialog: openRename,
   onCopyLinkDialog: openShareLink,
   onMoveDialog: openMoveDialog,
+  onRestoreDuplicateFiles: handleRestoreDuplicateFiles,
   onMoveDuplicateFiles: handleMoveDuplicateFiles,
   onAfterAction: clear,
-  onDuplicateFiles: (data) => {
-    toast(t("duplicateFilesWarning", { count: data.length }), "warning");
-  },
 });
 
 const {
@@ -722,7 +759,9 @@ const handleDelete = async () => {
 
 const handleRestore = async () => {
   if (!hasSelection.value) return;
-  const restored = await restoreMany(selectedItems.value);
+
+  pendingRestoreItems.value = [...selectedItems.value];
+  const restored = await restoreMany(pendingRestoreItems.value);
   if (!restored) return;
   clear();
 };

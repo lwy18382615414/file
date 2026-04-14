@@ -64,40 +64,55 @@ html {
 }
 
 .pc-ElMessageBox {
+  width: 500px;
+  max-width: 500px;
   border-radius: 24px;
-  padding: 25px 25px var(--el-messagebox-padding-primary);
+  padding: 16px 0 0;
+  box-shadow: 0 14px 20px -12px rgb(0 0 0 / 10%);
 
-  .el-message-box__container {
-    padding: 12px;
-    padding-bottom: 30px;
+  .el-message-box__header {
+    padding: 0 36px;
   }
 
   .el-message-box__title {
     font-size: calc(var(--base--font--size--16) * var(--scale-factor));
+    line-height: 1.469;
     color: var(--text-primary-color);
-    font-weight: bold;
+    font-weight: 700;
+  }
+
+  .el-message-box__content {
+    padding: 10px 36px 0;
+    min-height: 84px;
   }
 
   .el-message-box__message p {
     font-size: calc(var(--base--font--size--14) * var(--scale-factor));
+    line-height: 1.469;
     color: var(--text-primary-color);
   }
 
   .el-message-box__btns {
     justify-content: center;
+    padding: 16px 0;
+    margin-top: 10px;
     border-top: 1px solid var(--divider-color);
     gap: 16px;
 
     .el-button {
-      padding: 9px 44px;
+      width: 138px;
+      min-height: 42px;
+      margin: 0;
+      padding: 9px 0;
+      border-radius: 10px;
+      font-size: calc(var(--base--font--size--14) * var(--scale-factor));
+      font-weight: 500;
     }
 
     .btn-custom-cancel,
     .btn-custom-cancel:hover,
     .btn-custom-cancel:focus,
     .btn-custom-cancel:active {
-      min-height: 41px;
-      border-radius: 10px;
       --el-button-text-color: var(--text-primary-color);
       --el-button-bg-color: transparent;
       background: transparent;
@@ -108,8 +123,6 @@ html {
     .el-button--primary:hover,
     .el-button--primary:focus,
     .el-button--primary:active {
-      min-height: 41px;
-      border-radius: 10px;
       color: var(--btn-text-white-color);
       background-color: var(--theme-color);
       border-color: var(--theme-color);

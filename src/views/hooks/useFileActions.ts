@@ -55,7 +55,7 @@ export function useFileActions(options?: {
   onRenameDialog?: (item: ContentType) => void;
   onCopyLinkDialog?: (items: ContentType[]) => void;
   onMoveDialog?: (payload: MovePayload) => void;
-  onDuplicateFiles?: (data: Record<number, string>[]) => void;
+  onRestoreDuplicateFiles?: (data: Record<number, string>[]) => void;
   onMoveDuplicateFiles?: (data: Record<number, string>[]) => void;
   onAfterAction?: () => void;
 }) {
@@ -68,7 +68,7 @@ export function useFileActions(options?: {
   const onRenameDialog = options?.onRenameDialog;
   const onCopyLinkDialog = options?.onCopyLinkDialog;
   const onMoveDialog = options?.onMoveDialog;
-  const onDuplicateFiles = options?.onDuplicateFiles;
+  const onRestoreDuplicateFiles = options?.onRestoreDuplicateFiles;
   const onMoveDuplicateFiles = options?.onMoveDuplicateFiles;
   const onAfterAction = options?.onAfterAction;
 
@@ -527,7 +527,7 @@ export function useFileActions(options?: {
     }
 
     if (res.data?.length) {
-      onDuplicateFiles?.(res.data);
+      onRestoreDuplicateFiles?.(res.data);
       return false;
     }
 

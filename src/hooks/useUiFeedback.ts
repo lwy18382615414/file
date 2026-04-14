@@ -2,16 +2,28 @@ import { showConfirmDialog, showToast } from "vant";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useClientEnv } from "@/hooks/useClientEnv";
 import { useI18n } from "vue-i18n";
+import { computed } from "vue";
+import { getDeviceType } from "@/utils";
+import { DeviceType } from "@/enum/baseEnum";
 
 type FeedbackType = "success" | "warning" | "error" | "info";
 
 export function useUiFeedback() {
   const { isMobileApp, isPcClient } = useClientEnv();
-
   const { t } = useI18n();
 
+  const isPc = computed(() => {
+    if (isPcClient.value) return true;
+
+    const device = getDeviceType();
+
+    if (device === DeviceType.PC) return true;
+
+    return false;
+  });
+
   const toast = (message: string, type: FeedbackType = "info") => {
-    if (isPcClient.value) {
+    if (isPc.value) {
       ElMessage({
         message,
         type: type === "error" ? "error" : type,
@@ -42,7 +54,7 @@ export function useUiFeedback() {
     width?: string;
     type?: FeedbackType;
   }) => {
-    if (isPcClient.value) {
+    if (isPc.value) {
       await ElMessageBox.confirm(options.message, options.title, {
         confirmButtonText: options.confirmButtonText,
         cancelButtonText: options.cancelButtonText || t("cancel"),
