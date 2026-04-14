@@ -1,6 +1,10 @@
 import request from "@/utils/service";
 import type { IResponse } from "@/type";
-import type { OrgTreeCallbackParams, WeeklyReportBack, WeeklyReportParams } from "@/api/type";
+import type {
+  OrgTreeCallbackParams,
+  WeeklyReportBack,
+  WeeklyReportParams,
+} from "@/api/type";
 
 // 获取当前用户信息
 export function getUserInfoApi(): Promise<IResponse<Record<string, any>>> {
@@ -39,7 +43,7 @@ export function getUserTreeApi(): Promise<IResponse<OrgTreeCallbackParams[]>> {
 export function getFolderPermissionApi(
   contentId: number,
 ): Promise<IResponse<any>> {
-  return request.get("/rest/api/clouddrivecontent/permissions", {
+  return request.get("/rest/api/clouddrivecontent/permission", {
     params: { contentId },
   });
 }
@@ -55,12 +59,14 @@ export function getBatchPermissionApi(
 
 // 编辑权限
 export function editFolderPermissionApi(
-  permissionId: number,
+  userId: number,
   permissionType: number,
+  contentId: number,
 ): Promise<IResponse<Record<string, any>>> {
-  return request.put("/rest/api/clouddrivecontent/editpermission", {
-    permissionId,
+  return request.put("/rest/api/clouddrivecontent/permission", {
+    userId,
     permissionType,
+    contentId,
   });
 }
 
@@ -71,7 +77,7 @@ export function setMemberPermissionApi(
   orgId: number,
   permissionType: number,
 ): Promise<IResponse<Record<string, any>>> {
-  return request.post("/rest/api/clouddrivecontent/addpermissions", {
+  return request.post("/rest/api/clouddrivecontent/permissions", {
     contentId,
     userId,
     orgId,
@@ -95,7 +101,7 @@ export function addFolderPermissionApi(
   ranges: Record<string, number>[],
   permissionType: number,
 ): Promise<IResponse<Record<string, any>>> {
-  return request.post("/rest/api/clouddrivecontent/addpermissions", {
+  return request.post("/rest/api/clouddrivecontent/permissions", {
     contentId,
     ranges,
     permissionType,
@@ -169,25 +175,25 @@ export function hasCreateSharePermissionApi(): Promise<IResponse<boolean>> {
 
 // 全局搜索
 export function searchGlobalApi(data: {
-  keyWord: string,
-  pageIndex: number,
-  pageSize: number
+  keyWord: string;
+  pageIndex: number;
+  pageSize: number;
 }): Promise<IResponse<any>> {
-  const { keyWord, pageIndex, pageSize } = data
+  const { keyWord, pageIndex, pageSize } = data;
   return request.get("/rest/api/clouddrivecontent/searchall", {
     params: { keyWord, pageIndex, pageSize },
   });
 }
 
 // 获取父级文件夹contentId
-export function getParentFolderContentIdApi(
-  contentId: number,
-): Promise<IResponse<{
-  path: string;
-  isShare: boolean;
-  name: string;
-  isFolder: boolean;
-}>> {
+export function getParentFolderContentIdApi(contentId: number): Promise<
+  IResponse<{
+    path: string;
+    isShare: boolean;
+    name: string;
+    isFolder: boolean;
+  }>
+> {
   return request.get("/rest/api/clouddrivecontent/getparentcontentid", {
     params: { contentId },
   });
@@ -199,8 +205,10 @@ export function getUserAppsApi(): Promise<IResponse<Record<string, any>[]>> {
 }
 
 // 获取云盘周统计数据
-export function getWeeklyReportApi(params: WeeklyReportParams): Promise<IResponse<WeeklyReportBack>> {
+export function getWeeklyReportApi(
+  params: WeeklyReportParams,
+): Promise<IResponse<WeeklyReportBack>> {
   return request.get("/rest/api/clouddriveoperationlogs/stats/operationlog", {
-    params
-  })
+    params,
+  });
 }

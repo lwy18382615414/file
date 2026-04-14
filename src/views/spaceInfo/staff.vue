@@ -209,7 +209,7 @@ const setPermissionApi = async (
   id: number,
   permissionType: number,
 ): Promise<number> => {
-  return (await editFolderPermissionApi(id, permissionType)).code;
+  return (await editFolderPermissionApi(id, permissionType, contentId.value)).code;
 };
 
 const setPermission = async (permission: Record<string, any>) => {
@@ -228,7 +228,7 @@ const setPermission = async (permission: Record<string, any>) => {
       .then(async () => {
         activePermissionType.value = permission.value;
         const code = await setPermissionApi(
-          selectedPerson.value.id,
+          selectedPerson.value.userId,
           permission.value,
         );
         if (code === 1) {
@@ -245,7 +245,7 @@ const setPermission = async (permission: Record<string, any>) => {
       });
   } else {
     const code = await setPermissionApi(
-      selectedPerson.value.id,
+      selectedPerson.value.userId,
       permission.value,
     );
     if (code === 1) {

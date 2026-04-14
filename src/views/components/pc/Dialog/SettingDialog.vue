@@ -532,8 +532,9 @@ const editPermission = async (nextPermissionType: number) => {
           }
         } else {
           const res = await editFolderPermissionApi(
-            selectedPerson.value.id,
+            selectedPerson.value.userId!,
             nextPermissionType,
+            props.contentId,
           );
           if (res.code === 1) {
             ElMessage.success(t("modifySuccess"));
@@ -560,8 +561,9 @@ const editPermission = async (nextPermissionType: number) => {
   }
 
   const res = await editFolderPermissionApi(
-    selectedPerson.value.id,
+    selectedPerson.value.userId!,
     nextPermissionType,
+    props.contentId,
   );
   if (res.code === 1) {
     ElMessage.success(t("modifySuccess"));
@@ -734,9 +736,7 @@ watch(
 <style scoped lang="scss">
 :deep(.setting-dialog) {
   width: 640px;
-  padding: 0;
   overflow: hidden;
-  border-radius: 8px;
 
   .el-dialog__header {
     padding: 0;

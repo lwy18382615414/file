@@ -18,6 +18,7 @@ html {
   font-family: "Microsoft YaHei", sans-serif;
   font-size: calc(var(--base--font--size--16) * var(--scale-factor));
 }
+
 :root:root {
   --van-action-sheet-cancel-text-color: var(--text-primary-color);
   --van-base-font: Inter;
@@ -59,16 +60,6 @@ html {
         display: none;
       }
     }
-  }
-}
-
-.el-message-box {
-  .el-message-box__status {
-    display: none;
-  }
-
-  .el-message-box__message {
-    padding-left: 0;
   }
 }
 
