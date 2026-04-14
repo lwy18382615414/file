@@ -243,6 +243,7 @@ import { useI18n } from "vue-i18n";
 import { ArrowRight } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { CommonTable } from "@/components";
+import { useUiFeedback } from "@/hooks/useUiFeedback";
 import FolderSelectPc from "./FolderSelectPc.vue";
 import { useShareData } from "../../hooks/useShareData";
 import AvatarBox from "@/components/customSelectPerson/AvatarBox.vue";
@@ -255,9 +256,9 @@ import type { TableColumn } from "@/types/type";
 import { useHandleSaveFolder } from "@/hooks/useHandleSaveFolder.ts";
 import { usePermissionGuard } from "@/hooks/usePermissionGuard.ts";
 import { saveToCloudDriveApi } from "@/api/share";
-import { ElMessageBox } from "element-plus";
 
 const { t } = useI18n();
+const { confirm } = useUiFeedback();
 const { isBrowser, isPcClient } = useEnv();
 const { folderName, targetFolderContentId, saveFolder } = useHandleSaveFolder();
 const { runPermissionGuard } = usePermissionGuard();
@@ -405,19 +406,14 @@ const handleSaveToCloud = async () => {
         ...(shareId.value ? { shareId: shareId.value } : {}),
       }),
     showConfirm: (count) => {
-      return ElMessageBox.confirm(
-        t("savePermissionWarning", {
+      return confirm({
+        title: t("saveToCloudDrive"),
+        message: t("savePermissionWarning", {
           count,
         }),
-        t("saveToCloudDrive"),
-        {
-          confirmButtonText: t("Ok"),
-          cancelButtonText: t("cancel"),
-          showClose: false,
-          closeOnClickModal: false,
-          closeOnPressEscape: false,
-        },
-      );
+        confirmButtonText: t("Ok"),
+        cancelButtonText: t("cancel"),
+      });
     },
     notifySuccess: () => {
       isSaveSuccess.value = true;

@@ -8,6 +8,7 @@ export {}
 declare global {
   const ElLoading: typeof import('element-plus/es')['ElLoading']
   const ElMessage: typeof import('element-plus/es')['ElMessage']
+  const ElMessageBox: typeof import('element-plus/es')['ElMessageBox']
   const showConfirmDialog: typeof import('vant/es')['showConfirmDialog']
   const showDialog: typeof import('vant/es')['showDialog']
   const showFailToast: typeof import('vant/es')['showFailToast']

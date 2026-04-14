@@ -190,11 +190,12 @@ import { Permission, getHighestPermission } from "@/enum/permission.ts";
 import { CustomSelectPerson, EmptyState, SvgIcon } from "@/components";
 import PcFileContextMenu from "../PcFileContextMenu.vue";
 import AddNotifyUserDialog from "./AddNotifyUserDialog.vue";
-import { ElMessage, ElMessageBox } from "element-plus";
+import { ElMessage } from "element-plus";
 import { getQueryVariable, hasPermission, t } from "@/utils";
 import AvatarBox from "@/components/customSelectPerson/AvatarBox.vue";
 import type { PermissionItem } from "@/types/type";
 import { useAdjustPosition } from "@/hooks/useAdjustPosition.ts";
+import { useUiFeedback } from "@/hooks/useUiFeedback";
 import PinyinMatch from "pinyin-match";
 
 type MenuOptionKey =
@@ -232,6 +233,8 @@ const props = defineProps<{
   show: boolean;
   contentId: number;
 }>();
+
+const { confirm } = useUiFeedback();
 
 const emit = defineEmits<{
   (e: "update:show", value: boolean): void;
@@ -474,75 +477,69 @@ const transferSuperAdmin = async () => {
     return;
   }
 
-  ElMessageBox.confirm(
-    [
-      t("confirmTransferSuperAdmin", {
-        name: selectedPerson.value.label,
-      }),
-      t("confirmTransferSuperAdminExtra"),
-    ].join("\n\n"),
-    t("transferSuperAdmin"),
-    {
+  try {
+    await confirm({
+      title: t("transferSuperAdmin"),
+      message: [
+        t("confirmTransferSuperAdmin", {
+          name: selectedPerson.value.label,
+        }),
+        t("confirmTransferSuperAdminExtra"),
+      ].join("\n\n"),
       confirmButtonText: t("Ok"),
       cancelButtonText: t("cancel"),
-      showClose: false,
-      closeOnClickModal: false,
-      closeOnPressEscape: false,
-    },
-  )
-    .then(async () => {
-      const res = await transferSuperAdminApi(
-        selectedPerson.value.userId as number,
-        props.contentId,
-      );
-      if (res.code === 1) {
-        ElMessage.success(t("transferSuccess"));
-        await getFolderPermission(props.contentId);
-        contextMenuVisible.value = false;
-      }
-    })
-    .catch(() => {});
+    });
+
+    const res = await transferSuperAdminApi(
+      selectedPerson.value.userId as number,
+      props.contentId,
+    );
+    if (res.code === 1) {
+      ElMessage.success(t("transferSuccess"));
+      await getFolderPermission(props.contentId);
+      contextMenuVisible.value = false;
+    }
+  } catch {
+    // user canceled
+  }
 };
 
 const editPermission = async (nextPermissionType: number) => {
   if (nextPermissionType === Permission.Admin) {
-    ElMessageBox.confirm(
-      [
-        t("confirmSetAdmin", { name: selectedPerson.value.label }),
-        t("confirmSetAdminExtra"),
-      ].join("\n\n"),
-      t("addAdmin"),
-      {
-        showClose: false,
-        closeOnClickModal: false,
-        closeOnPressEscape: false,
-      },
-    )
-      .then(async () => {
-        if (isChild.value) {
-          const res = await setMemberPermissionApi(
-            props.contentId,
-            selectedPerson.value.userId!,
-            selectedPerson.value.orgId as number,
-            nextPermissionType,
-          );
-          if (res.code === 1) {
-            ElMessage.success(t("modifySuccess"));
-            await getFolderPermission(props.contentId);
-          }
-        } else {
-          const res = await editFolderPermissionApi(
-            selectedPerson.value.userId!,
-            nextPermissionType,
-            props.contentId,
-          );
-          if (res.code === 1) {
-            ElMessage.success(t("modifySuccess"));
-            await getFolderPermission(props.contentId);
-          }
+    try {
+      await confirm({
+        title: t("addAdmin"),
+        message: [
+          t("confirmSetAdmin", { name: selectedPerson.value.label }),
+          t("confirmSetAdminExtra"),
+        ].join("\n\n"),
+      });
+
+      if (isChild.value) {
+        const res = await setMemberPermissionApi(
+          props.contentId,
+          selectedPerson.value.userId!,
+          selectedPerson.value.orgId as number,
+          nextPermissionType,
+        );
+        if (res.code === 1) {
+          ElMessage.success(t("modifySuccess"));
+          await getFolderPermission(props.contentId);
         }
-      })
-      .catch(() => {});
+      } else {
+        const res = await editFolderPermissionApi(
+          selectedPerson.value.userId!,
+          nextPermissionType,
+          props.contentId,
+        );
+        if (res.code === 1) {
+          ElMessage.success(t("modifySuccess"));
+          await getFolderPermission(props.contentId);
+        }
+      }
+    } catch {
+      // user canceled
+    }
     return;
   }
 
@@ -571,34 +568,48 @@ const editPermission = async (nextPermissionType: number) => {
   }
 };
 
-const handleRemoveNotifyUser = (selected: PermissionItem) => {
+const handleRemoveNotifyUser = async (selected: PermissionItem) => {
   if (isReadOnly(selected)) return;
 
-  ElMessageBox.confirm(t("confirmRemoveNotifyUser"), t("remove"), {
-    confirmButtonText: t("Ok"),
-    cancelButtonText: t("cancel"),
-    showClose: false,
-    closeOnClickModal: false,
-    closeOnPressEscape: false,
-  })
-    .then(async () => {
-      if (!selected.userId) return;
-      const res = await removeFolderNotifyUsersApi(props.contentId, [
-        selected.userId,
-      ]);
-      if (res.code === 1) {
-        ElMessage.success(t("removeSuccess"));
-        await getFolderPermission(props.contentId);
-      }
-    })
-    .catch(() => {});
+  try {
+    await confirm({
+      title: t("remove"),
+      message: t("confirmRemoveNotifyUser"),
+      confirmButtonText: t("Ok"),
+      cancelButtonText: t("cancel"),
+    });
+
+    if (!selected.userId) return;
+    const res = await removeFolderNotifyUsersApi(props.contentId, [
+      selected.userId,
+    ]);
+    if (res.code === 1) {
+      ElMessage.success(t("removeSuccess"));
+      await getFolderPermission(props.contentId);
+    }
+  } catch {
+    // user canceled
+  }
 };
 
 const removePerson = async () => {
-  const res = await removeMemberApi(selectedPerson.value.id, props.contentId);
-  if (res.code === 1) {
-    ElMessage.success(t("removeSuccess"));
-    await getFolderPermission(props.contentId);
+  try {
+    await confirm({
+      title: t("removeMember"),
+      message: t("confirmRemoveMember", {
+        name: selectedPerson.value.label,
+      }),
+      confirmButtonText: t("Ok"),
+      cancelButtonText: t("cancel"),
+    });
+
+    const res = await removeMemberApi(selectedPerson.value.id, props.contentId);
+    if (res.code === 1) {
+      ElMessage.success(t("removeSuccess"));
+      await getFolderPermission(props.contentId);
+    }
+  } catch {
+    // user canceled
   }
 };
 
@@ -737,6 +748,7 @@ watch(
 :deep(.setting-dialog) {
   width: 640px;
   overflow: hidden;
+  padding: 0;
 
   .el-dialog__header {
     padding: 0;
