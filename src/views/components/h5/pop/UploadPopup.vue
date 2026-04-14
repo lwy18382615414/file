@@ -4,7 +4,11 @@
       <div class="sheet-header">
         <span class="sheet-title">{{ t("uploadFile") }}</span>
         <button class="close-btn" type="button" @click="showUpload = false">
-          <SvgIcon name="action-close" size="18" color="var(--btn-primary-text-color)" />
+          <SvgIcon
+            name="action-close"
+            size="18"
+            color="var(--btn-primary-text-color)"
+          />
         </button>
       </div>
 
@@ -28,7 +32,11 @@
               multiple
             >
               <div class="select-file">
-                <SvgIcon name="ic_empty_file" size="54" />
+                <SvgIcon
+                  name="action-upload_file"
+                  size="54"
+                  color="var(--primary-color)"
+                />
                 <span class="text">{{ t("clickToChooseFile") }}</span>
               </div>
             </van-uploader>
@@ -42,7 +50,10 @@
                   <SvgIcon :name="getFileIcon(file.name)" size="30" />
                   <div class="file-name">{{ file.name }}</div>
                 </div>
-                <SvgIcon name="action-close_bg" @click="handleRemove(file.name)" />
+                <SvgIcon
+                  name="action-close_bg"
+                  @click="handleRemove(file.name)"
+                />
               </div>
             </div>
           </template>
@@ -50,7 +61,11 @@
       </div>
 
       <div class="sheet-actions">
-        <button class="action-btn cancel-btn" type="button" @click="handleClose">
+        <button
+          class="action-btn cancel-btn"
+          type="button"
+          @click="handleClose"
+        >
           {{ t("cancel") }}
         </button>
         <button
@@ -100,9 +115,7 @@ function handleClose() {
   showUpload.value = false;
 }
 
-function beforeRead(
-  file: File | File[],
-): boolean {
+function beforeRead(file: File | File[]): boolean {
   try {
     const files = Array.isArray(file) ? file : [file];
 

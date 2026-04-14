@@ -38,9 +38,16 @@
             :on-change="handleSelectChange"
           >
             <template #trigger>
-              <div class="file-wrapper" :class="{ 'no-file': !hasSelectedFiles }">
+              <div
+                class="file-wrapper"
+                :class="{ 'no-file': !hasSelectedFiles }"
+              >
                 <div class="empty-file">
-                  <SvgIcon name="ic_empty_file" size="54" />
+                  <SvgIcon
+                    name="action-upload_file"
+                    size="54"
+                    color="var(--primary-color)"
+                  />
                   <span class="text">{{ t("clickToChoose") }}</span>
                 </div>
               </div>
@@ -66,7 +73,10 @@
                   <SvgIcon :name="getFileIcon(file.name)" size="24" />
                   <div class="file-name">{{ file.name }}</div>
                 </div>
-                <SvgIcon name="action-close_bg" @click.stop="handleRemove(file.name)" />
+                <SvgIcon
+                  name="action-close_bg"
+                  @click.stop="handleRemove(file.name)"
+                />
               </div>
             </div>
           </div>
@@ -78,7 +88,11 @@
           <el-button class="cancel-btn" @click="handleClose">
             {{ t("cancel") }}
           </el-button>
-          <el-button :disabled="loading" class="confirm-btn" @click="handleUpload">
+          <el-button
+            :disabled="loading"
+            class="confirm-btn"
+            @click="handleUpload"
+          >
             {{ t("Ok") }}
           </el-button>
         </div>
