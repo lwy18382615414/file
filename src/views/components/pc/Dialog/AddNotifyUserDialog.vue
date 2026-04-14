@@ -290,22 +290,7 @@ const handleConfirm = () => {
 }
 
 .dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
   padding: 16px;
   border-top: 1px solid var(--dialog-divider-color);
-}
-
-.cancel-btn,
-.confirm-btn {
-  width: 80px;
-  border-radius: 4px;
-}
-
-.cancel-btn {
-  border: 1px solid var(--theme-color);
-  background: #f2f4f8;
-  color: var(--theme-color);
 }
 </style>

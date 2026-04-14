@@ -54,6 +54,7 @@
 
 <script setup lang="ts">
 import { computed, type PropType, ref } from "vue";
+import { ElMessage } from "element-plus";
 import type { Task } from "@/hooks/upload/useUploadFlow";
 import { useUploadFlow } from "@/hooks/upload/useUploadFlow";
 import { t } from "@/utils";
@@ -166,19 +167,5 @@ const uploadStep2 = async (repeatType: number, index: number) => {
 
 .dialog-footer {
   padding: 0 16px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-
-  button {
-    width: 80px;
-    border-radius: 4px;
-  }
-
-  .cancel-btn {
-    border: 1px solid var(--theme-color);
-    background: #f2f4f8;
-    color: var(--theme-color);
-  }
 }
 </style>

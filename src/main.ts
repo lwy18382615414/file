@@ -17,7 +17,6 @@ import { defaultTheme } from "@/theme/themes";
 import { borderCursor } from "@/directives/borderCursor";
 import { truncateMiddle } from "@/directives/truncaeMiddle";
 import { longPress } from "@/directives/longpress";
-import "./styles/scrollbar.scss";
 
 import { initRem } from "@/utils/rem";
 import { getDeviceType } from "./utils";
@@ -147,6 +146,7 @@ const deviceType = getDeviceType();
 if (deviceType === DeviceType.H5) {
   initRem();
 } else {
+  import("./styles/scrollbar.scss");
   enablePcVConsoleDrag();
 }
 

@@ -1,13 +1,10 @@
-@media (min-width: 1024px) {
-  ::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
-    background-color: white;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background-color: #d2d4d6;
-    border-radius: 5px;
-  }
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+  background-color: white;
 }
 
+::-webkit-scrollbar-thumb {
+  background-color: #d2d4d6;
+  border-radius: 5px;
+}

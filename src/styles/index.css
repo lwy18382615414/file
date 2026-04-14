@@ -133,3 +133,65 @@ html {
     display: none;
   }
 }
+
+.el-dialog__footer {
+  .dialog-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+
+  .footer-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .cancel-btn,
+  .confirm-btn {
+    min-width: 88px;
+    height: 36px;
+    margin: 0;
+    padding: 8px 20px;
+    border-radius: var(--radius-md);
+    font-size: calc(var(--base--font--size--14) * var(--scale-factor));
+    font-weight: 500;
+  }
+
+  .cancel-btn,
+  .cancel-btn:hover,
+  .cancel-btn:focus,
+  .cancel-btn:active {
+    color: var(--text-primary-color);
+    background: var(--btn-default-bg);
+    border: 1px solid var(--btn-secondary-border-color);
+  }
+
+  .cancel-btn.is-disabled,
+  .cancel-btn.is-disabled:hover,
+  .cancel-btn.is-disabled:focus,
+  .cancel-btn.is-disabled:active {
+    color: var(--text-weak-color);
+    background: var(--btn-default-bg);
+    border-color: var(--btn-secondary-border-color);
+  }
+
+  .confirm-btn,
+  .confirm-btn:hover,
+  .confirm-btn:focus,
+  .confirm-btn:active {
+    color: var(--btn-text-white-color);
+    background: var(--btn-primary-color);
+    border: 1px solid var(--btn-primary-color);
+  }
+
+  .confirm-btn.is-disabled,
+  .confirm-btn.is-disabled:hover,
+  .confirm-btn.is-disabled:focus,
+  .confirm-btn.is-disabled:active {
+    color: var(--btn-text-white-color);
+    background: var(--theme-color-light);
+    border-color: var(--theme-color-light);
+  }
+}

@@ -443,33 +443,5 @@ function resetState() {
 
 .dialog-footer {
   padding: 0 16px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-
-  .el-button {
-    min-width: 88px;
-    height: 32px;
-    border-radius: 4px;
-  }
-}
-
-.cancel-btn {
-  border: 1px solid var(--el-color-primary);
-  background: #fff;
-  color: var(--el-color-primary);
-}
-
-.confirm-btn {
-  border: 1px solid var(--el-color-primary);
-  background: var(--el-color-primary);
-  color: #fff;
-
-  &.is-disabled {
-    border-color: #b7b7b7;
-    background: #b7b7b7;
-    color: #fff;
-  }
 }
 </style>

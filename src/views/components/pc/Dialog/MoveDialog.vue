@@ -1331,22 +1331,4 @@ const handleForward = async () => {
   padding: 0;
 }
 
-.footer-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.cancel-btn,
-.confirm-btn {
-  min-width: 88px;
-  height: 36px;
-  border-radius: 8px;
-}
-
-.cancel-btn {
-  border: 1px solid var(--btn-secondary-border-color);
-  background: #fff;
-  color: var(--text-primary-color);
-}
 </style>

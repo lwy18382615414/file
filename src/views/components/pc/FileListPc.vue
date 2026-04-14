@@ -380,6 +380,7 @@ const handleMoveDuplicateFiles = (data: Record<number, string>[]) => {
 
 const handleRestoreDuplicateFiles = (data: Record<number, string>[]) => {
   restoreRepeatList.value = buildRepeatList(data);
+  pendingRestoreItems.value = [...selectedItems.value];
   restoreRepeatVisible.value = true;
 };
 

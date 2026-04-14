@@ -139,23 +139,5 @@ const operateList = [
 
 .dialog-footer {
   padding: 0 16px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-
-  button {
-    width: 80px;
-    border-radius: 4px;
-  }
-
-  .cancel-btn {
-    border: 1px solid var(--theme-color);
-    background: #f2f4f8;
-    color: var(--theme-color);
-  }
-  .confirm-btn {
-    background: var(--btn-primary-color);
-    color: #fff;
-  }
 }
 </style>
