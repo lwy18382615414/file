@@ -1,16 +1,16 @@
 // truncateMiddleDirective.ts
 import type { Directive } from "vue";
 
-// 增强类型声明
-declare module "@vue/runtime-core" {
-  interface ComponentCustomProperties {
-    _truncateMiddle?: {
-      observer: ResizeObserver;
-      mutationObserver: MutationObserver;
-      originalText: string;
-    };
-  }
-}
+type TruncateMiddleState = {
+  observer: ResizeObserver;
+  mutationObserver: MutationObserver;
+  originalText: string;
+  updating: boolean;
+};
+
+type TruncateMiddleElement = HTMLElement & {
+  _truncateMiddle?: TruncateMiddleState;
+};
 
 // 文本测量工具
 const getTextWidth = (text: string, font: string): number => {
@@ -20,90 +20,125 @@ const getTextWidth = (text: string, font: string): number => {
   return ctx!.measureText(text).width;
 };
 
+const getTruncatedText = (
+  originalText: string,
+  font: string,
+  maxWidth: number,
+) => {
+  if (!originalText) return "";
+
+  if (getTextWidth(originalText, font) <= maxWidth) {
+    return originalText;
+  }
+
+  let low = 0;
+  let high = Math.floor(originalText.length / 2);
+  let best = 0;
+
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    const testText =
+      originalText.substring(0, mid) +
+      "…" +
+      originalText.substring(originalText.length - mid);
+
+    if (getTextWidth(testText, font) <= maxWidth) {
+      best = mid;
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
+
+  return best > 0
+    ? originalText.substring(0, best) +
+        "…" +
+        originalText.substring(originalText.length - best)
+    : originalText;
+};
+
 export const truncateMiddle: Directive = {
-  mounted(el, binding) {
-    // 保存原始文本
-    const originalText = el.textContent || "";
+  mounted(el) {
+    const element = el as TruncateMiddleElement;
 
-    // 更新逻辑
-    const updateText = () => {
-      const currentText = el.textContent || "";
-      const font = getComputedStyle(el).font;
-      const maxWidth = el.offsetWidth;
-
-      if (
-        currentText === originalText &&
-        getTextWidth(originalText, font) <= maxWidth
-      ) {
-        return;
-      }
-
-      // 当容器足够宽时恢复原始文本
-      if (getTextWidth(originalText, font) <= maxWidth) {
-        el.textContent = originalText;
-        return;
-      }
-
-      // 执行截断逻辑
-      let low = 0;
-      let high = Math.floor(originalText.length / 2);
-      let best = 0;
-
-      while (low <= high) {
-        const mid = Math.floor((low + high) / 2);
-        const testText =
-          originalText.substring(0, mid) +
-          "…" +
-          originalText.substring(originalText.length - mid);
-
-        if (getTextWidth(testText, font) <= maxWidth) {
-          best = mid;
-          low = mid + 1;
-        } else {
-          high = mid - 1;
-        }
-      }
-
-      el.textContent =
-        best > 0
-          ? originalText.substring(0, best) +
-            "…" +
-            originalText.substring(originalText.length - best)
-          : originalText;
+    const state: TruncateMiddleState = {
+      observer: null as unknown as ResizeObserver,
+      mutationObserver: null as unknown as MutationObserver,
+      originalText: element.textContent || "",
+      updating: false,
     };
 
-    // 监听容器尺寸变化
-    const resizeObserver = new ResizeObserver(updateText);
-    resizeObserver.observe(el);
+    const render = () => {
+      const font = getComputedStyle(element).font;
+      const maxWidth = element.offsetWidth;
+      const nextText = getTruncatedText(state.originalText, font, maxWidth);
 
-    // 监听文本内容变化（兼容Vue的数据绑定）
-    const mutationObserver = new MutationObserver((mutations) => {
+      if (element.textContent === nextText) return;
+
+      state.updating = true;
+      element.textContent = nextText;
+      state.updating = false;
+    };
+
+    const syncOriginalText = () => {
+      if (state.updating) return;
+      state.originalText = element.textContent || "";
+      render();
+    };
+
+    state.observer = new ResizeObserver(() => {
+      render();
+    });
+    state.observer.observe(element);
+
+    state.mutationObserver = new MutationObserver((mutations) => {
+      if (state.updating) return;
+
       for (const mutation of mutations) {
-        if (mutation.type === "characterData") {
-          updateText();
+        if (
+          mutation.type === "characterData" ||
+          mutation.type === "childList"
+        ) {
+          syncOriginalText();
+          break;
         }
       }
     });
-    mutationObserver.observe(el, {
+
+    state.mutationObserver.observe(element, {
       characterData: true,
+      childList: true,
       subtree: true,
     });
 
-    // 存储引用以便卸载
-    el._truncateMiddle = {
-      observer: resizeObserver,
-      mutationObserver,
-      originalText,
-    };
+    element._truncateMiddle = state;
+    render();
+  },
 
-    // 初始执行
-    updateText();
+  updated(el) {
+    const element = el as TruncateMiddleElement;
+    const state = element._truncateMiddle;
+
+    if (!state || state.updating) return;
+
+    state.originalText = element.textContent || "";
+
+    const font = getComputedStyle(element).font;
+    const maxWidth = element.offsetWidth;
+    const nextText = getTruncatedText(state.originalText, font, maxWidth);
+
+    if (element.textContent === nextText) return;
+
+    state.updating = true;
+    element.textContent = nextText;
+    state.updating = false;
   },
 
   unmounted(el) {
-    if (el._truncateMiddle) {
-      el._truncateMiddle.observer.disconnect();
-      el._truncateMiddle.mutationObserver.disconnect();
+    const element = el as TruncateMiddleElement;
+    if (element._truncateMiddle) {
+      element._truncateMiddle.observer.disconnect();
+      element._truncateMiddle.mutationObserver.disconnect();
     }
   },
 };

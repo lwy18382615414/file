@@ -8,7 +8,7 @@
         @click="handleAction(action.action)"
       >
         <span class="icon-wrapper">
-          <SvgIcon :name="action.icon" size="30" />
+          <SvgIcon :name="action.icon" color="#fff" size="30" />
         </span>
         <div class="name">{{ action.name }}</div>
       </div>
