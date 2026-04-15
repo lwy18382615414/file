@@ -149,6 +149,8 @@ export function useShareFolderSelect({
         ContentType: 1,
         PageIndex: page,
         PageSize: pagination.pageSize,
+        SortMethod: 1,
+        SortOrder: "desc",
       });
       if (res.code !== 1) return;
 

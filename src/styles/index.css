@@ -26,6 +26,34 @@ html {
   --van-dialog-width: 268px;
 }
 
+.van-toast--success,
+.van-toast--fail {
+  .van-toast__icon {
+    width: 36px;
+    height: 36px;
+    font-size: 0;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 36px 36px;
+  }
+
+  .van-toast__text {
+    word-break: break-word;
+  }
+}
+
+.van-toast--success {
+  .van-toast__icon {
+    background-image: url("../assets/icons/vant-success.svg");
+  }
+}
+
+.van-toast--fail {
+  .van-toast__icon {
+    background-image: url("../assets/icons/vant-fail.svg");
+  }
+}
+
 .repeat-file-operate-list {
   .operate-item {
     cursor: context-menu;

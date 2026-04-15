@@ -52,6 +52,11 @@ export function getLanguageCode() {
   return languageCode.toLowerCase();
 }
 
+export function setLanguageCode(code: "zh-hans" | "en") {
+  sessionStorage.setItem("languageCode", code);
+  Cookies.set("languageCode", code);
+}
+
 export function getFromPc() {
   return Cookies.get("useByPc") || sessionStorage.getItem("useByPc");
 }

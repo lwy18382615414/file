@@ -1,28 +1,22 @@
 <template>
-  <router-view />
+  <el-config-provider :locale="elementLocale">
+    <router-view />
+  </el-config-provider>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from "vue";
+import { onMounted } from "vue";
+import { ElConfigProvider } from "element-plus";
 import config from "./hooks/config";
-import i18n from "@/lang";
-import { getLanguageCode, getToken } from "./utils/auth";
+import { applyLanguage, elementLocale, type RawLanguageCode } from "@/lang";
+import { getToken } from "./utils/auth";
 import useMyUserInfo from "./hooks/useMyUserInfo";
 
 const { ensureConfigReady } = config();
 const { getMyInfoByApi } = useMyUserInfo();
 
-const curCode = ref("zh-hans");
-
-window.setLanguageCode = (code: "zh" | "en") => {
-  if (code) {
-    i18n.global.locale.value = code;
-    curCode.value = code;
-  } else {
-    const languageCode = getLanguageCode();
-    curCode.value = languageCode;
-    i18n.global.locale.value = languageCode === "zh-hans" ? "zh" : languageCode;
-  }
+window.setLanguageCode = (code?: RawLanguageCode) => {
+  applyLanguage(code);
 };
 
 const asyncMyInfo = () => {
@@ -35,6 +29,7 @@ const asyncMyInfo = () => {
 
 onMounted(() => {
   ensureConfigReady();
+  applyLanguage();
   asyncMyInfo();
 });
 </script>

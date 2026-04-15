@@ -21,6 +21,7 @@ declare global {
     rightBtnClick?: () => void;
     rightBtnClick2?: () => void;
     userLeftBackClick?: () => void;
+    setLanguageCode?: (code?: "zh" | "zh-hans" | "en") => void;
   }
 }
 

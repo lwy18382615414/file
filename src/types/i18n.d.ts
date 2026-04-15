@@ -1,5 +1,5 @@
 // types/i18n.d.ts
-import { i18n } from "@/lang";
+import i18n from "@/lang";
 
 declare module "@vue/runtime-core" {
   interface ComponentCustomProperties {

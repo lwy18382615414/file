@@ -476,8 +476,8 @@ const requestFolders = async (folderId: number) => {
     PageSize: 999,
     ContentId: folderId,
     ContentType: 0,
-    SortMethod: 2,
-    SortOrder: "asc",
+    SortMethod: 1,
+    SortOrder: "desc",
   });
 
   return Array.isArray(res.data?.data) ? res.data.data : [];
