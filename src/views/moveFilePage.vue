@@ -155,6 +155,7 @@ import { createFolderApi, moveFileOrDirApi } from "@/api/fileService";
 import { _getMySpaceContentApi } from "@/api/mySpace";
 import { _getShareSpace } from "@/api/shareSpace";
 import { useUiFeedback } from "@/hooks/useUiFeedback";
+import { httpCode } from "@/utils/permissionDenied";
 import type { ContentType } from "@/types/type";
 import { checkNameValidity, setAppTitle, t } from "@/utils";
 import { getContentId, getIsFolder, getName } from "@/utils/typeUtils";
@@ -434,6 +435,11 @@ const executeMove = async (repeatFileOperateType = 0) => {
       targetContentId: pendingMoveTargetId.value,
       repeatFileOperateType,
     });
+
+    if (res.code === httpCode.noEditPermission) {
+      toast(t("noMoveToFolderPermission"), "error");
+      return;
+    }
 
     if (res.code !== 1) {
       toast(t("errorOccurred"), "error");

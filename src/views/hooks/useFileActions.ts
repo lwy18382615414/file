@@ -282,7 +282,7 @@ export function useFileActions(options?: {
     });
 
     if (res.code === httpCode.noEditPermission) {
-      toast(t("noPermission"), "error");
+      toast(t("noMoveToFolderPermission"), "error");
       return false;
     }
 
