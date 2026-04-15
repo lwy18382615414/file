@@ -12,6 +12,7 @@ import router from "@/routers/index";
 import i18n from "@/lang";
 import pinia from "./stores/index";
 import { applyTheme } from "@/theme/applyTheme";
+import type { ThemeTokens } from "@/theme/tokens";
 import { defaultTheme } from "@/theme/themes";
 
 import { borderCursor } from "@/directives/borderCursor";
@@ -134,6 +135,16 @@ const enablePcVConsoleDrag = () => {
 };
 
 applyTheme(defaultTheme);
+
+if (typeof window !== "undefined") {
+  window.applyTheme = (theme: ThemeTokens | string) => {
+    const nextTheme =
+      typeof theme === "string" ? (JSON.parse(theme) as ThemeTokens) : theme;
+
+    console.log("接收来自客户端的主题色配置", nextTheme);
+    applyTheme(nextTheme);
+  };
+}
 
 const app = createApp(App);
 

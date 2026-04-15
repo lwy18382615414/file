@@ -40,7 +40,10 @@ import {
   createShareLinkWithPermission,
   filterAllowedContentIds,
 } from "@/views/hooks/useShareLink";
-import { getPermissionDeniedIdsFromResponse, httpCode } from "@/utils/permissionDenied";
+import {
+  getPermissionDeniedIdsFromResponse,
+  httpCode,
+} from "@/utils/permissionDenied";
 
 export type MovePayload = {
   items: ContentType[];
@@ -203,9 +206,8 @@ export function useFileActions(options?: {
 
       console.log(
         JSON.stringify({
-          type: "12",
+          type: "13",
           data: contentIds,
-          openAfterDownload: true,
         }),
       );
       return true;
