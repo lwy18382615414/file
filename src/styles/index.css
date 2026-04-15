@@ -32,6 +32,8 @@
   /* 卡片阴影配色 */
   --shadow-bg-color: rgba(0, 0, 0, 0.1);
   /* 卡片描边色 */
+  --border-color: var(--base-border-color);
+  /* 卡片描边色 */
   --card-border-color: #e2e8f0;
   /* 通用样式边框色 */
   --base-border-color: #e2e8f0;

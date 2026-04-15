@@ -340,7 +340,11 @@ const handleToolbarBatchAction = async (key: AuthHeaderActionKey) => {
   );
 
   if (!permissionState.allowedItems.length) {
-    toast(t("noOperationPermission", { action: batchActionLabelMap[key] }));
+    toast(
+      key === "move"
+        ? t("noMovePermission")
+        : t("noOperationPermission", { action: batchActionLabelMap[key] }),
+    );
     return;
   }
 

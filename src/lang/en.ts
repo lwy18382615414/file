@@ -341,8 +341,10 @@ export default {
     "You don't have the delete permission for the selected file. Please re-select a file",
   noSavePermission:
     "You don't have the saving permission for the selected file. Please re-select a file",
+  noMovePermission:
+    "You do not have permission to move the selected content",
   noMoveToFolderPermission:
-    "You do not have permission to move files to this folder",
+    "You do not have permission to move the selected content to this folder",
   noOperationPermission: "No {action} permission",
   partialOperationPermission:
     "Some files do not have the {action} permission. Operating on the remaining files",

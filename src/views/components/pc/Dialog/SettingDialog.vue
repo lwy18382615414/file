@@ -774,7 +774,7 @@ watch(
 .title {
   max-width: 320px;
   overflow: hidden;
-  color: #1e293b;
+  color: var(--text-primary-color);
   font-size: 18px;
   font-weight: 700;
   line-height: 26px;
@@ -783,7 +783,7 @@ watch(
 }
 
 .sub-title {
-  color: #64748b;
+  color: var(--text-secondary-color);
   font-size: 13px;
   line-height: 20px;
 }
@@ -797,7 +797,7 @@ watch(
   border: 0;
   border-radius: 8px;
   background: transparent;
-  color: #64748b;
+  color: var(--text-secondary-color);
   cursor: pointer;
   transition:
     background-color 0.2s ease,
@@ -805,7 +805,7 @@ watch(
 
   &:hover {
     background: var(--content-bg-color);
-    color: #334155;
+    color: var(--text-primary-color);
   }
 }
 
@@ -828,7 +828,7 @@ watch(
   gap: 12px;
   padding: 11px 14px;
   border-radius: 10px;
-  color: #334155;
+  color: var(--text-primary-color);
   font-size: 14px;
   line-height: 20px;
   cursor: pointer;
@@ -849,7 +849,7 @@ watch(
 }
 
 .nav-count {
-  color: #94a3b8;
+  color: var(--text-weak-color);
   font-size: 12px;
 }
 
@@ -877,8 +877,8 @@ watch(
   height: 32px;
   border: 0;
   border-radius: 8px;
-  background: #fff;
-  color: #475569;
+  background: var(--btn-default-bg);
+  color: var(--theme-color);
   cursor: pointer;
   transition:
     background-color 0.2s ease,
@@ -886,16 +886,16 @@ watch(
 
   &:hover {
     background: var(--content-bg-color);
-    color: #3156d3;
+    color: var(--theme-color-hover);
   }
 
   &.disabled {
     cursor: not-allowed;
-    color: #94a3b8;
+    color: var(--text-weak-color);
 
     &:hover {
-      background: #fff;
-      color: #94a3b8;
+      background: var(--btn-default-bg);
+      color: var(--text-weak-color);
     }
   }
 }
@@ -938,7 +938,7 @@ watch(
 
 .label {
   overflow: hidden;
-  color: #1e293b;
+  color: var(--text-primary-color);
   font-size: 14px;
   line-height: 20px;
   white-space: nowrap;
@@ -952,7 +952,7 @@ watch(
   max-width: 180px;
   padding: 6px 8px;
   border-radius: 8px;
-  color: #475569;
+  color: var(--text-secondary-color);
   cursor: pointer;
   transition:
     background-color 0.2s ease,
@@ -960,16 +960,16 @@ watch(
 
   &:hover {
     background: var(--content-bg-color);
-    color: #1e293b;
+    color: var(--text-primary-color);
   }
 
   &.is-readonly {
     cursor: default;
-    color: #94a3b8;
+    color: var(--text-weak-color);
 
     &:hover {
       background: transparent;
-      color: #94a3b8;
+      color: var(--text-weak-color);
     }
   }
 }
@@ -993,7 +993,7 @@ watch(
   align-items: center;
   justify-content: center;
   flex: 1;
-  color: #94a3b8;
+  color: var(--text-weak-color);
   font-size: 14px;
 }
 
@@ -1009,15 +1009,15 @@ watch(
   :deep(.el-input__wrapper) {
     padding: 0 10px;
     border-radius: 4px;
-    background: #fff;
-    box-shadow: inset 0 0 0 1px #dbe4f0;
+    background: var(--input-bg-color);
+    box-shadow: inset 0 0 0 1px var(--input-border-base-color);
     transition:
       box-shadow 0.2s ease,
       background-color 0.2s ease;
   }
 
   :deep(.el-input__wrapper:hover) {
-    box-shadow: inset 0 0 0 1px #cbd5e1;
+    box-shadow: inset 0 0 0 1px var(--btn-secondary-border-color);
   }
 
   :deep(.el-input__prefix),
@@ -1028,7 +1028,7 @@ watch(
 
   :deep(.el-input__prefix) {
     margin-right: 8px;
-    color: #94a3b8;
+    color: var(--text-weak-color);
   }
 
   :deep(.el-input__suffix) {
@@ -1036,12 +1036,12 @@ watch(
   }
 
   :deep(.el-input__inner) {
-    color: #1e293b;
+    color: var(--text-primary-color);
     font-size: 14px;
   }
 
   :deep(.el-input__inner::placeholder) {
-    color: #94a3b8;
+    color: var(--text-weak-color);
   }
 }
 
@@ -1061,8 +1061,8 @@ watch(
   padding: 0;
   border: 0;
   border-radius: 999px;
-  background: #e2e8f0;
-  color: #64748b;
+  background: var(--base-border-color);
+  color: var(--text-secondary-color);
   cursor: pointer;
   transition:
     background-color 0.2s ease,
@@ -1070,8 +1070,8 @@ watch(
     transform 0.2s ease;
 
   &:hover {
-    background: #cbd5e1;
-    color: #334155;
+    background: var(--btn-secondary-border-color);
+    color: var(--text-primary-color);
     transform: scale(1.05);
   }
 }

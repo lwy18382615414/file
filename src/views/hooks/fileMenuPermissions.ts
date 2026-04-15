@@ -130,7 +130,7 @@ export function getSingleMenuActionKeys(
   if (
     (pageType === ExplorerPageType.MY ||
       pageType === ExplorerPageType.SHARED) &&
-    canUsePermission(item, Permission.Upload, pageType)
+    canUsePermission(item, Permission.Edit, pageType)
   ) {
     nextActions.push("move");
   }
@@ -167,7 +167,7 @@ export function getMultiMenuActionKeys(
   if (
     (pageType === ExplorerPageType.MY ||
       pageType === ExplorerPageType.SHARED) &&
-    items.every((item) => canUsePermission(item, Permission.Upload, pageType))
+    items.every((item) => canUsePermission(item, Permission.Edit, pageType))
   ) {
     nextActions.push("move");
   }
@@ -207,7 +207,7 @@ export function createEmptyBatchActionPermissionState(
 const HEADER_ACTION_PERMISSION_MAP: Record<AuthHeaderActionKey, Permission> = {
   download: Permission.View,
   share: Permission.Share,
-  move: Permission.Upload,
+  move: Permission.Edit,
   copyLink: Permission.Share,
   delete: Permission.Edit,
 };
