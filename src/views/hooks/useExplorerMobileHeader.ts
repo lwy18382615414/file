@@ -13,7 +13,6 @@ import {
 
 export function useExplorerMobileHeader(options: {
   isMobileApp: Ref<boolean>;
-  allowUpload: Ref<boolean>;
   canCreateSharedFolder: Ref<boolean>;
   isHeaderBlocked?: Ref<boolean>;
   onOpenCreateEntry: () => void;
@@ -98,14 +97,8 @@ export function useExplorerMobileHeader(options: {
 
         showAppButton(2, "navi_more_dot_white.png");
         window.rightBtnClick = options.onOpenShareSettings;
-
-        if (options.allowUpload.value) {
-          showAppButton2(2, "navi_add_white.png");
-          window.rightBtnClick2 = options.onOpenCreateEntry;
-        } else {
-          hideAppButton2();
-          window.rightBtnClick2 = undefined;
-        }
+        showAppButton2(2, "navi_add_white.png");
+        window.rightBtnClick2 = options.onOpenCreateEntry;
         return;
       case ExplorerPageType.RECYCLE:
         showAppButton(1, t("clear"));
@@ -126,7 +119,6 @@ export function useExplorerMobileHeader(options: {
     () => [
       route.fullPath,
       options.isMobileApp.value,
-      options.allowUpload.value,
       options.canCreateSharedFolder.value,
       isHeaderBlocked.value,
     ],

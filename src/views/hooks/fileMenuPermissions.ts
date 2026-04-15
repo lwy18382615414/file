@@ -1,4 +1,4 @@
-import { getBatchPermissionApi } from "@/api/common";
+import { getBatchPermissionApi, getFolderPermissionApi } from "@/api/common";
 import { Permission } from "@/enum/permission";
 import type { ContentType } from "@/types/type";
 import { hasPermission } from "@/utils";
@@ -11,6 +11,7 @@ import {
   getPermissionType,
 } from "@/utils/typeUtils";
 import { ExplorerPageType } from "@/views/fileExplorer";
+import type { AuthHeaderActionKey } from "@/types/headerActionTypes";
 
 export type FileActionKey =
   | "open"
@@ -185,4 +186,89 @@ export function getMultiMenuActionKeys(
   }
 
   return nextActions;
+}
+
+export type BatchActionPermissionState = {
+  allowedItems: ContentType[];
+  deniedItems: ContentType[];
+  deniedCount: number;
+};
+
+export function createEmptyBatchActionPermissionState(
+  items: ContentType[] = [],
+): BatchActionPermissionState {
+  return {
+    allowedItems: items,
+    deniedItems: [],
+    deniedCount: 0,
+  };
+}
+
+const HEADER_ACTION_PERMISSION_MAP: Record<AuthHeaderActionKey, Permission> = {
+  download: Permission.View,
+  share: Permission.Share,
+  move: Permission.Upload,
+  copyLink: Permission.Share,
+  delete: Permission.Edit,
+};
+
+export async function resolveBatchActionPermissions(
+  items: ContentType[],
+  action: AuthHeaderActionKey,
+  pageType: ExplorerPageType,
+): Promise<BatchActionPermissionState> {
+  if (!items.length) {
+    return createEmptyBatchActionPermissionState([]);
+  }
+
+  const itemsWithPermissions = await ensureMenuPermissions(items, pageType);
+  const permission = HEADER_ACTION_PERMISSION_MAP[action];
+
+  const allowedItems = itemsWithPermissions.filter((item) => {
+    if (action === "download" && getIsFolder(item)) {
+      return false;
+    }
+
+    return canUsePermission(item, permission, pageType);
+  });
+
+  const deniedItems = itemsWithPermissions.filter(
+    (item) => !allowedItems.includes(item),
+  );
+
+  return {
+    allowedItems,
+    deniedItems,
+    deniedCount: deniedItems.length,
+  };
+}
+
+export async function isHavNewAuth(
+  contentId: number,
+  pageType: ExplorerPageType,
+) {
+  if (
+    pageType === ExplorerPageType.RECENT ||
+    pageType === ExplorerPageType.MY
+  ) {
+    return true;
+  }
+
+  if (
+    pageType === ExplorerPageType.MY_SHARES ||
+    pageType === ExplorerPageType.RECYCLE ||
+    pageType === ExplorerPageType.SEARCH
+  ) {
+    return false;
+  }
+
+  if (pageType === ExplorerPageType.SHARED) {
+    const res = await getFolderPermissionApi(contentId);
+    if (res.code !== 1) return false;
+
+    const permissionType = res.data.permissionType;
+    return hasPermission(permissionType, Permission.Upload);
+  }
+
+  return false;
 }

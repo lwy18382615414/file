@@ -6,7 +6,7 @@
         v-if="showSharedSpaceSetting"
         class="shared-space-setting-button"
         type="button"
-        @click="handleOpenSharedSpaceSetting"
+        @click="emitHeaderAction('openSharedSpaceSetting')"
       >
         <SvgIcon name="common-group" size="22" />
         <span>
@@ -44,10 +44,8 @@
         <button
           v-if="!isSearchPage"
           class="action-button primary"
-          :class="{ disabled: !props.canCreate }"
-          :disabled="!props.canCreate"
           type="button"
-          @click="handleCreate"
+          @click="emitHeaderAction('create')"
         >
           <SvgIcon name="action-new" size="12" />
           <span>{{ t("new") }}</span>
@@ -55,48 +53,37 @@
         <button
           v-if="!isSearchPage"
           class="action-button"
-          :class="{ disabled: !props.canUpload }"
-          :disabled="!props.canUpload"
           type="button"
-          @click="handleUpload"
+          @click="emitHeaderAction('upload')"
         >
           <SvgIcon name="action-upload" size="12" />
           <span>{{ t("upload") }}</span>
         </button>
         <button
           class="action-button"
-          :class="{ disabled: !props.canDownload }"
-          :disabled="!props.canDownload"
           type="button"
-          @click="handleDownload"
+          @click="emitHeaderAction('download')"
         >
           <SvgIcon name="action-download" size="12" />
           <span>{{ t("download") }}</span>
         </button>
-        <div class="share-action" :class="{ disabled: !props.canShare }">
-          <button
-            class="action-button"
-            :class="{ disabled: !props.canShare }"
-            :disabled="!props.canShare"
-            type="button"
-          >
+        <div class="share-action">
+          <button class="action-button" type="button">
             <SvgIcon name="action-share" size="12" />
             <span>{{ t("share") }}</span>
           </button>
           <div class="share-dropdown">
             <button
               class="share-dropdown-item"
-              :disabled="!props.canShare"
               type="button"
-              @click="handleShare"
+              @click="emitHeaderAction('share')"
             >
               {{ t("shareToFriend") }}
             </button>
             <button
               class="share-dropdown-item"
-              :disabled="!props.canShare"
               type="button"
-              @click="handleCopyLink"
+              @click="emitHeaderAction('copyLink')"
             >
               {{ t("copyLink") }}
             </button>
@@ -105,19 +92,15 @@
         <button
           v-if="pageType !== ExplorerPageType.RECENT"
           class="action-button"
-          :class="{ disabled: !props.canMove }"
-          :disabled="!props.canMove"
           type="button"
-          @click="handleMove"
+          @click="emitHeaderAction('move')"
         >
           <span>{{ t("move") }}</span>
         </button>
         <button
           class="action-button danger"
-          :class="{ disabled: !props.canDelete }"
-          :disabled="!props.canDelete"
           type="button"
-          @click="handleDelete"
+          @click="emitHeaderAction('delete')"
         >
           <SvgIcon name="action-delete" size="12" />
           <span>{{ t("delete") }}</span>
@@ -160,6 +143,7 @@ import {
   type ExplorerContext,
   type ExplorerQueryState,
 } from "@/views/fileExplorer";
+import type { CommonHeaderActionKey } from "../../../types/headerActionTypes";
 
 const props = defineProps<{
   pageType: ExplorerPageType;
@@ -168,12 +152,6 @@ const props = defineProps<{
   total: number;
   currentViewMode: LayoutMode;
   supportSort: boolean;
-  canCreate: boolean;
-  canUpload: boolean;
-  canDownload: boolean;
-  canShare: boolean;
-  canMove: boolean;
-  canDelete: boolean;
   hasSelection: boolean;
   currentFolderPermissionCount: number | null;
 }>();
@@ -181,14 +159,7 @@ const props = defineProps<{
 const isSearchPage = computed(() => props.pageType === ExplorerPageType.SEARCH);
 
 const emit = defineEmits<{
-  (e: "create"): void;
-  (e: "upload"): void;
-  (e: "download"): void;
-  (e: "share"): void;
-  (e: "move"): void;
-  (e: "copyLink"): void;
-  (e: "delete"): void;
-  (e: "openSharedSpaceSetting"): void;
+  (e: "action", key: CommonHeaderActionKey): void;
   (e: "sort"): void;
   (e: "toggleView"): void;
 }>();
@@ -245,43 +216,8 @@ const handleForward = () => {
   router.forward();
 };
 
-const handleCreate = () => {
-  if (!props.canCreate) return;
-  emit("create");
-};
-
-const handleUpload = () => {
-  if (!props.canUpload) return;
-  emit("upload");
-};
-
-const handleDownload = () => {
-  if (!props.canDownload) return;
-  emit("download");
-};
-
-const handleShare = () => {
-  if (!props.canShare) return;
-  emit("share");
-};
-
-const handleCopyLink = () => {
-  if (!props.canShare) return;
-  emit("copyLink");
-};
-
-const handleMove = () => {
-  if (!props.canMove) return;
-  emit("move");
-};
-
-const handleDelete = () => {
-  if (!props.canDelete) return;
-  emit("delete");
-};
-
-const handleOpenSharedSpaceSetting = () => {
-  emit("openSharedSpaceSetting");
+const emitHeaderAction = (key: CommonHeaderActionKey) => {
+  emit("action", key);
 };
 
 const handleToggleView = (mode: LayoutMode) => {
@@ -490,22 +426,6 @@ watch(() => route.fullPath, syncHistoryState, { immediate: true });
 
       &:disabled {
         color: #cbd5e1;
-        cursor: not-allowed;
-      }
-    }
-
-    .action-button.disabled,
-    .action-button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-
-    .share-action.disabled {
-      pointer-events: none;
-
-      .action-button {
-        opacity: 0.5;
         cursor: not-allowed;
       }
     }

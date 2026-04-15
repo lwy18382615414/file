@@ -324,6 +324,9 @@ export default {
   noSharePermission: "所选文件没有分享权限，请重新选择文件",
   noDeletePermission: "所选文件没有删除权限，请重新选择文件",
   noSavePermission: "所选文件没有保存权限，请重新选择文件",
+  noOperationPermission: "暂无{action}权限",
+  partialOperationPermission:
+    "部分文件没有{action}权限，是否{action}剩余文件？",
   deletePermissionWarning:
     "有{count}个没有删除权限的文件无法删除，是否删除其他文件?",
   savePermissionWarning:

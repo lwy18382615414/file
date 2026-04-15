@@ -4,25 +4,9 @@
       :page-type="pageType"
       :query="headerQuery"
       :total="total"
-      :can-create="canCreate"
-      :can-upload="canUpload"
-      :can-download="canDownload"
-      :can-share="canShare"
-      :can-move="canMove"
-      :can-delete="canDelete"
       :has-selection="hasSelection"
       :current-folder-permission-count="currentFolderPermissionCount"
-      @create="handleCreate"
-      @upload="handleUpload"
-      @download="handleDownload"
-      @share="handleShare"
-      @move="handleMove"
-      @copy-link="handleCopyLink"
-      @delete="handleDelete"
-      @restore="handleRestore"
-      @delete-permanently="handleDeletePermanently"
-      @cancel-share="handleCancelShare"
-      @open-shared-space-setting="handleOpenSharedSpaceSetting"
+      @action="handleHeaderAction"
       @update-keyword="handleUpdateKeyword"
       @update-date-range="handleDateRangeUpdate"
       @search="handleSearch"
@@ -95,7 +79,7 @@
     />
     <PcDragUploadContainer
       class="file-list-wrapper"
-      :can-drop="canUpload"
+      :before-drop="ensureUploadAllowed"
       :content-id="getExplorerContext(route).currentFolderId"
       :is-personal="props.pageType === ExplorerPageType.MY"
       @refresh="emit('refresh')"
@@ -142,7 +126,6 @@ import { useRoute, useRouter } from "vue-router";
 import { createFolderApi } from "@/api/fileService";
 import { getExplorerContext } from "../../fileExplorer";
 import { LayoutMode } from "@/enum/baseEnum";
-import { Permission } from "@/enum/permission";
 import { useLayoutMode } from "@/hooks/useLayoutMode";
 import { useExplorerSort } from "@/hooks/sort/useExplorerSort";
 import { setExplorerSortMode } from "@/hooks/sort/state";
@@ -154,17 +137,8 @@ import type {
   ExplorerUploadingFolderItem,
   TableColumn,
 } from "@/types/type";
-import {
-  checkNameValidity,
-  hasPermission,
-  SessionStorageUtil,
-  t,
-} from "@/utils";
-import {
-  getContentId,
-  getIsFolder,
-  getPermissionType,
-} from "@/utils/typeUtils";
+import { checkNameValidity, SessionStorageUtil, t } from "@/utils";
+import { getContentId } from "@/utils/typeUtils";
 import { ExplorerPageType, type ExplorerQueryState } from "../../fileExplorer";
 import { parseQueryDate } from "@/utils";
 import { useFileActions, type MovePayload } from "../../hooks/useFileActions";
@@ -172,6 +146,10 @@ import { usePcFileContextMenu } from "../../hooks/usePcFileContextMenu";
 import { useRenameDialog } from "../../hooks/useRenameDialog";
 import { useShareLink } from "../../hooks/useShareLink";
 import { useUploadDialog } from "../../hooks/useUploadDialog";
+import {
+  isHavNewAuth,
+  resolveBatchActionPermissions,
+} from "../../hooks/fileMenuPermissions";
 import CopyLinkDialog from "./Dialog/CopyLinkDialog.vue";
 import MoveDialog from "./Dialog/MoveDialog.vue";
 import NameEditDialog from "./Dialog/NameEditDialog.vue";
@@ -181,6 +159,10 @@ import UploadProgress from "./UploadProgress.vue";
 import PcDragUploadContainer from "./PcDragUploadContainer.vue";
 import PcExplorerGridView from "./PcExplorerGridView.vue";
 import PcExplorerHeader from "./PcExplorerHeader.vue";
+import type {
+  AuthHeaderActionKey,
+  HeaderActionKey,
+} from "@/types/headerActionTypes";
 import PcExplorerListView from "./PcExplorerListView.vue";
 import PcFileContextMenu from "./PcFileContextMenu.vue";
 import SettingDialog from "./Dialog/SettingDialog.vue";
@@ -210,67 +192,14 @@ const props = defineProps<{
   total: number;
   hasMore: boolean;
   columns: TableColumn[];
-  allowUpload: boolean;
   currentFolderPermissionType: number | null;
   currentFolderPermissionCount: number | null;
 }>();
 
 const headerQuery = reactive<ExplorerQueryState>({ ...props.query });
 
-const hasExplicitPermission = (
-  item: ContentType,
-  permission: Permission,
-): boolean => {
-  const permissionType = getPermissionType(item);
-
-  if (
-    props.pageType === ExplorerPageType.SHARED ||
-    props.pageType === ExplorerPageType.SEARCH
-  ) {
-    if (permissionType == null) return false;
-  }
-
-  return hasPermission(permissionType, permission);
-};
-
 const selectedItems = computed(() => selected.value);
 const hasSelection = computed(() => selectedItems.value.length > 0);
-const canCreate = computed(() => props.allowUpload);
-const canUpload = computed(() => props.allowUpload);
-const canDownload = computed(() => {
-  if (!hasSelection.value) return false;
-  if (selectedItems.value.every((item) => getIsFolder(item))) return false;
-  if (props.pageType === ExplorerPageType.SEARCH) return true;
-  return selectedItems.value.every((item) =>
-    hasExplicitPermission(item, Permission.View),
-  );
-});
-const canShare = computed(() => {
-  if (!hasSelection.value) return false;
-  if (props.pageType === ExplorerPageType.SEARCH) return true;
-  return selectedItems.value.every((item) =>
-    hasExplicitPermission(item, Permission.Share),
-  );
-});
-const canMove = computed(() => {
-  if (!hasSelection.value) return false;
-  if (
-    props.pageType !== ExplorerPageType.MY &&
-    props.pageType !== ExplorerPageType.SHARED
-  ) {
-    return false;
-  }
-  return selectedItems.value.every((item) =>
-    hasExplicitPermission(item, Permission.Upload),
-  );
-});
-const canDelete = computed(() => {
-  if (!hasSelection.value) return false;
-  if (props.pageType === ExplorerPageType.SEARCH) return true;
-  return selectedItems.value.every((item) =>
-    hasExplicitPermission(item, Permission.Edit),
-  );
-});
 
 const { shareLinkVisible, shareLinkItems, openShareLink, closeShareLink } =
   useShareLink();
@@ -693,8 +622,24 @@ const commitInlineCreate = async () => {
   }
 };
 
+const handleRenameVisibleChange = (value: boolean) => {
+  if (value) {
+    renameVisible.value = true;
+    return;
+  }
+
+  closeRename();
+};
+
+// 新建文件夹
 const handleCreate = async () => {
-  if (!canCreate.value) return;
+  const contentId = getExplorerContext(route).currentFolderId;
+  const canCreate = await isHavNewAuth(contentId, props.pageType);
+
+  if (!canCreate) {
+    toast(t("noPermission"));
+    return;
+  }
 
   if (props.pageType === ExplorerPageType.RECENT) {
     SessionStorageUtil.set("recentCreateFolder", "1");
@@ -712,52 +657,38 @@ const handleCreate = async () => {
   await startInlineCreate();
 };
 
-const handleRenameVisibleChange = (value: boolean) => {
-  if (value) {
-    renameVisible.value = true;
-    return;
+const ensureUploadAllowed = async () => {
+  const contentId = getExplorerContext(route).currentFolderId;
+  const canCreate = await isHavNewAuth(contentId, props.pageType);
+
+  if (!canCreate) {
+    toast(t("noPermission"));
+    return false;
   }
-
-  closeRename();
-};
-
-const handleUpload = async () => {
-  if (!canUpload.value) return;
 
   if (props.pageType === ExplorerPageType.RECENT) {
     SessionStorageUtil.set("recentCreateFolder", "2");
     await router.push({
       path: "/my",
     });
+    return false;
+  }
+
+  return true;
+};
+
+// 上传文件
+const handleUpload = async () => {
+  const canUpload = await ensureUploadAllowed();
+
+  if (!canUpload) {
     return;
   }
 
   openUpload();
 };
 
-const handleDownload = async () => {
-  if (!canDownload.value) return;
-  await downloadMany(selectedItems.value);
-  clear();
-};
-
-const handleShare = async () => {
-  if (!canShare.value) return;
-  await shareToFriendMany(selectedItems.value);
-  clear();
-};
-
-const handleMove = async () => {
-  if (!canMove.value) return;
-  await moveMany(selectedItems.value);
-};
-
-const handleDelete = async () => {
-  if (!canDelete.value) return;
-  await removeMany(selectedItems.value);
-  clear();
-};
-
+// 还原
 const handleRestore = async () => {
   if (!hasSelection.value) return;
 
@@ -767,6 +698,7 @@ const handleRestore = async () => {
   clear();
 };
 
+// 彻底删除
 const handleDeletePermanently = async () => {
   if (!hasSelection.value) return;
   const deleted = await deletePermanentlyMany(selectedItems.value);
@@ -774,6 +706,7 @@ const handleDeletePermanently = async () => {
   clear();
 };
 
+// 取消分享
 const handleCancelShare = async () => {
   if (!hasSelection.value) return;
   const canceled = await cancelShareMany(selectedItems.value);
@@ -781,12 +714,101 @@ const handleCancelShare = async () => {
   clear();
 };
 
-const handleCopyLink = () => {
-  if (!canShare.value) {
+const specialAction: Record<string, () => Promise<void>> = {
+  restore: handleRestore,
+  deletePermanently: handleDeletePermanently,
+  cancelShare: handleCancelShare,
+};
+
+const handleOpenSharedSpaceSetting = async () => {
+  settingVisible.value = true;
+};
+
+const newAction: Record<string, () => Promise<void>> = {
+  create: handleCreate,
+  upload: handleUpload,
+  openSharedSpaceSetting: handleOpenSharedSpaceSetting,
+};
+
+const batchHeaderActionMap: Record<
+  AuthHeaderActionKey,
+  (items: ContentType[]) => Promise<boolean>
+> = {
+  download: downloadMany,
+  share: shareToFriendMany,
+  move: moveMany,
+  copyLink: async (items) => {
+    openShareLink(items);
+    return true;
+  },
+  delete: removeMany,
+};
+
+const batchActionLabelMap: Record<AuthHeaderActionKey, string> = {
+  download: t("download"),
+  share: t("share"),
+  move: t("move"),
+  copyLink: t("copyLink"),
+  delete: t("delete"),
+};
+
+const isAuthHeaderActionKey = (
+  key: HeaderActionKey,
+): key is AuthHeaderActionKey => {
+  return ["download", "share", "move", "copyLink", "delete"].includes(key);
+};
+
+const handleBatchHeaderAction = async (key: AuthHeaderActionKey) => {
+  if (!hasSelection.value) {
     toast(t("selectFile"));
     return;
   }
-  openShareLink(selectedItems.value);
+
+  const permissionState = await resolveBatchActionPermissions(
+    selectedItems.value,
+    key,
+    props.pageType,
+  );
+
+  if (!permissionState.allowedItems.length) {
+    toast(t("noOperationPermission", { action: batchActionLabelMap[key] }));
+    return;
+  }
+
+  if (permissionState.deniedCount > 0) {
+    try {
+      await confirm({
+        title: t("hint"),
+        message: t("partialOperationPermission", {
+          action: batchActionLabelMap[key],
+        }),
+        showCancelButton: true,
+        confirmButtonText: t("Ok"),
+        cancelButtonText: t("cancel"),
+        width: "80%",
+      });
+    } catch {
+      return;
+    }
+  }
+
+  await batchHeaderActionMap[key](permissionState.allowedItems);
+};
+
+const handleHeaderAction = async (key: HeaderActionKey) => {
+  if (specialAction[key]) {
+    await specialAction[key]?.();
+    return;
+  }
+
+  if (newAction[key]) {
+    await newAction[key]?.();
+    return;
+  }
+
+  if (isAuthHeaderActionKey(key)) {
+    await handleBatchHeaderAction(key);
+  }
 };
 
 const handleShareLinkVisibleChange = (value: boolean) => {
@@ -882,10 +904,6 @@ function handleSortChange(payload: {
     sortMethod: getSortMethod(payload.sortBy),
     sortOrder: payload.sortOrder,
   });
-}
-
-function handleOpenSharedSpaceSetting() {
-  settingVisible.value = true;
 }
 
 function handlePermissionCountUpdate(value: number) {

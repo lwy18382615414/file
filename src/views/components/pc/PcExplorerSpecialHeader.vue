@@ -29,7 +29,11 @@
           </el-input>
         </div>
         <button class="action-button" type="button" @click="emit('search')">
-          <SvgIcon name="common-search" size="22" color="var(--btn-primary-text-color)" />
+          <SvgIcon
+            name="common-search"
+            size="22"
+            color="var(--btn-primary-text-color)"
+          />
           {{ t("search") }}
         </button>
         <div
@@ -40,7 +44,7 @@
             class="action-button"
             type="button"
             :disabled="!props.hasSelection"
-            @click="emit('restore')"
+            @click="emitHeaderAction('restore')"
           >
             {{ t("restore") }}
           </button>
@@ -48,7 +52,7 @@
             class="action-button danger-button"
             type="button"
             :disabled="!props.hasSelection"
-            @click="emit('deletePermanently')"
+            @click="emitHeaderAction('deletePermanently')"
           >
             {{ t("deletePermanently") }}
           </button>
@@ -58,7 +62,7 @@
             class="action-button"
             type="button"
             :disabled="!props.hasSelection"
-            @click="emit('cancelShare')"
+            @click="emitHeaderAction('cancelShare')"
           >
             {{ t("cancelShare") }}
           </button>
@@ -76,6 +80,7 @@ import {
   ExplorerPageType,
   type ExplorerQueryState,
 } from "@/views/fileExplorer";
+import type { SpecialHeaderActionKey } from "../../../types/headerActionTypes";
 
 const props = defineProps<{
   query: ExplorerQueryState;
@@ -87,10 +92,12 @@ const emit = defineEmits<{
   (e: "updateKeyword", value: string): void;
   (e: "updateDateRange", value: [Date, Date] | null): void;
   (e: "search"): void;
-  (e: "restore"): void;
-  (e: "deletePermanently"): void;
-  (e: "cancelShare"): void;
+  (e: "action", key: SpecialHeaderActionKey): void;
 }>();
+
+const emitHeaderAction = (key: SpecialHeaderActionKey) => {
+  emit("action", key);
+};
 
 const { t } = useI18n();
 

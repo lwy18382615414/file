@@ -9,12 +9,10 @@ import {
   type ExplorerQueryState,
 } from "./fileExplorer";
 import { FileTypeEnum } from "@/enum/baseEnum";
-import { Permission } from "@/enum/permission";
 import { mergeList } from "@/utils/apiCache";
 import { getIsFolder } from "@/utils/typeUtils";
 import { mapSortMethodToSortBy } from "@/hooks/sort/config";
 import { syncExplorerQuerySort } from "@/hooks/sort/state";
-import { hasPermission } from "@/utils";
 import { useExplorerSort } from "@/hooks/sort/useExplorerSort";
 import { getFolderPermissionApi } from "@/api/common";
 
@@ -54,36 +52,6 @@ export function useFileData() {
   const currentFolderPermissionType = ref<number | null>(null);
   const currentFolderPermissionCount = ref<number | null>(null);
   const initialFetchDone = ref(false);
-
-  const allowUpload = computed(() => {
-    if (
-      context.value.pageType === ExplorerPageType.RECENT ||
-      context.value.pageType === ExplorerPageType.MY
-    ) {
-      return true;
-    }
-
-    if (
-      context.value.pageType === ExplorerPageType.MY_SHARES ||
-      context.value.pageType === ExplorerPageType.RECYCLE ||
-      context.value.pageType === ExplorerPageType.SEARCH
-    ) {
-      return false;
-    }
-
-    if (
-      context.value.pageType === ExplorerPageType.SHARED &&
-      !context.value.isRoot
-    ) {
-      if (currentFolderPermissionType.value == null) return false;
-      return hasPermission(
-        currentFolderPermissionType.value,
-        Permission.Upload,
-      );
-    }
-
-    return true;
-  });
 
   function resetQuery() {
     Object.assign(query, queryDefaults);
@@ -293,7 +261,6 @@ export function useFileData() {
     },
   );
 
-
   return {
     isMobileApp,
     query,
@@ -307,7 +274,6 @@ export function useFileData() {
     shouldLoadMobileFoldersFirst,
     currentFolderPermissionType,
     currentFolderPermissionCount,
-    allowUpload,
     fetchList,
     refreshList,
     searchList,

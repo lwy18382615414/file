@@ -341,6 +341,9 @@ export default {
     "You don't have the delete permission for the selected file. Please re-select a file",
   noSavePermission:
     "You don't have the saving permission for the selected file. Please re-select a file",
+  noOperationPermission: "No {action} permission",
+  partialOperationPermission:
+    "Some files do not have the {action} permission. Operating on the remaining files",
   deletePermissionWarning:
     "There are {count} files without delete permission that cannot be deleted. Do you want to delete other files?",
   savePermissionWarning:

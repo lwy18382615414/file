@@ -55,7 +55,6 @@
       :total="total"
       :has-more="hasMore"
       :columns="pageConfig.columns"
-      :allow-upload="allowUpload"
       :current-folder-permission-type="currentFolderPermissionType"
       :current-folder-permission-count="currentFolderPermissionCount"
       @load-more="loadMore"
@@ -75,6 +74,7 @@ import { hasCreateSharePermissionApi } from "@/api/common";
 import { useUiFeedback } from "@/hooks/useUiFeedback";
 import { useRenameDialog } from "./hooks/useRenameDialog";
 import { useExplorerMobileHeader } from "./hooks/useExplorerMobileHeader";
+import { isHavNewAuth } from "./hooks/fileMenuPermissions";
 import { ExplorerPageType } from "./fileExplorer";
 import FileListMobile from "./components/h5/FileListMobile.vue";
 import FileListPc from "./components/pc/FileListPc.vue";
@@ -115,7 +115,6 @@ const {
   shouldLoadMobileFoldersFirst,
   currentFolderPermissionType,
   currentFolderPermissionCount,
-  allowUpload,
   loadMore,
   refreshList,
   searchList,
@@ -159,8 +158,15 @@ const syncCreatePermission = async () => {
   }
 };
 
-const openCreateEntry = () => {
-  if (!allowUpload.value) return;
+const openCreateEntry = async () => {
+  const contentId = context.value.currentFolderId;
+  const canCreate = await isHavNewAuth(contentId, context.value.pageType);
+
+  if (!canCreate) {
+    toast(t("noPermission"));
+    return;
+  }
+
   createVisible.value = true;
 };
 
@@ -226,7 +232,6 @@ watch(
 
 useExplorerMobileHeader({
   isMobileApp,
-  allowUpload,
   canCreateSharedFolder,
   isHeaderBlocked,
   onOpenCreateEntry: openCreateEntry,

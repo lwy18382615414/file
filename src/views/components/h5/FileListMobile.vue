@@ -109,7 +109,7 @@
             :color="item.color"
             @click="item.action"
           />
-          <span>{{ t(item.icon) }}</span>
+          <span>{{ t(item.label) }}</span>
         </div>
       </template>
     </div>
@@ -159,6 +159,8 @@ import { useFileActions } from "../../hooks/useFileActions";
 import { useShareLink } from "../../hooks/useShareLink";
 import { LayoutMode } from "@/enum/baseEnum";
 import { useUiFeedback } from "@/hooks/useUiFeedback";
+import { resolveBatchActionPermissions } from "../../hooks/fileMenuPermissions";
+import type { AuthHeaderActionKey } from "@/types/headerActionTypes";
 
 const props = defineProps<{
   pageType: ExplorerPageType;
@@ -202,7 +204,8 @@ const {
   clear,
   setItems,
 } = useFileSelection();
-const { toast } = useUiFeedback();
+const uiFeedback = useUiFeedback();
+const { toast } = uiFeedback;
 const route = useRoute();
 const router = useRouter();
 const listRef = ref();
@@ -277,48 +280,115 @@ const openMovePage = async (items: ContentType[]) => {
   });
 };
 
+const batchActionLabelMap: Record<AuthHeaderActionKey, string> = {
+  download: t("download"),
+  share: t("share"),
+  move: t("move"),
+  copyLink: t("copyLink"),
+  delete: t("delete"),
+};
+
+const mobileBatchActionMap: Record<
+  AuthHeaderActionKey,
+  (items: ContentType[]) => Promise<boolean>
+> = {
+  download: async (items) => {
+    const downloaded = await downloadMany(items);
+    if (!downloaded) return false;
+    clear();
+    clearLongPressState();
+    return true;
+  },
+  share: async (items) => {
+    const shared = await shareToFriendMany(items);
+    if (!shared) return false;
+    clear();
+    clearLongPressState();
+    return true;
+  },
+  move: async (items) => {
+    await openMovePage(items);
+    clear();
+    clearLongPressState();
+    return true;
+  },
+  copyLink: async (items) => {
+    openShareLink(items);
+    return true;
+  },
+  delete: async (items) => {
+    const removed = await removeMany(items);
+    if (!removed) return false;
+    clear();
+    clearLongPressState();
+    return true;
+  },
+};
+
+const handleToolbarBatchAction = async (key: AuthHeaderActionKey) => {
+  const selectedItems = getSelectedItems();
+
+  if (!selectedItems.length) {
+    toast(t("selectFile"));
+    return;
+  }
+
+  const permissionState = await resolveBatchActionPermissions(
+    selectedItems,
+    key,
+    props.pageType,
+  );
+
+  if (!permissionState.allowedItems.length) {
+    toast(t("noOperationPermission", { action: batchActionLabelMap[key] }));
+    return;
+  }
+
+  if (permissionState.deniedCount > 0) {
+    try {
+      await uiFeedback.confirm({
+        title: t("hint"),
+        message: t("partialOperationPermission", {
+          action: batchActionLabelMap[key],
+        }),
+        showCancelButton: true,
+        confirmButtonText: t("Ok"),
+        cancelButtonText: t("cancel"),
+        width: "80%",
+      });
+    } catch {
+      return;
+    }
+  }
+
+  await mobileBatchActionMap[key](permissionState.allowedItems);
+};
+
 const actions = computed(() => {
   const baseActions = [
     {
       icon: "download",
+      label: "download",
       color: "#252F43",
-      action: async () => {
-        const downloaded = await downloadMany(getSelectedItems());
-        if (!downloaded) return;
-        clear();
-        clearLongPressState();
-      },
+      action: () => handleToolbarBatchAction("download"),
     },
     {
       icon: "delete",
+      label: "delete",
       color: "#f44336",
-      action: async () => {
-        const removed = await removeMany(getSelectedItems());
-        if (!removed) return;
-        clear();
-        clearLongPressState();
-      },
+      action: () => handleToolbarBatchAction("delete"),
     },
     {
       icon: "copy",
+      label: "copyLink",
       color: "#252f43",
-      action: async () => {
-        if (!getSelectedItems().length) {
-          toast(t("selectFile"));
-          return;
-        }
-        openShareLink(getSelectedItems());
-      },
+      action: () => handleToolbarBatchAction("copyLink"),
     },
     {
       icon: "share",
+      label: "share",
       color: "#252f43",
-      action: async () => {
-        const shared = await shareToFriendMany(getSelectedItems());
-        if (!shared) return;
-        clear();
-        clearLongPressState();
-      },
+      action: () => handleToolbarBatchAction("share"),
     },
   ];
 
@@ -331,13 +401,9 @@ const actions = computed(() => {
     baseActions[1],
     {
       icon: "move",
+      label: "move",
       color: "#252f43",
-      action: async () => {
-        const selectedItems = getSelectedItems();
-        await openMovePage(selectedItems);
-        clear();
-        clearLongPressState();
-      },
+      action: () => handleToolbarBatchAction("move"),
     },
     baseActions[2],
     baseActions[3],

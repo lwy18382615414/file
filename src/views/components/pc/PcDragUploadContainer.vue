@@ -7,7 +7,7 @@
     @drop="handleDrop"
   >
     <slot />
-    <div v-if="canDrop && isDraggingOver" class="dropzone"></div>
+    <div v-if="isDraggingOver" class="dropzone"></div>
     <RepeatFileDialog
       :is-transfer="true"
       :repeat-visible="showRepeatFileDialog"
@@ -40,7 +40,7 @@ type PendingFolderUpload = UploadingFolderEventPayload & {
 };
 
 const props = defineProps<{
-  canDrop: boolean;
+  beforeDrop?: () => Promise<boolean>;
   contentId: number;
   isPersonal: boolean;
 }>();
@@ -165,19 +165,16 @@ function readDirectory(
 }
 
 const handleDragEnter = () => {
-  if (!props.canDrop) return;
   clearDragLeaveTimeout();
   isDraggingOver.value = true;
 };
 
 const handleDragOver = (event: DragEvent) => {
-  if (!props.canDrop) return;
   event.preventDefault();
   clearDragLeaveTimeout();
 };
 
 const handleDragLeave = () => {
-  if (!props.canDrop) return;
   clearDragLeaveTimeout();
   dragLeaveTimeout = window.setTimeout(() => {
     isDraggingOver.value = false;
@@ -198,11 +195,13 @@ const createFolderFn = async (
 };
 
 const handleDrop = async (event: DragEvent) => {
-  if (!props.canDrop) return;
   event.preventDefault();
   clearDragLeaveTimeout();
   isDraggingOver.value = false;
   clearDroppedFolders();
+
+  const allowDrop = await props.beforeDrop?.();
+  if (allowDrop === false) return;
 
   const items = Array.from(event.dataTransfer?.items || []);
   if (!items.length) return;

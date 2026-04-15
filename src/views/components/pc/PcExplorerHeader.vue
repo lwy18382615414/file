@@ -8,25 +8,9 @@
       :total="total"
       :current-view-mode="currentViewMode"
       :support-sort="allowSort"
-      :can-create="props.canCreate"
-      :can-upload="props.canUpload"
-      :can-download="props.canDownload"
-      :can-share="props.canShare"
-      :can-move="props.canMove"
-      :can-delete="props.canDelete"
       :current-folder-permission-count="props.currentFolderPermissionCount"
       :has-selection="props.hasSelection"
-      @create="$emit('create')"
-      @upload="$emit('upload')"
-      @download="$emit('download')"
-      @share="$emit('share')"
-      @move="$emit('move')"
-      @copy-link="$emit('copyLink')"
-      @delete="$emit('delete')"
-      @restore="$emit('restore')"
-      @delete-permanently="$emit('deletePermanently')"
-      @cancel-share="$emit('cancelShare')"
-      @open-shared-space-setting="$emit('openSharedSpaceSetting')"
+      @action="handleHeaderAction"
       @toggle-view="toggleLayoutMode"
       @sort="openSortPopup"
       @update-keyword="handleKeywordUpdate"
@@ -57,6 +41,7 @@ import {
   getExplorerContext,
   type ExplorerQueryState,
 } from "@/views/fileExplorer";
+import type { HeaderActionKey } from "../../../types/headerActionTypes";
 import { useRoute } from "vue-router";
 import PcExplorerCommonHeader from "./PcExplorerCommonHeader.vue";
 import PcExplorerSpecialHeader from "./PcExplorerSpecialHeader.vue";
@@ -65,32 +50,20 @@ const props = defineProps<{
   pageType: ExplorerPageType;
   query: ExplorerQueryState;
   total: number;
-  canCreate: boolean;
-  canUpload: boolean;
-  canDownload: boolean;
-  canShare: boolean;
-  canMove: boolean;
-  canDelete: boolean;
   hasSelection: boolean;
   currentFolderPermissionCount: number | null;
 }>();
 
 const emit = defineEmits<{
-  (e: "create"): void;
-  (e: "upload"): void;
-  (e: "download"): void;
-  (e: "share"): void;
-  (e: "move"): void;
-  (e: "copyLink"): void;
-  (e: "delete"): void;
-  (e: "restore"): void;
-  (e: "deletePermanently"): void;
-  (e: "cancelShare"): void;
-  (e: "openSharedSpaceSetting"): void;
+  (e: "action", key: HeaderActionKey): void;
   (e: "search"): void;
   (e: "updateKeyword", value: string): void;
   (e: "updateDateRange", value: [Date, Date] | null): void;
 }>();
+
+const handleHeaderAction = (key: HeaderActionKey) => {
+  emit("action", key);
+};
 
 const route = useRoute();
 const context = computed(() => getExplorerContext(route));
