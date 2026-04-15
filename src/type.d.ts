@@ -2,7 +2,6 @@
 
 // 定义接口返回数据类型
 import type { AxiosResponse } from "axios";
-import type { ThemeTokens } from "@/theme/tokens";
 
 export interface IResponse<T> {
   code: number;
@@ -13,8 +12,10 @@ export interface IResponse<T> {
 
 export type ApiResponse<T> = AxiosResponse<IResponse<T>>;
 
+declare module "js-cookie";
+
 declare global {
   interface Window {
-    applyTheme: (theme: ThemeTokens | string) => void;
+    applyThemeVars: (theme: string) => void;
   }
 }

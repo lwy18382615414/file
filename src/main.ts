@@ -11,9 +11,7 @@ import App from "./App.vue";
 import router from "@/routers/index";
 import i18n from "@/lang";
 import pinia from "./stores/index";
-import { applyTheme } from "@/theme/applyTheme";
-import type { ThemeTokens } from "@/theme/tokens";
-import { defaultTheme } from "@/theme/themes";
+import { applyThemeVars, initTheme } from "@/theme/runtime";
 
 import { borderCursor } from "@/directives/borderCursor";
 import { truncateMiddle } from "@/directives/truncaeMiddle";
@@ -134,15 +132,12 @@ const enablePcVConsoleDrag = () => {
   observer.observe(document.body, { childList: true, subtree: true });
 };
 
-applyTheme(defaultTheme);
+initTheme();
 
 if (typeof window !== "undefined") {
-  window.applyTheme = (theme: ThemeTokens | string) => {
-    const nextTheme =
-      typeof theme === "string" ? (JSON.parse(theme) as ThemeTokens) : theme;
-
-    console.log("接收来自客户端的主题色配置", nextTheme);
-    applyTheme(nextTheme);
+  window.applyThemeVars = (theme: string) => {
+    console.log("接收来自客户端的主题色配置", theme);
+    applyThemeVars(theme);
   };
 }
 

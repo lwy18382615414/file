@@ -31,7 +31,10 @@ export function needsExplicitPermission(
   pageType: ExplorerPageType,
 ) {
   if (pageType === ExplorerPageType.SHARED) return true;
-  if (pageType === ExplorerPageType.SEARCH || pageType === ExplorerPageType.RECENT) {
+  if (
+    pageType === ExplorerPageType.SEARCH ||
+    pageType === ExplorerPageType.RECENT
+  ) {
     return getIsShare(item);
   }
   return false;
@@ -63,7 +66,11 @@ export async function ensureMenuPermissions<T extends ContentType>(
   if (!itemsToFetch.length) return items;
 
   const contentIds = Array.from(
-    new Set(itemsToFetch.map((item) => getContentId(item) ?? 0).filter((id) => id > 0)),
+    new Set(
+      itemsToFetch
+        .map((item) => getContentId(item) ?? 0)
+        .filter((id) => id > 0),
+    ),
   );
 
   if (!contentIds.length) return items;
@@ -119,14 +126,16 @@ export function getSingleMenuActionKeys(
 
   nextActions.push(getIsSetTop(item) ? "unTop" : "top");
 
+  if (
+    (pageType === ExplorerPageType.MY ||
+      pageType === ExplorerPageType.SHARED) &&
+    canUsePermission(item, Permission.Upload, pageType)
+  ) {
+    nextActions.push("move");
+  }
+
   if (canUsePermission(item, Permission.Edit, pageType)) {
     nextActions.push("rename");
-    if (
-      pageType === ExplorerPageType.MY ||
-      pageType === ExplorerPageType.SHARED
-    ) {
-      nextActions.push("move");
-    }
     nextActions.push("delete");
   }
 
@@ -148,17 +157,23 @@ export function getMultiMenuActionKeys(
   const nextActions: FileActionKey[] = [];
   const allFiles = items.every((item) => !getIsFolder(item));
 
-  if (items.every((item) => canUsePermission(item, Permission.Share, pageType))) {
+  if (
+    items.every((item) => canUsePermission(item, Permission.Share, pageType))
+  ) {
     nextActions.push("share", "copyLink");
   }
 
-  if (items.every((item) => canUsePermission(item, Permission.Edit, pageType))) {
-    if (
-      pageType === ExplorerPageType.MY ||
-      pageType === ExplorerPageType.SHARED
-    ) {
-      nextActions.push("move");
-    }
+  if (
+    (pageType === ExplorerPageType.MY ||
+      pageType === ExplorerPageType.SHARED) &&
+    items.every((item) => canUsePermission(item, Permission.Upload, pageType))
+  ) {
+    nextActions.push("move");
+  }
+
+  if (
+    items.every((item) => canUsePermission(item, Permission.Edit, pageType))
+  ) {
     nextActions.push("delete");
   }
 

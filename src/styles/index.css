@@ -12,6 +12,93 @@
   --base--font--size--22: 22px;
   --base--font--size--24: 24px;
   --scale-factor: 1;
+
+  /* 主题色 */
+  --theme-color: #5665bb;
+  /* 主题色 hover */
+  --theme-color-hover: color-mix(in srgb, var(--theme-color) 90%, black 10%);
+  /* 主题色浅色 */
+  --theme-color-light: color-mix(in srgb, var(--theme-color) 12%, white 88%);
+  /* 弱化主题色 */
+  --theme-weak-color: color-mix(in srgb, var(--theme-color) 10%, white 90%);
+  /* 主按钮背景色 */
+  --btn-primary-color: var(--theme-color);
+  /* 默认按钮背景色 */
+  --btn-default-bg: #ffffff;
+  /* 背景色 */
+  --bg-color: #f1f5f9;
+  /* 卡片背景色 */
+  --card-bg-color: #fbfbfb;
+  /* 卡片阴影配色 */
+  --shadow-bg-color: rgba(0, 0, 0, 0.1);
+  /* 卡片描边色 */
+  --card-border-color: #e2e8f0;
+  /* 通用样式边框色 */
+  --base-border-color: #e2e8f0;
+  /* 次要按钮边框色 */
+  --btn-secondary-border-color: var(--base-border-color);
+  /* 主要文字色 */
+  --text-primary-color: #252525;
+  /* 次要文字色 */
+  --text-secondary-color: #707681;
+  /* 弱化文本色 */
+  --text-weak-color: #99a1af;
+  /* 按钮纯色 */
+  --btn-text-white-color: #ffffff;
+  /* 主要按钮文本色 */
+  --btn-primary-text-color: #ffffff;
+  /* 次要按钮文本色 */
+  --btn-secondary-text-color: #5665bb;
+  /* 输入框底色 */
+  --input-bg-color: #ffffff;
+  /* 输入框边框色 */
+  --input-border-base-color: #e2e8f0;
+  /* 分割线颜色 */
+  --divider-color: #eaedf2;
+  /* 警示色红 */
+  --warning-red-color: #ef4444;
+  /* 警示色蓝 */
+  --warning-blue-color: #3b82f6;
+  /* 警示色绿 */
+  --warning-green-color: #00c950;
+  /* 警示色黄 */
+  --warning-yellow-color: #ff9f21;
+  /* 状态色红 */
+  --status-red-color: #c9494f;
+  /* 状态色蓝 */
+  --status-blue-color: #3b82f6;
+  /* 状态色绿 */
+  --status-green-color: #01c09f;
+  /* 状态色黄 */
+  --status-yellow-color: var(--warning-yellow-color);
+  /* 状态色灰 */
+  --status-gray-color: var(--text-weak-color);
+  /* 正文背景色 */
+  --content-bg-color: #f3f4f6;
+  /* 列表背景色 */
+  --list-bg-color: #fbfbfb;
+  /* 列表hover背景色 */
+  --list-hover-bg-color: #e7f2ff;
+  /* 列表高亮背景色 */
+  --list-highlight-bg-color: #fff2df;
+  /* 列表表头背景色 */
+  --list-head-bg-color: #f3f6fa;
+  /* 通用大表头背景色 */
+  --main-head-bg-color: #e9eef5;
+  /* 列表表头文本色 */
+  --list-head-text-bg-color: #99a1af;
+  /* 禁用按钮色 */
+  --btn-disabled-color: color-mix(in srgb, var(--theme-color) 20%, white 80%);
+  /* 禁用按钮文本色 */
+  --btn-disabled-text-color: color-mix(
+    in srgb,
+    var(--btn-text-white-color) 20%,
+    white 80%
+  );
+  /* 列表图标移入背景色 */
+  --list-icon-hover-color: color-mix(in srgb, #000000 8%, transparent);
+  /* 图标底色 */
+  --list-icon-background-color: color-mix(in srgb, #a8a8a8 10%, transparent);
 }
 
 html {

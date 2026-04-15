@@ -35,7 +35,7 @@
                 <SvgIcon
                   name="action-upload_file"
                   size="54"
-                  color="var(--primary-color)"
+                  color="var(--theme-color)"
                 />
                 <span class="text">{{ t("clickToChooseFile") }}</span>
               </div>

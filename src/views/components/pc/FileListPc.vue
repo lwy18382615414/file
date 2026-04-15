@@ -261,7 +261,7 @@ const canMove = computed(() => {
     return false;
   }
   return selectedItems.value.every((item) =>
-    hasExplicitPermission(item, Permission.Edit),
+    hasExplicitPermission(item, Permission.Upload),
   );
 });
 const canDelete = computed(() => {

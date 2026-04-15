@@ -281,6 +281,11 @@ export function useFileActions(options?: {
       repeatFileOperateType,
     });
 
+    if (res.code === httpCode.noEditPermission) {
+      toast(t("noPermission"), "error");
+      return false;
+    }
+
     if (res.code !== 1) {
       toast(t("errorOccurred"), "error");
       return false;
