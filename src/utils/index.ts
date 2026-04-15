@@ -17,11 +17,6 @@ import { getUserAppsApi } from "@/api/common";
 const getCloudDriveUploadUrl = () => config().cloudDriveUploadUrl.value;
 const getFileMaxSize = () => config().fileMaxSize.value;
 
-export const AppNameMap: Record<string, string> = {
-  so: "Supper Office",
-  wi: "WorkIM",
-};
-
 export const t = i18n.global.t;
 
 export default class LocalStorageUtil {
@@ -619,8 +614,7 @@ export function generateShareText({
   password: string;
 }) {
   const truncatedName = truncateName(fileName);
-  const mode = import.meta.env.MODE;
-  const appName = AppNameMap[mode] || "Steady@Work";
+  const appName = "Steady@Work";
   const itemDesc =
     count === 1
       ? t("sharePrompt", { count: count, fileName: truncatedName, appName })
@@ -964,9 +958,7 @@ export const checkIsShared = async (contentIds: number[]) => {
 
 // 根据环境变量获取资源文件地址
 export function getAssetUrl(file: string, dir: "images" | "icons" = "images") {
-  const mode = import.meta.env.MODE;
-  const prefix = mode === "SG" ? "assets-sg" : "assets";
-  return new URL(`../${prefix}/${dir}/${file}`, import.meta.url).href;
+  return new URL(`../assets/${dir}/${file}`, import.meta.url).href;
 }
 
 // 校验文件大小

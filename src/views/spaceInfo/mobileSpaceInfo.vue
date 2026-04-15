@@ -31,10 +31,7 @@
               v-on="getFromApp() ? { click: toAppSelect } : {}"
             >
               <div class="avatar">
-                <div
-                  class="avatar-img"
-                  :style="{ borderRadius: isSgMode ? '50%' : '0.5rem' }"
-                ></div>
+                <div class="avatar-img"></div>
               </div>
             </component>
           </template>
@@ -153,8 +150,6 @@ const contentId = computed<number>(() => {
   const queryId = route.query.contentId;
   return typeof queryId === "string" ? Number(queryId) : 0;
 });
-
-const isSgMode = import.meta.env.MODE === "SG";
 
 const toStaffList = (contentId: number, permissionType: number) => {
   router.push({

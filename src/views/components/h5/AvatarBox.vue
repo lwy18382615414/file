@@ -1,7 +1,6 @@
 <template>
   <el-image
     class="avatar"
-    :class="{ round: isSGMode }"
     :src="avatarUrl(avatar)"
     alt=""
     :style="{ width: sizePx, height: sizePx }"
@@ -56,9 +55,6 @@ const sizePx = computed(() =>
   typeof props.size === "number" ? `${props.size}px` : props.size,
 );
 
-const mode = import.meta.env.MODE;
-const isSGMode = mode === "SG";
-
 const avatarUrl = (fileName: string) => {
   if (fileName)
     return getFromApp()
@@ -86,9 +82,6 @@ const goApp = () => {
   position: relative;
   border-radius: 4px;
   object-fit: cover;
-}
-.round {
-  border-radius: 50% !important;
 }
 .image-slot {
   display: flex;
